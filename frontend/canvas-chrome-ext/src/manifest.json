@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+  "name": "Extension Prototype",
+  "description": "Prototype for Canvas Extension",
+  "version": "0.1.0",
+
+  "icons": {
+  },
+
+  "background": {},
+
+  "browser_action": {
+    "default_popup": "components/popup.html",
+    "default_icon": {}
+  },
+  "permissions": [],
+
+  "content_scripts": [{
+    "matches": ["https://seattleu.instructure.com/", "*://www.google.com/"],
+    "js": ["scripts/Content.js"]
+  }]
+}
