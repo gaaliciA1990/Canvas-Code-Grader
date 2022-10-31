@@ -1,17 +1,19 @@
-package com.canvas.chromeApiServer;
+package com.canvas.service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ProcessExecutor {
-    private final String[] commands;
+    private final List<String> commands;
     private boolean buildSuccess;
     private final StringBuilder output;
 
-    public ProcessExecutor(String[] commands) {
-        this.commands = Arrays.copyOf(commands, commands.length);
+    public ProcessExecutor(List<String> commands) {
+        this.commands = new ArrayList<>(commands);
         this.buildSuccess = false;
         this.output = new StringBuilder();
     }
