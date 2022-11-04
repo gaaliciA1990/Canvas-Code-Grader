@@ -15,14 +15,22 @@ import org.springframework.web.multipart.MultipartFile;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 public class FileService {
-    public FileService() {
 
+    public FileService(String id) {
+        this.fileDirectory = generateFileDirectory(id);
+    }
+
+    private final String fileDirectory;
+
+    private String generateFileDirectory(String id) {
+        return "./" + id;
     }
 
     public void writeFileFromDataBufferPublisher(Publisher<DataBuffer> dataBufferFlux) {
-        File dir = new File("./");
-        new File(dir, "makefile");
-        Path path = Paths.get("makefile");
+        File dir = new File(fileDirectory); // adding something after the slash wil create new directory
+        File dir2 = new File(dir, "makefile");
+        System.out.println(dir2);
+        Path path = Paths.get(fileDirectory + "/makefile");
         DataBufferUtils.write(dataBufferFlux, path, CREATE_NEW).block();
     }
 
@@ -43,7 +51,7 @@ public class FileService {
     }
 
     public boolean deleteFile(MultipartFile file) {
-        return deleteFileHelper(file.getOriginalFilename());
+        return deleteFileHelper(concatFileDirAndName(fileDirectory, file.getOriginalFilename()));
     }
 
     public boolean deleteFile(String fileName) {
@@ -51,7 +59,8 @@ public class FileService {
     }
 
     public boolean deleteFilesEndingWithExtension(String extension) {
-        File dir = new File("./");
+        // File dir = new File("./");
+        File dir = new File(fileDirectory);
         File[] files = dir.listFiles((d, name) -> name.endsWith(extension));
         if (files != null && files.length > 0) {
             for (File file : files) {
@@ -64,7 +73,7 @@ public class FileService {
     private boolean deleteFileHelper(String fileName) {
         boolean deleteSuccess = false;
         try {
-            deleteSuccess = Files.deleteIfExists(Paths.get(fileName));
+            deleteSuccess = Files.deleteIfExists(Paths.get(concatFileDirAndName(fileDirectory, fileName)));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -72,7 +81,15 @@ public class FileService {
         return deleteSuccess;
     }
 
-    public static FileService getFileService() {
-        return new FileService();
+    public static FileService getFileService(String id) {
+        return new FileService(id);
+    }
+
+    public String getFileDirectory() {
+        return fileDirectory;
+    }
+
+    private static String concatFileDirAndName(String fileDirectory, String fileName) {
+        return fileDirectory + "/" + fileName;
     }
 }

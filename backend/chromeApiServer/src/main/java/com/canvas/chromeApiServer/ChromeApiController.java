@@ -35,9 +35,11 @@ public class ChromeApiController {
             produces = { "application/json" },
             consumes = { "multipart/form-data" }
     )
-    public ResponseEntity<CommandOutput> compileCodeFile(@RequestParam("files") MultipartFile[] files) {
+    public ResponseEntity<CommandOutput> compileCodeFile(
+            @RequestParam("files") MultipartFile[] files,
+            @RequestParam("userId") String userId) {
         Publisher<DataBuffer> makefileDataBufferFlux = getFileFromCanvas();
-        FileService fileService = FileService.getFileService();
+        FileService fileService = FileService.getFileService(userId);
         fileService.writeFileFromDataBufferPublisher(makefileDataBufferFlux);
 
         // Write files
@@ -46,7 +48,8 @@ public class ChromeApiController {
         }
 
         // Compile the files and grab output
-        ProcessExecutor processExecutor = new ProcessExecutor(new String[] {"make"});
+        String cdToFileDirectory = "cd " + fileService.getFileDirectory();
+        ProcessExecutor processExecutor = new ProcessExecutor(new String[] {cdToFileDirectory, "make"});
         boolean compileSuccess = processExecutor.executeProcess();
         String output = compileSuccess ? "Your program compiled successfully!" : processExecutor.getProcessOutput();
 
