@@ -8,12 +8,16 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ProcessExecutor {
-    private final List<String> commands;
+    private final String[] commands;
     private boolean buildSuccess;
     private final StringBuilder output;
 
     public ProcessExecutor(List<String> commands) {
-        this.commands = new ArrayList<>(commands);
+        this(commands.toArray(new String[0]));
+    }
+
+    public ProcessExecutor(String[] commands) {
+        this.commands = Arrays.copyOf(commands, commands.length);
         this.buildSuccess = false;
         this.output = new StringBuilder();
     }
@@ -26,7 +30,9 @@ public class ProcessExecutor {
             Process process = processBuilder.start();
             process.waitFor();
             this.buildSuccess = process.exitValue() == 0;
-            BufferedReader inputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader inputReader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream())
+            );
             String line;
             while ((line = inputReader.readLine()) != null) {
                 //System.out.println(line);

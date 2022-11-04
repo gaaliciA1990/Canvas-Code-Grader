@@ -4,13 +4,26 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.reactivestreams.Publisher;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.web.multipart.MultipartFile;
+
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 public class FileService {
     public FileService() {
 
+    }
+
+    public void writeFileFromDataBufferPublisher(Publisher<DataBuffer> dataBufferFlux) {
+        File dir = new File("./");
+        new File(dir, "makefile");
+        Path path = Paths.get("makefile");
+        DataBufferUtils.write(dataBufferFlux, path, CREATE_NEW).block();
     }
 
     public boolean writeFile(MultipartFile file) {
