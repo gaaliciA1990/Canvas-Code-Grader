@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.IOException;
+
 @RestController
 @CrossOrigin
 public class ChromeApiController {
@@ -40,7 +42,7 @@ public class ChromeApiController {
             @RequestParam("userId") String userId) {
         Publisher<DataBuffer> makefileDataBufferFlux = getFileFromCanvas();
         FileService fileService = FileService.getFileService(userId);
-        fileService.writeFileFromDataBufferPublisher(makefileDataBufferFlux);
+        fileService.writeFileFromDataBufferPublisher(makefileDataBufferFlux, "makefile");
 
         // Write files
         for (MultipartFile file : files) {

@@ -12,7 +12,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 public class FileService {
 
@@ -26,12 +26,22 @@ public class FileService {
         return "./" + id;
     }
 
-    public void writeFileFromDataBufferPublisher(Publisher<DataBuffer> dataBufferFlux) {
-        File dir = new File(fileDirectory); // adding something after the slash wil create new directory
-        File dir2 = new File(dir, "makefile");
-        System.out.println(dir2);
-        Path path = Paths.get(fileDirectory + "/makefile");
-        DataBufferUtils.write(dataBufferFlux, path, CREATE_NEW).block();
+    public void writeFileFromDataBufferPublisher(Publisher<DataBuffer> dataBufferFlux, String fileName) {
+        // create directory
+        File dir = new File(fileDirectory);
+        dir.mkdirs();
+
+        // create makefile inside of directory
+        File newFile = new File(dir, fileName);
+        try {
+            newFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // write to makefile
+        Path path = Paths.get(newFile.getAbsolutePath());
+        DataBufferUtils.write(dataBufferFlux, path, WRITE).block();
     }
 
     public boolean writeFile(MultipartFile file) {
