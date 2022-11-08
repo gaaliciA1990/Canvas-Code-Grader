@@ -16,6 +16,17 @@ console.log("Chrome ext ready");
         el.appendChild(btn);
     }
 
+    // TODO get the file from Canvas directory using directory path to file
+    function populatePre(url) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+            document.getElementById('contents').textContent = this.responseText;
+        };
+        xhr.open('GET', url);
+        xhr.send();
+    }
+    populatePre('path/to/file.txt');
+
     function defineEvents () {
         document
             .getElementById("submit_compile_code")
