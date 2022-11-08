@@ -18,11 +18,11 @@ import static java.nio.file.StandardOpenOption.WRITE;
 
 public class FileService {
 
+    private final String fileDirectory;
+
     public FileService(String id) {
         this.fileDirectory = generateFileDirectory(id);
     }
-
-    private final String fileDirectory;
 
     private String generateFileDirectory(String id) {
         return "./" + id;
@@ -42,7 +42,7 @@ public class FileService {
         }
 
         // write to makefile
-        Path path = Paths.get(newFile.getAbsolutePath());
+        Path path = Paths.get(newFile.getPath());
         DataBufferUtils.write(dataBufferFlux, path, WRITE).block();
     }
 
@@ -96,7 +96,6 @@ public class FileService {
     }
 
     public boolean deleteFilesEndingWithExtension(String extension) {
-        // File dir = new File("./");
         File dir = new File(fileDirectory);
         File[] files = dir.listFiles((d, name) -> name.endsWith(extension));
         if (files != null && files.length > 0) {

@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.io.IOException;
-
 @RestController
 @CrossOrigin
 public class ChromeApiController {
@@ -40,28 +38,24 @@ public class ChromeApiController {
     public ResponseEntity<CommandOutput> compileCodeFile(
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("userId") String userId) {
+
         Publisher<DataBuffer> makefileDataBufferFlux = getFileFromCanvas();
+
         FileService fileService = FileService.getFileService(userId);
         fileService.writeFileFromDataBufferPublisher(makefileDataBufferFlux, "makefile");
 
         // Write files
         for (MultipartFile file : files) {
-            fileService.writeFile(file);
+            fileService.writeFileFromMultipart(file);
         }
 
         // Compile the files and grab output
-        String cdToFileDirectory = "cd " + fileService.getFileDirectory();
-        ProcessExecutor processExecutor = new ProcessExecutor(new String[] {cdToFileDirectory, "make"});
+        ProcessExecutor processExecutor = new ProcessExecutor(new String[] {"make"}, fileService.getFileDirectory());
         boolean compileSuccess = processExecutor.executeProcess();
         String output = compileSuccess ? "Your program compiled successfully!" : processExecutor.getProcessOutput();
 
         // Cleanup
-        for (MultipartFile file : files) {
-            fileService.deleteFile(file);
-        }
-        fileService.deleteFile("makefile");
-        fileService.deleteFilesEndingWithExtension(".exe"); // Executable
-        fileService.deleteFilesEndingWithExtension(".gch"); // GCC Precompiled Header
+        fileService.deleteDirectory();
 
         // Generate response
         CommandOutput commandOutput = new CommandOutput(compileSuccess, output);
