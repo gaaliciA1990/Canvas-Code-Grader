@@ -1,16 +1,21 @@
 package com.canvas.chromeApiServer;
 
 import com.canvas.dto.CommandOutput;
+import com.canvas.service.JSONParsingService;
 import com.canvas.service.ProcessExecutor;
 import com.canvas.service.FileService;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -20,6 +25,13 @@ public class ChromeApiController {
 
     @Autowired
     private WebClient.Builder webClientBuilder;
+
+    @Value("${canvas.mock.url}")
+    // @Value("${canvas.api.url}")
+    private String CANVAS_HOST_URL;
+
+    @Value("${canvas.api.auth.token}")
+    private String CANVAS_AUTH_TOKEN;
 
     public ChromeApiController() {
 
@@ -37,14 +49,21 @@ public class ChromeApiController {
     )
     public ResponseEntity<CommandOutput> compileCodeFile(
             @RequestParam("files") MultipartFile[] files,
-            @RequestParam("userId") String userId) {
+            @RequestParam("userId") String userId
+    ) {
+        // Retrieve file json from Canvas
+        Publisher<DataBuffer> dataBuffer = getFileFromCanvas("68687639");
 
-        Publisher<DataBuffer> makefileDataBufferFlux = getFileFromCanvas();
-
+        // Write json to file
+        String canvasFileJsonName = "canvas-file-response.json";
         FileService fileService = FileService.getFileService(userId);
-        fileService.writeFileFromDataBufferPublisher(makefileDataBufferFlux, "makefile");
+        fileService.writeFileFromDataBufferPublisher(dataBuffer, canvasFileJsonName);
 
-        // Write files
+        // Write makefile from file URL
+        JSONParsingService canvasFileJson = new JSONParsingService(fileService.getFileDirectory() + "/" + canvasFileJsonName);
+        fileService.writeFileFromUrl(canvasFileJson.get("url"), "makefile");
+
+        // Write submitted code files
         for (MultipartFile file : files) {
             fileService.writeFileFromMultipart(file);
         }
@@ -63,13 +82,12 @@ public class ChromeApiController {
         return new ResponseEntity<>(commandOutput, HttpStatus.OK);
     }
 
-    private Publisher<DataBuffer> getFileFromCanvas() {
-        // TODO this request needs to be unique to each assignment in order to grab the correct makefile
-        // TODO update URL to Canvas API
+    private Publisher<DataBuffer> getFileFromCanvas(String fileId) {
         return webClientBuilder.build()
                 .get()
-                .uri("http://127.0.0.1:55321/makefile/hello-world")
-                .accept(MediaType.APPLICATION_OCTET_STREAM) // TODO how does canvas send file over HTTP
+                .uri(CANVAS_HOST_URL + "/files/" + fileId)
+                .header("Authorization", "Bearer " + CANVAS_AUTH_TOKEN)
+                .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToFlux(DataBuffer.class);
     }
