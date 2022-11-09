@@ -1,9 +1,9 @@
 package com.canvas.service;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,19 +11,22 @@ public class ProcessExecutor {
     private final String[] commands;
     private boolean buildSuccess;
     private final StringBuilder output;
+    private final String directory;
 
-    public ProcessExecutor(List<String> commands) {
-        this(commands.toArray(new String[0]));
+    public ProcessExecutor(List<String> commands, String directory) {
+        this(commands.toArray(new String[0]), directory);
     }
 
-    public ProcessExecutor(String[] commands) {
-        this.commands = Arrays.copyOf(commands, commands.length);
+    public ProcessExecutor(String[] executeCommands, String directory) {
+        this.commands = Arrays.copyOf(executeCommands, executeCommands.length);
+        this.directory = directory;
         this.buildSuccess = false;
         this.output = new StringBuilder();
     }
 
     public boolean executeProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder(this.commands);
+        processBuilder.directory(new File(this.directory));
         processBuilder.redirectErrorStream(true);
 
         try {
@@ -35,7 +38,6 @@ public class ProcessExecutor {
             );
             String line;
             while ((line = inputReader.readLine()) != null) {
-                //System.out.println(line);
                 this.output.append(line);
             }
         } catch (IOException | InterruptedException e) {
