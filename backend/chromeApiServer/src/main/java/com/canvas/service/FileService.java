@@ -77,6 +77,18 @@ public class FileService {
         return true;
     }
 
+    public boolean writeFileFromBytes(String path, String fileName, byte[] bytes) {
+        try {
+            FileOutputStream fos = new FileOutputStream(path + "/" + fileName);
+            fos.write(bytes);
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     public boolean deleteDirectory() {
         try {
             FileUtils.deleteDirectory(new File(fileDirectory));
