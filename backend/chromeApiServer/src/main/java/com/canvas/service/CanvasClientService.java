@@ -124,7 +124,7 @@ public class CanvasClientService {
 
     //Test
     public static void main(String[] args) throws IOException {
-        CanvasClientService canvasClientServices = new CanvasClientService("Bearer 1029~fVxRhFkvbIkAGPO9wwwGtrdVG2dX1e2GTLL0fQqkTQsifWDMkODuSzeTF2ow60wc");
+        CanvasClientService canvasClientServices = new CanvasClientService("Bearer");
         String userId = canvasClientServices.fetchUserId();
         String myFilesId = canvasClientServices.getMyFilesFolderId(userId, "my files");
         // This will change to Submissions folder
