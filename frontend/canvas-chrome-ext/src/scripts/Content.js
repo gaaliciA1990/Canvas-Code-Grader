@@ -17,7 +17,6 @@ console.log("Chrome ext ready");
     }
 
     // TODO get the file from Canvas directory using directory path to file
-    //  --> GET RID OF THIS FUNCTION branch instructor-canvas-view
     function populatePre(url) {
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
