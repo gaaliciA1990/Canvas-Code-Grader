@@ -24,7 +24,6 @@ console.log("Chrome ext ready");
                 upload_compile(event.target.value.split(" ")[1]);
                 //needs to grab the file from the field
             });
-
     }
 
     function upload_compile(str) {
