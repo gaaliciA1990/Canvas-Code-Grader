@@ -16,17 +16,6 @@ console.log("Chrome ext ready");
         el.appendChild(btn);
     }
 
-    // TODO get the file from Canvas directory using directory path to file
-    function populatePre(url) {
-        var xhr = new XMLHttpRequest();
-        xhr.onload = function () {
-            document.getElementById('contents').textContent = this.responseText;
-        };
-        xhr.open('GET', url);
-        xhr.send();
-    }
-    populatePre('path/to/file.txt');
-
     function defineEvents () {
         document
             .getElementById("submit_compile_code")
@@ -35,7 +24,6 @@ console.log("Chrome ext ready");
                 upload_compile(event.target.value.split(" ")[1]);
                 //needs to grab the file from the field
             });
-
     }
 
     function upload_compile(str) {
