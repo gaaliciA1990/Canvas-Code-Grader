@@ -119,7 +119,7 @@ public class CanvasClientService {
 
         FileService fs = new FileService("1");
         // default stores file in /tmp
-        fs.writeFileFromBytes("/tmp",fileName,fileBytes);
+        fs.writeFileFromBytes(fileName,fileBytes);
     }
 
     //Test
@@ -133,6 +133,6 @@ public class CanvasClientService {
         byte[] fileBytes = canvasClientServices.fetchFile(submissionFileId);
 
         FileService fs = new FileService("1");
-        fs.writeFileFromBytes("/tmp","sample1.cpp",fileBytes);
+        fs.writeFileFromBytes("sample1.cpp",fileBytes);
     }
 }
