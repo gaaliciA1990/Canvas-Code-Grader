@@ -1,5 +1,6 @@
 package com.canvas.service;
 
+import com.canvas.config.CanvasConfiguration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
@@ -12,13 +13,14 @@ import java.util.Objects;
 
 public class CanvasClientService {
 
-    public static final String CANVAS_URL = "https://seattleu.instructure.com/api/v1";
+    // seattleU host: https://seattleu.instructure.com/api/v1
+    public static final String CANVAS_URL = "https://canvas.instructure.com/api/v1";
     public static final String AUTH_HEADER = "Authorization";
 
     private final OkHttpClient okHttpClient;
     private final String accessToken;
     public CanvasClientService(String token) {
-        this.okHttpClient = new OkHttpClient ();
+        this.okHttpClient = new OkHttpClient();
         this.accessToken = token;
     }
 
@@ -61,6 +63,16 @@ public class CanvasClientService {
         return null;
     }
 
+    private String getFilesRequestUrlFromAssignmentFolder(JsonNode response, String folderName) throws IOException{
+        for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
+            JsonNode folder = it.next();
+            if (folder.get("name").asText().equals(folderName)) {
+                return folder.get("files_url").asText();
+            }
+        }
+        return null;
+    }
+
     public byte[] fetchFile(String fileId) throws IOException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/files/" + fileId)
@@ -74,6 +86,23 @@ public class CanvasClientService {
         Response fileResp = this.okHttpClient.newCall(fileRequest).execute();
         return Objects.requireNonNull(fileResp.body()).bytes();
     }
+
+    public byte[] fetchFileUnderCourseAssignmentFolder(String courseId, String assignmentId, String fileName) throws IOException {
+        JsonNode foldersResp = fetchFoldersUnderCourse(courseId);
+        // assignmentId is the folder name
+        String filesRequestUrl = getFilesRequestUrlFromAssignmentFolder(foldersResp, assignmentId);
+
+        Request filesRequest = new Request.Builder()
+                .url(filesRequestUrl)
+                .get()
+                .addHeader(AUTH_HEADER, this.accessToken)
+                .build();
+
+        JsonNode filesResponse = parseResponseToJsonNode(this.okHttpClient.newCall(filesRequest).execute());
+        String fileId = getFileIdFromFilesResponse(filesResponse, fileName + ".dms");
+        return fetchFile(fileId);
+    }
+
     public String fetchUserId() throws IOException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/users/self")
@@ -85,6 +114,16 @@ public class CanvasClientService {
         return userId;
 
     }
+
+    public JsonNode fetchFoldersUnderCourse(String courseId) throws IOException {
+        Request request = new Request.Builder()
+                .url(CANVAS_URL + "/courses/" + courseId + "/folders")
+                .get()
+                .addHeader(AUTH_HEADER, this.accessToken)
+                .build();
+        return parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
+    }
+
     public JsonNode fetchFoldersUnderStudent(String userId) throws IOException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/users/" + userId + "/folders/by_path")

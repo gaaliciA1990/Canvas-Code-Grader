@@ -14,11 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -50,20 +46,26 @@ public class ChromeApiController {
             consumes = { "multipart/form-data" }
     )
     public ResponseEntity<CommandOutput> compileCodeFile(
+            @RequestHeader("Authorization") String bearerToken,
             @RequestParam("files") MultipartFile[] files,
-            @RequestParam("userId") String userId
+            @RequestParam("userId") String userId,
+            @RequestParam("assignmentId") String assignmentId,
+            @RequestParam("courseId") String courseId
     ) {
+        CanvasClientService canvasClientService = new CanvasClientService(bearerToken);
+        String makefileName = "makefile";
+
         // Retrieve file json from Canvas
         byte[] makefileBytes = new byte[0];
         try {
-            makefileBytes = new CanvasClientService("Bearer " + this.canvasConfig.getAuthToken())
-                    .fetchFile("68687639");
+            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(
+                    courseId, assignmentId, makefileName
+            );
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         // Write makefile to file
-        String makefileName = "makefile";
         FileService fileService = FileService.getFileService(userId);
         fileService.writeFileFromBytes(makefileName, makefileBytes);
 
