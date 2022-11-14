@@ -1,6 +1,5 @@
 package com.canvas.service;
 
-import com.canvas.config.CanvasConfiguration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;

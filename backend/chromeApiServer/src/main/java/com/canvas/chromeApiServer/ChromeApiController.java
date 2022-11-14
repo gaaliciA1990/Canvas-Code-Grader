@@ -1,44 +1,22 @@
 package com.canvas.chromeApiServer;
 
-import com.canvas.config.CanvasConfiguration;
 import com.canvas.dto.CommandOutput;
 import com.canvas.service.CanvasClientService;
 import com.canvas.service.ProcessExecutor;
 import com.canvas.service.FileService;
-import org.reactivestreams.Publisher;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 
 @RestController
 @CrossOrigin
 public class ChromeApiController {
-    @Autowired
-    private CanvasConfiguration canvasConfig;
 
-    @Autowired
-    private WebClient.Builder webClientBuilder;
-
-
-    public ChromeApiController() {
-
-    }
-
-    @Bean
-    public WebClient.Builder getWebClientBuilder(){
-        return WebClient.builder();
-    }
+    public ChromeApiController() { }
 
     @PostMapping(
             value = "/evaluate",
@@ -113,13 +91,5 @@ public class ChromeApiController {
         }
         return new ResponseEntity<>("SAVED FILE", HttpStatus.OK);
     }
-//    private Publisher<DataBuffer> getFileFromCanvas(String fileId) {
-//        return webClientBuilder.build()
-//                .get()
-//                .uri(CANVAS_HOST_URL + "/files/" + fileId)
-//                .header("Authorization", "Bearer " + CANVAS_AUTH_TOKEN)
-//                .accept(MediaType.APPLICATION_JSON)
-//                .retrieve()
-//                .bodyToFlux(DataBuffer.class);
-//    }
+
 }
