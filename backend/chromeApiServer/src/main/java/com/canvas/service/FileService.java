@@ -77,9 +77,11 @@ public class FileService {
         return true;
     }
 
-    public boolean writeFileFromBytes(String path, String fileName, byte[] bytes) {
+    public boolean writeFileFromBytes(String fileName, byte[] bytes) {
+        File dir = new File(fileDirectory);
+        dir.mkdirs();
         try {
-            FileOutputStream fos = new FileOutputStream(path + "/" + fileName);
+            FileOutputStream fos = new FileOutputStream(this.fileDirectory + "/" + fileName);
             fos.write(bytes);
             fos.close();
         } catch (IOException e) {

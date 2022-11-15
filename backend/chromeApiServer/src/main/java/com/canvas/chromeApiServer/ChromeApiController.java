@@ -2,48 +2,21 @@ package com.canvas.chromeApiServer;
 
 import com.canvas.dto.CommandOutput;
 import com.canvas.service.CanvasClientService;
-import com.canvas.service.JSONParsingService;
 import com.canvas.service.ProcessExecutor;
 import com.canvas.service.FileService;
-import org.reactivestreams.Publisher;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
+
+import java.io.IOException;
 
 @RestController
 @CrossOrigin
 public class ChromeApiController {
 
-    @Autowired
-    private WebClient.Builder webClientBuilder;
-
-    @Value("${canvas.mock.url}")
-    // @Value("${canvas.api.url}")
-    private String CANVAS_HOST_URL;
-
-    @Value("${canvas.api.auth.token}")
-    private String CANVAS_AUTH_TOKEN;
-
-    public ChromeApiController() {
-
-    }
-
-    @Bean
-    public WebClient.Builder getWebClientBuilder(){
-        return WebClient.builder();
-    }
+    public ChromeApiController() { }
 
     @PostMapping(
             value = "/evaluate",
@@ -51,20 +24,28 @@ public class ChromeApiController {
             consumes = { "multipart/form-data" }
     )
     public ResponseEntity<CommandOutput> compileCodeFile(
+            @RequestHeader("Authorization") String bearerToken,
             @RequestParam("files") MultipartFile[] files,
-            @RequestParam("userId") String userId
+            @RequestParam("userId") String userId,
+            @RequestParam("assignmentId") String assignmentId,
+            @RequestParam("courseId") String courseId
     ) {
+        CanvasClientService canvasClientService = new CanvasClientService(bearerToken);
+        String makefileName = "makefile";
+
         // Retrieve file json from Canvas
-        Publisher<DataBuffer> dataBuffer = getFileFromCanvas("68687639");
+        byte[] makefileBytes = new byte[0];
+        try {
+            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(
+                    courseId, assignmentId, makefileName
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        // Write json to file
-        String canvasFileJsonName = "canvas-file-response.json";
+        // Write makefile to file
         FileService fileService = FileService.getFileService(userId);
-        fileService.writeFileFromDataBufferPublisher(dataBuffer, canvasFileJsonName);
-
-        // Write makefile from file URL
-        JSONParsingService canvasFileJson = new JSONParsingService(fileService.getFileDirectory() + "/" + canvasFileJsonName);
-        fileService.writeFileFromUrl(canvasFileJson.get("url"), "makefile");
+        fileService.writeFileFromBytes(makefileName, makefileBytes);
 
         // Write submitted code files
         for (MultipartFile file : files) {
@@ -110,13 +91,5 @@ public class ChromeApiController {
         }
         return new ResponseEntity<>("SAVED FILE", HttpStatus.OK);
     }
-    private Publisher<DataBuffer> getFileFromCanvas(String fileId) {
-        return webClientBuilder.build()
-                .get()
-                .uri(CANVAS_HOST_URL + "/files/" + fileId)
-                .header("Authorization", "Bearer " + CANVAS_AUTH_TOKEN)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToFlux(DataBuffer.class);
-    }
+
 }
