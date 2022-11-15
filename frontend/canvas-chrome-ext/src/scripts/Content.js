@@ -1,36 +1,19 @@
 
 console.log("Chrome ext ready");
 
+const site = window.location.hostname;
+alert("Canvas-Code JS has been injected into: " + site);
 
-(function () {
+if (site.includes("https://seattleu.instructure.com/")) {
+    alert("inside SU");
+}
 
-    function  addBtn() {
-        var btn = document.createElement("input");
-        btn.value = "Submit Check";
-        btn.id = "submit_compile_code";
-        btn.type = "submit";
+function injectScript(file_path, tag){
+    var node = document.getElementsByTagName(tag)[0];
+    var script = document.createElement("script");
+    script.setAttribute('type', 'text/javascript');
+    script.setAttribute('src', file_path);
+    node.appendChild(script);
+}
 
-        const el = document.querySelector(".FPdoLc.lJ9FBc center");
-
-        console.log(el);
-        el.appendChild(btn);
-    }
-
-    function defineEvents () {
-        document
-            .getElementById("submit_compile_code")
-            .addEventListener("click", function
-                (event){
-                upload_compile(event.target.value.split(" ")[1]);
-                //needs to grab the file from the field
-            });
-    }
-
-    function upload_compile(str) {
-        console.log("connect to our server and upload assignment")
-    }
-
-    addBtn();
-    defineEvents();
-
-})();
+injectScript(chrome.extension.getURL('scripts/inject_script.js'), 'body');

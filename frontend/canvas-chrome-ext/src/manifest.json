@@ -6,14 +6,21 @@
 
   "icons": {
   },
-
-  "background": {},
-
+  "web_accessible_resources": ["scripts/inject_script.js"],
   "browser_action": {
     "default_popup": "components/popup.html",
     "default_icon": {}
   },
-  "permissions": [],
+  "permissions": [
+    "activeTab",
+    "<all_urls>",
+    "tabs"
+  ],
+
+  "background": [{
+    "scripts": ["scripts/background_script.js"],
+    "persistent": false
+  }],
 
   "content_scripts": [{
     "matches": ["https://seattleu.instructure.com/", "*://www.google.com/"],
