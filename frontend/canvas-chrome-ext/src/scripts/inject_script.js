@@ -50,21 +50,33 @@
 
         //need to wait for file to be input
 
-        const endpoint ="http://127.0.0.1:3002/submit_file";
+        const endpoint ="http://127.0.0.1:8080/evaluate";
         const formData = new FormData();
 
-        fileInput.addEventListener("change", function (){
-            formData.append("fileInput", fileInput.files[0]);
+        //need to extract this somehow
+        let userId = "36497003";
+        let courseId = "5660191";
+        let assignmentId = "33719910";
+        let bearerToken = "Bearer 7~NXFfejf0q09Rx6d50rAOnZTcwjIXxaZk7pOsmCj2ITVZNoYBmuFtaEuou0asBH5U";
 
-            //default multipart form data
+        fileInput.addEventListener("change", function (){
+            formData.append("files", fileInput.files[0]);
+            formData.append("userId",userId);
+            formData.append("courseId", courseId);
+            formData.append("assignmentId", assignmentId);
+
+
             fetch(endpoint, {
                 method: "POST",
+                headers: new Headers({
+                    'Authorization': bearerToken
+                }),
                 body: formData
-            }).catch(console.error).then(async response => {
-                let fileSubmit_response = await response;
+            }).catch(console.error).then( async response =>  {
+                let fileSubmit_response = await response.json();
 
-                console.log(fileSubmit_response)
-                alert(fileSubmit_response);
+                console.log(fileSubmit_response);
+                alert(fileSubmit_response.output);
             });
         });
 
@@ -72,7 +84,9 @@
 
 
     //find where to add upload button
-    const el = document.querySelector(".FPdoLc.lJ9FBc center");
+    //eesy eesy-tab2-container
+    //const el = document.querySelector(".FPdoLc.lJ9FBc center");
+    const el = document.body;
     console.log(el);
     el.appendChild(fileInput);
     el.appendChild(btn_code_submission);

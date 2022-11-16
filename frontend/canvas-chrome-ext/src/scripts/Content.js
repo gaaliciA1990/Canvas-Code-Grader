@@ -8,6 +8,10 @@ if (site.includes("https://seattleu.instructure.com/")) {
     alert("inside SU");
 }
 
+if (site.includes("https://canvas.instructure.com/")) {
+    alert("inside canvas");
+}
+
 function injectScript(file_path, tag){
     var node = document.getElementsByTagName(tag)[0];
     var script = document.createElement("script");
