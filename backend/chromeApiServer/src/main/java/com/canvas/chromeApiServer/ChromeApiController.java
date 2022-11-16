@@ -26,7 +26,6 @@ public class ChromeApiController {
     public ResponseEntity<CommandOutput> compileCodeFile(
             @RequestHeader("Authorization") String bearerToken,
             @RequestParam("files") MultipartFile[] files,
-            @RequestParam("userId") String userId,
             @RequestParam("assignmentId") String assignmentId,
             @RequestParam("courseId") String courseId
     ) {
@@ -39,6 +38,13 @@ public class ChromeApiController {
             makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(
                     courseId, assignmentId, makefileName
             );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String userId = "";
+        try {
+            userId = canvasClientService.fetchUserId();
         } catch (IOException e) {
             e.printStackTrace();
         }
