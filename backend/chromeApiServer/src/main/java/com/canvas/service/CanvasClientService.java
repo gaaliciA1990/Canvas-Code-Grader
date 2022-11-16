@@ -2,13 +2,13 @@ package com.canvas.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 
 public class CanvasClientService {
 
@@ -146,6 +146,28 @@ public class CanvasClientService {
                 .addHeader(AUTH_HEADER, this.accessToken)
                 .build();
         return parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
+    }
+
+    public Map<String, byte[]> fetchSubmissionFilesFromStudent(String courseId, String assignmentId, String studentId) throws IOException {
+        Map<String, byte[]> submissionFilesBytes = new HashMap<>();
+
+        Request request = new Request.Builder()
+                .url(CANVAS_URL + "/courses/" + courseId + "/assignments/" + assignmentId + "/submissions/" + studentId)
+                .get()
+                .addHeader(AUTH_HEADER, this.accessToken)
+                .build();
+
+        JsonNode submissionResp = parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
+        JsonNode filesAttachment = submissionResp.get("attachments");
+
+        for (JsonNode fileJson : filesAttachment) {
+            String fileId = fileJson.get("id").asText();
+            byte[] fileBytes = fetchFile(fileId);
+            String fileName = fileJson.get("filename").asText();
+            submissionFilesBytes.put(fileName, fileBytes);
+        }
+
+        return submissionFilesBytes;
     }
 
     public void fetchSubmissionFromMyFilesAndSave(String fileName) throws IOException {

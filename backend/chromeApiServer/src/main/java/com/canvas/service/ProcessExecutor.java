@@ -38,7 +38,7 @@ public class ProcessExecutor {
             );
             String line;
             while ((line = inputReader.readLine()) != null) {
-                this.output.append(line);
+                this.output.append(line).append('\n');
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
