@@ -7,6 +7,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
 import org.reactivestreams.Publisher;
@@ -89,6 +90,12 @@ public class FileService {
             return false;
         }
         return true;
+    }
+
+    public String getFileNameWithExtension(String ext) {
+        File dir = new File(fileDirectory);
+        File file = Objects.requireNonNull(dir.listFiles((d, name) -> name.endsWith(ext)))[0];
+        return file.getPath();
     }
 
     public boolean deleteDirectory() {
