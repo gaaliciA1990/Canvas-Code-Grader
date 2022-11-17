@@ -13,23 +13,24 @@ import org.apache.commons.io.FileUtils;
 import org.reactivestreams.Publisher;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import static java.nio.file.StandardOpenOption.WRITE;
 
+@Service
 public class FileService {
 
-    private final String fileDirectory;
-
-    public FileService(String id) {
-        this.fileDirectory = generateFileDirectory(id);
+    public FileService() {
     }
 
     private String generateFileDirectory(String id) {
         return "./" + id;
     }
 
-    public void writeFileFromDataBufferPublisher(Publisher<DataBuffer> dataBufferFlux, String fileName) {
+    public void writeFileFromDataBufferPublisher(Publisher<DataBuffer> dataBufferFlux, String fileName, String id) {
+        String fileDirectory = generateFileDirectory(id);
+
         // create directory
         File dir = new File(fileDirectory);
         dir.mkdirs();
@@ -47,7 +48,9 @@ public class FileService {
         DataBufferUtils.write(dataBufferFlux, path, WRITE).block();
     }
 
-    public boolean writeFileFromUrl(String url, String filename) {
+    public boolean writeFileFromUrl(String url, String filename, String id) {
+        String fileDirectory = generateFileDirectory(id);
+
         try {
             FileUtils.copyURLToFile(
                     new URL(url),
@@ -60,7 +63,9 @@ public class FileService {
         return true;
     }
 
-    public boolean writeFileFromMultipart(MultipartFile file) {
+    public boolean writeFileFromMultipart(MultipartFile file, String id) {
+        String fileDirectory = generateFileDirectory(id);
+
         if (!file.isEmpty()) {
             try {
                 byte[] bytes = file.getBytes();
@@ -78,11 +83,13 @@ public class FileService {
         return true;
     }
 
-    public boolean writeFileFromBytes(String fileName, byte[] bytes) {
+    public boolean writeFileFromBytes(String fileName, byte[] bytes, String id) {
+        String fileDirectory = generateFileDirectory(id);
+
         File dir = new File(fileDirectory);
         dir.mkdirs();
         try {
-            FileOutputStream fos = new FileOutputStream(this.fileDirectory + "/" + fileName);
+            FileOutputStream fos = new FileOutputStream(fileDirectory + "/" + fileName);
             fos.write(bytes);
             fos.close();
         } catch (IOException e) {
@@ -92,13 +99,15 @@ public class FileService {
         return true;
     }
 
-    public String getFileNameWithExtension(String ext) {
-        File dir = new File(fileDirectory);
+    public String getFileNameWithExtension(String ext, String id) {
+        File dir = new File(generateFileDirectory(id));
         File file = Objects.requireNonNull(dir.listFiles((d, name) -> name.endsWith(ext)))[0];
         return file.getPath();
     }
 
-    public boolean deleteDirectory() {
+    public boolean deleteDirectory(String id) {
+        String fileDirectory = generateFileDirectory(id);
+
         try {
             FileUtils.deleteDirectory(new File(fileDirectory));
         } catch (IOException e) {
@@ -108,26 +117,33 @@ public class FileService {
         return true;
     }
 
-    public boolean deleteFile(MultipartFile file) {
-        return deleteFileHelper(concatFileDirAndName(fileDirectory, file.getOriginalFilename()));
+
+    public boolean deleteFile(MultipartFile file, String id) {
+        String fileDirectory = generateFileDirectory(id);
+
+        return deleteFileHelper(concatFileDirAndName(fileDirectory, file.getOriginalFilename()), id);
     }
 
-    public boolean deleteFile(String fileName) {
-        return deleteFileHelper(fileName);
+    public boolean deleteFile(String fileName, String id) {
+        return deleteFileHelper(fileName, id);
     }
 
-    public boolean deleteFilesEndingWithExtension(String extension) {
+    public boolean deleteFilesEndingWithExtension(String extension, String id) {
+        String fileDirectory = generateFileDirectory(id);
+
         File dir = new File(fileDirectory);
         File[] files = dir.listFiles((d, name) -> name.endsWith(extension));
         if (files != null && files.length > 0) {
             for (File file : files) {
-                deleteFileHelper(file.getName());
+                deleteFileHelper(file.getName(), id);
             }
         }
         return true;
     }
 
-    private boolean deleteFileHelper(String fileName) {
+    private boolean deleteFileHelper(String fileName, String id) {
+        String fileDirectory = generateFileDirectory(id);
+
         boolean deleteSuccess = false;
         try {
             deleteSuccess = Files.deleteIfExists(Paths.get(concatFileDirAndName(fileDirectory, fileName)));
@@ -138,11 +154,9 @@ public class FileService {
         return deleteSuccess;
     }
 
-    public static FileService getFileService(String id) {
-        return new FileService(id);
-    }
+    public String getFileDirectory(String id) {
+        String fileDirectory = generateFileDirectory(id);
 
-    public String getFileDirectory() {
         return fileDirectory;
     }
 

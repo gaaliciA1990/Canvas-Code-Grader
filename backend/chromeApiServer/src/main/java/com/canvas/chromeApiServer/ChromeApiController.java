@@ -4,6 +4,7 @@ import com.canvas.dto.CommandOutput;
 import com.canvas.service.CanvasClientService;
 import com.canvas.service.ProcessExecutor;
 import com.canvas.service.FileService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +18,16 @@ import java.util.Map;
 @RestController
 @CrossOrigin
 public class ChromeApiController {
-
+    private final FileService fileService;
+    private final CanvasClientService canvasClientService;
     private static final String MAKEFILE = "makefile";
-    public ChromeApiController() { }
+
+    @Autowired
+    public ChromeApiController(FileService fileService, CanvasClientService canvasClientService) {
+        this.fileService = fileService;
+        this.canvasClientService = canvasClientService;
+    }
+
 
     @GetMapping(
             value = "/execute/courses/{courseId}/assignments/{assignmentId}/submissions/{studentId}",
@@ -31,16 +39,13 @@ public class ChromeApiController {
             @PathVariable("courseId") String courseId,
             @PathVariable("studentId") String studentId
     ) {
-        CanvasClientService canvasClientService = new CanvasClientService(bearerToken);
-        FileService fileService = new FileService(studentId);
-
         // Write makefile to directory
-        writeMakefile(courseId, assignmentId, canvasClientService, fileService);
+        writeMakefile(studentId, courseId, assignmentId, bearerToken);
 
         // Fetch submission files from Canvas
         Map<String, byte[]> submissionMap = new HashMap<>();
         try {
-            submissionMap = canvasClientService.fetchSubmissionFilesFromStudent(courseId, assignmentId, studentId);
+            submissionMap = canvasClientService.fetchSubmissionFilesFromStudent(courseId, assignmentId, studentId, bearerToken);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -48,22 +53,22 @@ public class ChromeApiController {
         // Write submission files to directory
         for (Map.Entry<String, byte[]> entry : submissionMap.entrySet()) {
             // Key: filename, Value: file bytes to write
-            fileService.writeFileFromBytes(entry.getKey(), entry.getValue());
+            fileService.writeFileFromBytes(entry.getKey(), entry.getValue(), fileService.getFileDirectory(studentId));
         }
 
         // If code compiles successfully
-        if (compileCodeFiles(fileService).isSuccess()) {
+        if (compileCodeFiles(studentId).isSuccess()) {
             // Execute the code
-            CommandOutput codeExecutionOutput = executeCodeFiles(fileService);
+            CommandOutput codeExecutionOutput = executeCodeFiles(studentId);
             System.out.println(codeExecutionOutput.getOutput());
 
             // Cleanup
-            fileService.deleteDirectory();
+            fileService.deleteDirectory(studentId);
 
             return new ResponseEntity<>(codeExecutionOutput, HttpStatus.OK);
         } else {
             // Cleanup
-            fileService.deleteDirectory();
+            fileService.deleteDirectory(studentId);
             return ResponseEntity.badRequest().build();
         }
 
@@ -71,8 +76,8 @@ public class ChromeApiController {
 
     @PostMapping(
             value = "/evaluate",
-            produces = { "application/json" },
-            consumes = { "multipart/form-data" }
+            produces = {"application/json"},
+            consumes = {"multipart/form-data"}
     )
     public ResponseEntity<CommandOutput> compileCodeFile(
             @RequestHeader("Authorization") String bearerToken,
@@ -80,33 +85,36 @@ public class ChromeApiController {
             @RequestParam("assignmentId") String assignmentId,
             @RequestParam("courseId") String courseId
     ) {
-        CanvasClientService canvasClientService = new CanvasClientService(bearerToken);
-
         // Fetch student's userId
         String userId = "";
         try {
-            userId = canvasClientService.fetchUserId();
+            userId = canvasClientService.fetchUserId(bearerToken);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        FileService fileService = FileService.getFileService(userId);
 
         // Write makefile to directory
-        writeMakefile(courseId, assignmentId, canvasClientService, fileService);
+        writeMakefile(userId, courseId, assignmentId, bearerToken);
 
         // Write submitted code files to directory
         for (MultipartFile file : files) {
-            fileService.writeFileFromMultipart(file);
+            fileService.writeFileFromMultipart(file, userId);
         }
 
         // Compile the files and grab output
-        CommandOutput commandOutput = compileCodeFiles(fileService);
+        CommandOutput commandOutput = compileCodeFiles(userId);
 
         // Cleanup
-        fileService.deleteDirectory();
+        fileService.deleteDirectory(userId);
 
         return new ResponseEntity<>(commandOutput, HttpStatus.OK);
     }
+
+
+    @GetMapping(
+            value = "/fetchStudentSubmission",
+            produces = {"application/json"}
+    )
 
     /**
      * Test Route to get student submission given access token and studentId
@@ -115,59 +123,50 @@ public class ChromeApiController {
      * @param token
      * @return
      */
-
-        @GetMapping(
-            value = "/fetchStudentSubmission",
-            produces = { "application/json" }
-    )
-
     public ResponseEntity<String> fetchFileFromCanvasAndSave(@RequestParam("studentId") String studentId,
-                                                  @RequestParam("accessToken") String token,
-                                                  @RequestParam("fileName") String fileName  ) {
-        CanvasClientService canvasClientService = new CanvasClientService("Bearer " + token);
+                                                             @RequestParam("accessToken") String token,
+                                                             @RequestParam("fileName") String fileName) {
+        CanvasClientService canvasClientService = new CanvasClientService();
         try {
-        canvasClientService.fetchSubmissionFromMyFilesAndSave(fileName);
-        }
-        catch(Exception e) {
+            canvasClientService.fetchSubmissionFromMyFilesAndSave(fileName, token);
+        } catch (Exception e) {
             return new ResponseEntity<>("ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>("SAVED FILE", HttpStatus.OK);
     }
 
     private void writeMakefile(
+            String userId,
             String courseId,
             String assignmentId,
-            CanvasClientService canvasClientService,
-            FileService fileService
+            String bearerToken
     ) {
         // Retrieve file json from Canvas
         byte[] makefileBytes = new byte[0];
         try {
-            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(
-                    courseId, assignmentId, MAKEFILE
-            );
+            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(courseId, assignmentId, MAKEFILE, bearerToken);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        fileService.writeFileFromBytes(MAKEFILE, makefileBytes);
+        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, userId);
     }
 
-    private static CommandOutput compileCodeFiles(FileService fileService) {
-        CommandOutput compileOutput = executeCommand(new String[] {"make"}, fileService);
+    private CommandOutput compileCodeFiles(String userId) {
+        CommandOutput compileOutput = executeCommand(new String[] {"make"}, userId);
         if (compileOutput.isSuccess()) {
             compileOutput.setOutput("Your program compiled successfully!");
         }
         return compileOutput;
     }
 
-    private static CommandOutput executeCodeFiles(FileService fileService) {
-        String exeFile = fileService.getFileNameWithExtension(".exe");
-        return executeCommand(new String[] {exeFile}, fileService);
+    private CommandOutput executeCodeFiles(String userId) {
+        String exeFile = fileService.getFileNameWithExtension(".exe", userId);
+        return executeCommand(new String[] {exeFile}, userId);
     }
 
-    private static CommandOutput executeCommand(String[] commands, FileService fileService) {
-        ProcessExecutor processExecutor = new ProcessExecutor(commands, fileService.getFileDirectory());
+    private CommandOutput executeCommand(String[] commands, String userId) {
+        ProcessExecutor processExecutor = new ProcessExecutor(commands, fileService.getFileDirectory(userId));
         boolean compileSuccess = processExecutor.executeProcess();
         String output = processExecutor.getProcessOutput();
         return new CommandOutput(compileSuccess, output);
