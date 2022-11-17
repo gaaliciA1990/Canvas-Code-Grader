@@ -77,11 +77,16 @@
 
                 console.log(fileSubmit_response);
                 alert(fileSubmit_response.output);
+
+                let output = fileSubmit_response.output;
+
+                console.log("sending message to content")
+                window.postMessage( {type: "FROM_PAGE", output});
+
             });
         });
 
     })
-
 
     //find where to add upload button
     //eesy eesy-tab2-container

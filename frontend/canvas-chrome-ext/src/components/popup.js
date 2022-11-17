@@ -1,10 +1,11 @@
-document.addEventListener("DOMContentLoaded", function (){
 
-    document.getElementById("button1").addEventListener("click", function () {
-        alert("Your file submission was successful");
+window.addEventListener('DOMContentLoaded', () => {
+    let background = chrome.extension.getBackgroundPage();
 
-        //connect to server submit shit get response
+    chrome.tabs.quert({active:true, currentWindow:true}, (tabs) => {
+        let currentTabId = tabs[0].id;
+        let results = background.results[currentTabId];
 
-    });
-});
-
+        background.console.log(results);
+    })
+})

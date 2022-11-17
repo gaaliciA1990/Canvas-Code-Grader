@@ -18,8 +18,7 @@
   ],
 
   "background": [{
-    "scripts": ["scripts/background_script.js"],
-    "persistent": false
+    "scripts": ["frontend/canvas-chrome-ext/src/scripts/background_script.js"]
   }],
 
   "content_scripts": [{
