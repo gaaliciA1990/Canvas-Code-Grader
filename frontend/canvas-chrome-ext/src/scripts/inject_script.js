@@ -61,7 +61,6 @@
 
         fileInput.addEventListener("change", function (){
             formData.append("files", fileInput.files[0]);
-            formData.append("userId",userId);
             formData.append("courseId", courseId);
             formData.append("assignmentId", assignmentId);
 
