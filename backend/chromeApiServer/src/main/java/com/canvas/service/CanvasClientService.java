@@ -160,9 +160,9 @@ public class CanvasClientService {
         String submissionFileId = this.getFileId(canvasCodeFolderId, fileName, accessToken);
         byte[] fileBytes = this.fetchFile(submissionFileId, accessToken);
 
-        FileService fs = new FileService("1");
+        FileService fs = new FileService();
         // default stores file in /tmp
-        fs.writeFileFromBytes(fileName, fileBytes);
+        fs.writeFileFromBytes(fileName, fileBytes, "1");
     }
 
     //Test
@@ -176,7 +176,7 @@ public class CanvasClientService {
         String submissionFileId = canvasClientServices.getFileId(canvasCodeFolderId, "sample.cpp", accessToken);
         byte[] fileBytes = canvasClientServices.fetchFile(submissionFileId, accessToken);
 
-        FileService fs = new FileService("1");
-        fs.writeFileFromBytes("sample1.cpp", fileBytes);
+        FileService fs = new FileService();
+        fs.writeFileFromBytes("sample1.cpp", fileBytes, "1");
     }
 }
