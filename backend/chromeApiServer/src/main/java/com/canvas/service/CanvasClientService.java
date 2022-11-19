@@ -2,15 +2,16 @@ package com.canvas.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class CanvasClientService {
