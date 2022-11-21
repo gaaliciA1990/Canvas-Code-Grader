@@ -12,6 +12,8 @@ public class ExtensionUser {
     private String courseId;
     private String assignmentId;
 
+    private UserType userType;
+
     /**
      * Constructor for creating a new user
      *
@@ -20,11 +22,12 @@ public class ExtensionUser {
      * @param course     canvas course id
      * @param assignment canvas assignment id
      */
-    public ExtensionUser(String authToken, String id, String course, String assignment) {
+    public ExtensionUser(String authToken, String id, String course, String assignment, UserType type) {
         this.bearerToken = authToken;
         this.userId = id;
         this.courseId = course;
         this.assignmentId = assignment;
+        this.userType = type;
     }
 
 
@@ -98,5 +101,23 @@ public class ExtensionUser {
      */
     public void setAssignmentId(String assignmentId) {
         this.assignmentId = assignmentId;
+    }
+
+    /**
+     * Getter for user type,
+     *
+     * @return Enum UserType
+     */
+    public UserType getUserType() {
+        return userType;
+    }
+
+    /**
+     * Setter for user type
+     *
+     * @param userType UserType enum
+     */
+    public void setUserType(UserType userType) {
+        this.userType = userType;
     }
 }
