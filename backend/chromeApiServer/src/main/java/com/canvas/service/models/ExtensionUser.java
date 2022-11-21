@@ -12,6 +12,21 @@ public class ExtensionUser {
     private String courseId;
     private String assignmentId;
 
+    /**
+     * Constructor for creating a new user
+     *
+     * @param authToken  authorization token from Canvas
+     * @param id         canvas user id
+     * @param course     canvas course id
+     * @param assignment canvas assignment id
+     */
+    public ExtensionUser(String authToken, String id, String course, String assignment) {
+        this.bearerToken = authToken;
+        this.userId = id;
+        this.courseId = course;
+        this.assignmentId = assignment;
+    }
+
 
     /**
      * Getter for authorization token
