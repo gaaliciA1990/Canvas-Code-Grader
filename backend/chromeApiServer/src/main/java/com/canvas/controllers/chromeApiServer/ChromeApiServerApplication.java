@@ -1,4 +1,4 @@
-package com.canvas.chromeApiServer;
+package com.canvas.controllers.chromeApiServer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

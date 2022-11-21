@@ -1,4 +1,4 @@
-package com.canvas.chromeApiServer;
+package com.canvas.controllers.chromeApiServer;
 
 import com.canvas.dto.CommandOutput;
 import com.canvas.service.CanvasClientService;
