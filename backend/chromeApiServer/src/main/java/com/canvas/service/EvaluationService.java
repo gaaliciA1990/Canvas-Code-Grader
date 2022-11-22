@@ -34,7 +34,8 @@ public class EvaluationService {
     }
 
     /**
-     * This method will compile the student code
+     * This method will compile the student code. The files are extracted
+     * and the program is compiled.
      *
      * @param user  User object holding all components associated with a user
      * @param files The files to compile

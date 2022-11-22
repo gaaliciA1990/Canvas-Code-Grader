@@ -1,4 +1,4 @@
-package com.canvas.dto;
+package com.canvas.service.models;
 
 import com.canvas.service.models.CommandOutput;
 import org.junit.jupiter.api.Test;
