@@ -2,10 +2,9 @@ package com.canvas.controllers.chromeApiServer;
 
 import com.canvas.service.StudentEvaluationService;
 import com.canvas.service.models.CommandOutput;
-import com.canvas.service.CanvasClientService;
+import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
 import com.canvas.service.models.UserType;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+/**
+ * API Controller for the Chrome Extension handling all the GET and POST requests.
+ */
 @RestController
 @CrossOrigin
 public class ChromeApiController {
@@ -98,21 +100,23 @@ public class ChromeApiController {
             @RequestParam("courseId") String courseId,
             @RequestParam("userType") UserType type
     ) throws IOException {
+        if (type == null || type == UserType.UNAUTHORIZED) {
+            System.out.println(String.format("Exception: user type does not match expected [%s] or [%s]",
+                    UserType.GRADER, UserType.STUDENT));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         // Get the user id from Canvas API
         String userId = canvasClientService.fetchUserId(bearerToken);
 
         // Create a user object with params
         ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, type);
 
-        if (type == UserType.STUDENT) {
+        if (user.getUserType() == UserType.STUDENT) {
             return studentEval.compileStudentCodeFile(user, files);
-        }
-        if (type == UserType.GRADER) {
+        } else {
             // TODO: Implement the path for the Instructor side
             return new ResponseEntity<>(HttpStatus.CONTINUE);
-        } else {
-            System.out.println(String.format("Exception: user type does not match expected [%s] or [%s]", UserType.GRADER, UserType.STUDENT));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -124,7 +128,7 @@ public class ChromeApiController {
     @GetMapping
     public ResponseEntity<CommandOutput> getProgramResponse(
             @RequestParam("Authorization") String bearerToken
-            ) {
+    ) {
         return null;
     }
 

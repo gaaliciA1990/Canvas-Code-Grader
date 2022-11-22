@@ -1,4 +1,4 @@
-package com.canvas.service;
+package com.canvas.service.helperServices;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

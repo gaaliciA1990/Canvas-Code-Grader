@@ -1,4 +1,4 @@
-package com.canvas.service;
+package com.canvas.service.helperServices;
 
 import com.canvas.service.models.ExtensionUser;
 import com.fasterxml.jackson.databind.JsonNode;

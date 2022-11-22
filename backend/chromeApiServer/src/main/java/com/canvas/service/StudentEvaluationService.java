@@ -1,5 +1,8 @@
 package com.canvas.service;
 
+import com.canvas.service.helperServices.CanvasClientService;
+import com.canvas.service.helperServices.FileService;
+import com.canvas.service.helperServices.ProcessExecutor;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.models.ExtensionUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+/**
+ * This class handles the Student side of the evaluation process.
+ */
 @Service
 public class StudentEvaluationService {
     private final FileService fileService;

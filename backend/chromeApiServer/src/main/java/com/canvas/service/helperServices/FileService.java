@@ -1,4 +1,4 @@
-package com.canvas.service;
+package com.canvas.service.helperServices;
 
 import java.io.File;
 import java.io.FileOutputStream;

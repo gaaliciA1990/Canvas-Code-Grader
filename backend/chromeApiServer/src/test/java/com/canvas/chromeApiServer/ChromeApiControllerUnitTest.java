@@ -1,8 +1,8 @@
 package com.canvas.chromeApiServer;
 
 import com.canvas.service.models.CommandOutput;
-import com.canvas.service.CanvasClientService;
-import com.canvas.service.FileService;
+import com.canvas.service.helperServices.CanvasClientService;
+import com.canvas.service.helperServices.FileService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
