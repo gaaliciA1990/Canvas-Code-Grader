@@ -1,9 +1,11 @@
 package com.canvas.controllers.chromeApiServer;
 
-import com.canvas.dto.CommandOutput;
+import com.canvas.service.StudentEvaluationService;
+import com.canvas.service.models.CommandOutput;
 import com.canvas.service.CanvasClientService;
-import com.canvas.service.ProcessExecutor;
-import com.canvas.service.FileService;
+import com.canvas.service.models.ExtensionUser;
+import com.canvas.service.models.UserType;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,23 +13,28 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @CrossOrigin
 public class ChromeApiController {
-    private final FileService fileService;
-    private final CanvasClientService canvasClientService;
-    private static final String MAKEFILE = "makefile";
+    private final StudentEvaluationService studentEval;
 
     @Autowired
-    public ChromeApiController(FileService fileService, CanvasClientService canvasClientService) {
-        this.fileService = fileService;
-        this.canvasClientService = canvasClientService;
+    public ChromeApiController(StudentEvaluationService studentEval) {
+        this.studentEval = studentEval;
     }
 
+
+    /**
+     * Post request to evaluate files. Depending on type of user, the correct evaluation path is called.
+     *
+     * @param bearerToken  authorization token from Canvas API
+     * @param files        file(s) to be evaluated
+     * @param userId       Canvas user id
+     * @param assignmentId Canvas assignment id
+     * @param courseId     Canvas course id
+     * @param type         User Type Enum
+     * @return Response CommandOutput
+     */
 
     @GetMapping(
             value = "/execute/courses/{courseId}/assignments/{assignmentId}/submissions/{studentId}",
@@ -79,35 +86,25 @@ public class ChromeApiController {
             produces = {"application/json"},
             consumes = {"multipart/form-data"}
     )
-    public ResponseEntity<CommandOutput> compileCodeFile(
+    public ResponseEntity<CommandOutput> initiateCodeEvaluation(
             @RequestHeader("Authorization") String bearerToken,
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("assignmentId") String assignmentId,
-            @RequestParam("courseId") String courseId
+            @RequestParam("courseId") String courseId,
+            @RequestParam("userType") UserType type
     ) {
-        // Fetch student's userId
-        String userId = "";
-        try {
-            userId = canvasClientService.fetchUserId(bearerToken);
-        } catch (IOException e) {
-            e.printStackTrace();
+        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, type);
+
+        if (type == UserType.STUDENT) {
+            return studentEval.compileStudentCodeFile(user, files);
         }
-
-        // Write makefile to directory
-        writeMakefile(userId, courseId, assignmentId, bearerToken);
-
-        // Write submitted code files to directory
-        for (MultipartFile file : files) {
-            fileService.writeFileFromMultipart(file, userId);
+        if (type == UserType.GRADER) {
+            // TODO: Implement the path for the Instructor side
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            System.out.println(String.format("Exception: user type does not match expected [%s] or [%s]", UserType.GRADER, UserType.STUDENT));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
-        // Compile the files and grab output
-        CommandOutput commandOutput = compileCodeFiles(userId);
-
-        // Cleanup
-        fileService.deleteDirectory(userId);
-
-        return new ResponseEntity<>(commandOutput, HttpStatus.OK);
     }
 
 

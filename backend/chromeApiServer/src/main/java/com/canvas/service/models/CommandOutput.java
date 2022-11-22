@@ -1,4 +1,4 @@
-package com.canvas.dto;
+package com.canvas.service.models;
 
 public class CommandOutput {
     private boolean success;

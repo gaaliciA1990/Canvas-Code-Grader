@@ -1,6 +1,6 @@
 package com.canvas.chromeApiServer;
 
-import com.canvas.dto.CommandOutput;
+import com.canvas.service.models.CommandOutput;
 import com.canvas.service.CanvasClientService;
 import com.canvas.service.FileService;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,5 +1,6 @@
 package com.canvas.dto;
 
+import com.canvas.service.models.CommandOutput;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
