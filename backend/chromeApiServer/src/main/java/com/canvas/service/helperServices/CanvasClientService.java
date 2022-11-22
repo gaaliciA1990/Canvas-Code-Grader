@@ -14,6 +14,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Service for accessing data from the Canvas API
+ * <p>
+ * All tests should be written in test/java/com.canvas/service
+ * <p>
+ * TODO: We should be referencing a user object here instead is possible
+ */
 @Service
 public class CanvasClientService {
 
@@ -27,57 +34,33 @@ public class CanvasClientService {
         this.okHttpClient = new OkHttpClient();
     }
 
-    private JsonNode parseResponseToJsonNode(Response response) throws IOException {
-        String r = response.body().string();
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readTree(r);
+    /**
+     * Calls the canvas api and fetches the user id based on the authorization token
+     *
+     * @param bearerToken authorization token from canvas
+     * @return String of user id
+     * @throws IOException
+     */
+    public String fetchUserId(String bearerToken) throws IOException {
+        Request request = new Request.Builder()
+                .url(CANVAS_URL + "/users/self")
+                .get()
+                .addHeader(AUTH_HEADER, bearerToken)
+                .build();
+        JsonNode resp = parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
+        String userId = resp.get("id").asText();
+        return userId;
+
     }
 
-    private String getMyFilesFolderId(String userId, String folderName, String accessToken) throws IOException {
-        JsonNode response = fetchFoldersUnderStudent(userId, accessToken);
-        return getFolderIdFromFoldersResponse(response, folderName);
-    }
-
-    private String getCanvasCodeFolderId(String folderId, String folderName, String accessToken) throws IOException {
-        JsonNode response = fetchFolders(folderId, accessToken);
-        return getFolderIdFromFoldersResponse(response, folderName);
-    }
-
-    private String getFileId(String folderId, String fileName, String bearerToken) throws IOException {
-        JsonNode response = fetchFilesUnderFolder(folderId, bearerToken);
-        return getFileIdFromFilesResponse(response, fileName);
-    }
-
-    private String getFolderIdFromFoldersResponse(JsonNode response, String folderName) throws IOException {
-        for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
-            JsonNode folder = it.next();
-            if (folder.get("name").asText().equals(folderName)) {
-                return folder.get("id").toString();
-            }
-        }
-        return null;
-    }
-
-    private String getFileIdFromFilesResponse(JsonNode response, String fileName) throws IOException {
-        for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
-            JsonNode folder = it.next();
-            if (folder.get("filename").asText().equals(fileName)) {
-                return folder.get("id").toString();
-            }
-        }
-        return null;
-    }
-
-    private String getFilesRequestUrlFromAssignmentFolder(JsonNode response, String folderName) throws IOException {
-        for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
-            JsonNode folder = it.next();
-            if (folder.get("name").asText().equals(folderName)) {
-                return folder.get("files_url").asText();
-            }
-        }
-        return null;
-    }
-
+    /**
+     * Get a file from Canvas
+     *
+     * @param fileId      file to fetch from Canvas
+     * @param bearerToken authorization token
+     * @return returns a byte array of the file
+     * @throws IOException
+     */
     public byte[] fetchFile(String fileId, String bearerToken) throws IOException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/files/" + fileId)
@@ -92,6 +75,14 @@ public class CanvasClientService {
         return Objects.requireNonNull(fileResp.body()).bytes();
     }
 
+    /**
+     * Gets a file from a specific course assignment folder in Canvas
+     *
+     * @param user     Canvas user ID
+     * @param fileName file name to fetch
+     * @return returns a byte array of the file
+     * @throws IOException
+     */
     public byte[] fetchFileUnderCourseAssignmentFolder(ExtensionUser user, String fileName) throws IOException {
         JsonNode foldersResp = fetchFoldersUnderCourse(user.getCourseId(), user.getBearerToken());
         // assignmentId is the folder name
@@ -108,50 +99,70 @@ public class CanvasClientService {
         return fetchFile(fileId, user.getBearerToken());
     }
 
-    public String fetchUserId(String bearerToken) throws IOException {
-        Request request = new Request.Builder()
-                .url(CANVAS_URL + "/users/self")
-                .get()
-                .addHeader(AUTH_HEADER,bearerToken)
-                .build();
-        JsonNode resp = parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
-        String userId = resp.get("id").asText();
-        return userId;
-
-    }
-
-    public JsonNode fetchFoldersUnderCourse(String courseId,String accessToken) throws IOException {
+    /**
+     * Gets all the folders for a given course id
+     *
+     * @param courseId    Canvas course id
+     * @param bearerToken authorization token
+     * @return JsonNode
+     * @throws IOException
+     */
+    public JsonNode fetchFoldersUnderCourse(String courseId, String bearerToken) throws IOException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/courses/" + courseId + "/folders")
                 .get()
-                .addHeader(AUTH_HEADER, accessToken)
+                .addHeader(AUTH_HEADER, bearerToken)
                 .build();
         return parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
     }
 
-    public JsonNode fetchFoldersUnderStudent(String userId, String accessToken) throws IOException {
+    /**
+     * Gets all the folder associated with a student
+     *
+     * @param userId      Canvas user id
+     * @param bearerToken Authorization Token
+     * @return JsonNode
+     * @throws IOException
+     */
+    public JsonNode fetchFoldersUnderStudent(String userId, String bearerToken) throws IOException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/users/" + userId + "/folders/by_path")
                 .get()
-                .addHeader(AUTH_HEADER, accessToken)
+                .addHeader(AUTH_HEADER, bearerToken)
                 .build();
         return parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
     }
 
-    public JsonNode fetchFolders(String folderId,String accessToken) throws IOException {
+    /**
+     * Gets all folders for a specific user
+     *
+     * @param folderId    folder id to return
+     * @param bearerToken Authorization Token
+     * @return JsonNode
+     * @throws IOException
+     */
+    public JsonNode fetchFolders(String folderId, String bearerToken) throws IOException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/folders/" + folderId + "/folders")
                 .get()
-                .addHeader(AUTH_HEADER, accessToken)
+                .addHeader(AUTH_HEADER, bearerToken)
                 .build();
         return parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
     }
 
-    public JsonNode fetchFilesUnderFolder(String folderId, String accessToken) throws IOException {
+    /**
+     * Gets all files under a given folder
+     *
+     * @param folderId    folder to extract files from
+     * @param bearerToken Authorization token
+     * @return JsonNode
+     * @throws IOException
+     */
+    public JsonNode fetchFilesUnderFolder(String folderId, String bearerToken) throws IOException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/folders/" + folderId + "/files")
                 .get()
-                .addHeader(AUTH_HEADER, accessToken)
+                .addHeader(AUTH_HEADER, bearerToken)
                 .build();
         return parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
     }
@@ -178,30 +189,131 @@ public class CanvasClientService {
         return submissionFilesBytes;
     }
 
-    public void fetchSubmissionFromMyFilesAndSave(String fileName, String accessToken) throws IOException {
-        String userId = this.fetchUserId(accessToken);
-        String myFilesId = this.getMyFilesFolderId(userId, "my files", accessToken);
-        String canvasCodeFolderId = this.getCanvasCodeFolderId(myFilesId, "CanvasCode", accessToken);
-        String submissionFileId = this.getFileId(canvasCodeFolderId, fileName, accessToken);
-        byte[] fileBytes = this.fetchFile(submissionFileId, accessToken);
+    /**
+     * Gets an assignment submission from a file and saves it TODO: elaborate on what this is doing?
+     *
+     * @param fileName    file name to search the submission under
+     * @param bearerToken Authorization token
+     * @throws IOException
+     */
+    public void fetchSubmissionFromMyFilesAndSave(String fileName, String bearerToken) throws IOException {
+        String userId = this.fetchUserId(bearerToken);
+        String myFilesId = this.getMyFilesFolderId(userId, "my files", bearerToken);
+        String canvasCodeFolderId = this.getCanvasCodeFolderId(myFilesId, "CanvasCode", bearerToken);
+        String submissionFileId = this.getFileId(canvasCodeFolderId, fileName, bearerToken);
+        byte[] fileBytes = this.fetchFile(submissionFileId, bearerToken);
 
         FileService fs = new FileService();
         // default stores file in /tmp
         fs.writeFileFromBytes(fileName, fileBytes, "1");
     }
 
-    //Test
-    public static void main(String[] args) throws IOException {
-        String accessToken = "testToken";
-        CanvasClientService canvasClientServices = new CanvasClientService();
-        String userId = canvasClientServices.fetchUserId(accessToken);
-        String myFilesId = canvasClientServices.getMyFilesFolderId(userId, "my files", accessToken);
-        // This will change to Submissions folder
-        String canvasCodeFolderId = canvasClientServices.getCanvasCodeFolderId(myFilesId, "CanvasCode", accessToken);
-        String submissionFileId = canvasClientServices.getFileId(canvasCodeFolderId, "sample.cpp", accessToken);
-        byte[] fileBytes = canvasClientServices.fetchFile(submissionFileId, accessToken);
+    /**
+     * Parses a response to a JSON node Todo: explain more about what this is doing
+     *
+     * @param response
+     * @return
+     * @throws IOException
+     */
+    private JsonNode parseResponseToJsonNode(Response response) throws IOException {
+        String r = response.body().string();
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readTree(r);
+    }
 
-        FileService fs = new FileService();
-        fs.writeFileFromBytes("sample1.cpp", fileBytes, "1");
+    /**
+     * Todo: Add comments explaining this helpder method
+     *
+     * @param userId
+     * @param folderName
+     * @param accessToken
+     * @return
+     * @throws IOException
+     */
+    private String getMyFilesFolderId(String userId, String folderName, String accessToken) throws IOException {
+        JsonNode response = fetchFoldersUnderStudent(userId, accessToken);
+        return getFolderIdFromFoldersResponse(response, folderName);
+    }
+
+    /**
+     * Help function to extract the Canvas folder id TODO: explain more about where this is coming from
+     *
+     * @param folderId
+     * @param folderName
+     * @param accessToken
+     * @return
+     * @throws IOException
+     */
+    private String getCanvasCodeFolderId(String folderId, String folderName, String accessToken) throws IOException {
+        JsonNode response = fetchFolders(folderId, accessToken);
+        return getFolderIdFromFoldersResponse(response, folderName);
+    }
+
+    /**
+     * Helper method to get the file id TODO: explain more about what this is doing
+     *
+     * @param folderId
+     * @param fileName
+     * @param bearerToken
+     * @return
+     * @throws IOException
+     */
+    private String getFileId(String folderId, String fileName, String bearerToken) throws IOException {
+        JsonNode response = fetchFilesUnderFolder(folderId, bearerToken);
+        return getFileIdFromFilesResponse(response, fileName);
+    }
+
+    /**
+     * Helper method for something? TODO: explain more about what this is doing
+     *
+     * @param response
+     * @param folderName
+     * @return
+     * @throws IOException
+     */
+    private String getFolderIdFromFoldersResponse(JsonNode response, String folderName) throws IOException {
+        for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
+            JsonNode folder = it.next();
+            if (folder.get("name").asText().equals(folderName)) {
+                return folder.get("id").toString();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Help method for TODO: explain more about what this is doing
+     *
+     * @param response
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    private String getFileIdFromFilesResponse(JsonNode response, String fileName) throws IOException {
+        for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
+            JsonNode folder = it.next();
+            if (folder.get("filename").asText().equals(fileName)) {
+                return folder.get("id").toString();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper method for extracting something from the url TODO: explain more about what this is doing
+     *
+     * @param response
+     * @param folderName
+     * @return
+     * @throws IOException
+     */
+    private String getFilesRequestUrlFromAssignmentFolder(JsonNode response, String folderName) throws IOException {
+        for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
+            JsonNode folder = it.next();
+            if (folder.get("name").asText().equals(folderName)) {
+                return folder.get("files_url").asText();
+            }
+        }
+        return null;
     }
 }

@@ -1,6 +1,6 @@
 package com.canvas.controllers.chromeApiServer;
 
-import com.canvas.service.StudentEvaluationService;
+import com.canvas.service.EvaluationService;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
@@ -20,12 +20,12 @@ import java.io.IOException;
 @RestController
 @CrossOrigin
 public class ChromeApiController {
-    private final StudentEvaluationService studentEval;
+    private final EvaluationService evaluation;
     private final CanvasClientService canvasClientService;
 
     @Autowired
-    public ChromeApiController(StudentEvaluationService studentEval, CanvasClientService canvasClientService) {
-        this.studentEval = studentEval;
+    public ChromeApiController(EvaluationService studentEval, CanvasClientService canvasClientService) {
+        this.evaluation = studentEval;
         this.canvasClientService = canvasClientService;
     }
 
@@ -90,7 +90,7 @@ public class ChromeApiController {
 
     @PostMapping(
             value = "/evaluate",
-            produces = {"application/json"},
+            produces = {"application/json"}, //This method should only start the program and return a success reponse
             consumes = {"multipart/form-data"}
     )
     public ResponseEntity<CommandOutput> initiateCodeEvaluation(
@@ -100,6 +100,7 @@ public class ChromeApiController {
             @RequestParam("courseId") String courseId,
             @RequestParam("userType") UserType type
     ) throws IOException {
+        // check the user type isn't null or unauthorized
         if (type == null || type == UserType.UNAUTHORIZED) {
             System.out.println(String.format("Exception: user type does not match expected [%s] or [%s]",
                     UserType.GRADER, UserType.STUDENT));
@@ -113,9 +114,9 @@ public class ChromeApiController {
         ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, type);
 
         if (user.getUserType() == UserType.STUDENT) {
-            return studentEval.compileStudentCodeFile(user, files);
+            return evaluation.compileStudentCodeFile(user, files);
         } else {
-            // TODO: Implement the path for the Instructor side
+            // TODO: Implement the path for the Instructor side, evaluation.runInstructorGrading for example
             return new ResponseEntity<>(HttpStatus.CONTINUE);
         }
     }
@@ -125,8 +126,11 @@ public class ChromeApiController {
      * is constantly being updated during the program run time.
      * Need to figure out how we
      */
-    @GetMapping
-    public ResponseEntity<CommandOutput> getProgramResponse(
+    @GetMapping(
+            value = "/evaluate/output",
+            produces = {"application/json"}
+    )
+    public ResponseEntity<CommandOutput> getRunningProgramOutput(
             @RequestParam("Authorization") String bearerToken
     ) {
         return null;

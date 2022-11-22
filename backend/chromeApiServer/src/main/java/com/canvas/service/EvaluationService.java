@@ -17,7 +17,7 @@ import java.io.IOException;
  * This class handles the Student side of the evaluation process.
  */
 @Service
-public class StudentEvaluationService {
+public class EvaluationService {
     private final FileService fileService;
     private final CanvasClientService canvasClientService;
 
@@ -28,7 +28,7 @@ public class StudentEvaluationService {
      * @param canvasClientService Canvas client service instance
      */
     @Autowired
-    public StudentEvaluationService(FileService fileService, CanvasClientService canvasClientService) {
+    public EvaluationService(FileService fileService, CanvasClientService canvasClientService) {
         this.fileService = fileService;
         this.canvasClientService = canvasClientService;
     }
@@ -62,7 +62,12 @@ public class StudentEvaluationService {
         // Compile the files and grab output
         ProcessExecutor processExecutor = new ProcessExecutor(new String[]{"make"}, fileService.getFileDirectory(user.getUserId()));
         boolean compileSuccess = processExecutor.executeProcess();
-        String output = compileSuccess ? "Your program compiled successfully!" : processExecutor.getProcessOutput();
+        String output;
+        if (compileSuccess) {
+            output = "Your program compiled successfully!";
+        } else {
+            output = processExecutor.getProcessOutput();
+        }
 
         // Cleanup
         fileService.deleteDirectory(user.getUserId());
