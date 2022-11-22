@@ -8,6 +8,13 @@ public class CommandOutput {
     private String output;
 
     /**
+     * Adding no arg constructor for testing
+     */
+    public CommandOutput() {
+
+    }
+
+    /**
      * Constructor TODO: add details about the params
      *
      * @param success
