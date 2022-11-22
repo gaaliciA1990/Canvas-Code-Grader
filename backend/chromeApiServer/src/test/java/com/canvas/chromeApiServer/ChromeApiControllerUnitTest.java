@@ -8,6 +8,7 @@ import com.canvas.service.models.UserType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -23,9 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
