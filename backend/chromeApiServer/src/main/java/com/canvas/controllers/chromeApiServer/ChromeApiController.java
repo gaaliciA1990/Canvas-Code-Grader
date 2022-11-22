@@ -39,7 +39,7 @@ public class ChromeApiController {
      * @param files        file(s) to be evaluated
      * @param assignmentId Canvas assignment id
      * @param courseId     Canvas course id
-     * @param type         User Type Enum
+     * @param type         User Type Enum indicating who is using the extension
      * @return Response CommandOutput
      */
 
@@ -90,7 +90,7 @@ public class ChromeApiController {
 
     @PostMapping(
             value = "/evaluate",
-            produces = {"application/json"}, //This method should only start the program and return a success reponse
+            produces = {"application/json"}, //This method should only start the program and return a success response
             consumes = {"multipart/form-data"}
     )
     public ResponseEntity<CommandOutput> initiateCodeEvaluation(
