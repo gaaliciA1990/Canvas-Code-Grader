@@ -54,28 +54,6 @@ public class CanvasClientService {
     }
 
     /**
-     * Get a file from Canvas
-     *
-     * @param fileId      file to fetch from Canvas
-     * @param bearerToken authorization token
-     * @return returns a byte array of the file
-     * @throws IOException
-     */
-    public byte[] fetchFile(String fileId, String bearerToken) throws IOException {
-        Request request = new Request.Builder()
-                .url(CANVAS_URL + "/files/" + fileId)
-                .get()
-                .addHeader(AUTH_HEADER, bearerToken)
-                .build();
-        JsonNode resp = parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
-        String url = resp.get("url").asText();
-
-        Request fileRequest = new Request.Builder().url(url).get().build();
-        Response fileResp = this.okHttpClient.newCall(fileRequest).execute();
-        return Objects.requireNonNull(fileResp.body()).bytes();
-    }
-
-    /**
      * Gets a file from a specific course assignment folder in Canvas
      *
      * @param user     Canvas user ID
@@ -97,6 +75,28 @@ public class CanvasClientService {
         JsonNode filesResponse = parseResponseToJsonNode(this.okHttpClient.newCall(filesRequest).execute());
         String fileId = getFileIdFromFilesResponse(filesResponse, fileName + ".dms");
         return fetchFile(fileId, user.getBearerToken());
+    }
+
+    /**
+     * Get a file from Canvas
+     *
+     * @param fileId      file to fetch from Canvas
+     * @param bearerToken authorization token
+     * @return returns a byte array of the file
+     * @throws IOException
+     */
+    public byte[] fetchFile(String fileId, String bearerToken) throws IOException {
+        Request request = new Request.Builder()
+                .url(CANVAS_URL + "/files/" + fileId)
+                .get()
+                .addHeader(AUTH_HEADER, bearerToken)
+                .build();
+        JsonNode resp = parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
+        String url = resp.get("url").asText();
+
+        Request fileRequest = new Request.Builder().url(url).get().build();
+        Response fileResp = this.okHttpClient.newCall(fileRequest).execute();
+        return Objects.requireNonNull(fileResp.body()).bytes();
     }
 
     /**
