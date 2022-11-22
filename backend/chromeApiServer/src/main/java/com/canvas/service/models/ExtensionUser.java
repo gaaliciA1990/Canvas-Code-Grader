@@ -11,8 +11,9 @@ public class ExtensionUser {
     private String userId;
     private String courseId;
     private String assignmentId;
-
     private UserType userType;
+
+    private String studentId;
 
     /**
      * Constructor for creating a new user
@@ -22,12 +23,14 @@ public class ExtensionUser {
      * @param course     canvas course id
      * @param assignment canvas assignment id
      */
-    public ExtensionUser(String authToken, String id, String course, String assignment, UserType type) {
+    public ExtensionUser(String authToken, String id, String course, String assignment, String studentId, UserType type) {
         this.bearerToken = authToken;
         this.userId = id;
         this.courseId = course;
         this.assignmentId = assignment;
+        this.studentId = studentId;
         this.userType = type;
+
     }
 
 
@@ -101,6 +104,22 @@ public class ExtensionUser {
      */
     public void setAssignmentId(String assignmentId) {
         this.assignmentId = assignmentId;
+    }
+
+    /**
+     * Getter for the student ID
+     * @return  String of the student ID
+     */
+    public String getStudentId() {
+        return studentId;
+    }
+
+    /**
+     * Setter for the student id
+     * @param studentId     String of the student ID
+     */
+    public void setStudentId(String studentId) {
+        this.studentId = studentId;
     }
 
     /**

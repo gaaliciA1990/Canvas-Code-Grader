@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class handles the Student side of the evaluation process.
@@ -20,6 +22,7 @@ import java.io.IOException;
 public class EvaluationService {
     private final FileService fileService;
     private final CanvasClientService canvasClientService;
+    String MAKEFILE = "makefile";
 
     /**
      * Constructor for creating our instances of FileService and CanvasClientService
@@ -39,21 +42,21 @@ public class EvaluationService {
      *
      * @param user  User object holding all components associated with a user
      * @param files The files to compile
-     * @return return a CommandOutput response
+     * @return      return a CommandOutput response
      */
     public ResponseEntity<CommandOutput> compileStudentCodeFile(ExtensionUser user, MultipartFile[] files) {
-        String makefileName = "makefile";
+
 
         // Retrieve file json from Canvas
         byte[] makefileBytes = new byte[0];
         try {
-            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, makefileName);
+            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         // Write makefile to file
-        fileService.writeFileFromBytes(makefileName, makefileBytes, user.getUserId());
+        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
 
         // Write submitted code files
         for (MultipartFile file : files) {
@@ -77,6 +80,78 @@ public class EvaluationService {
         CommandOutput commandOutput = new CommandOutput(compileSuccess, output);
 
         return new ResponseEntity<>(commandOutput, HttpStatus.OK);
+    }
+
+    /**
+     * Method executes student submitted code for instructors/graders to grade.
+     * @param user  User object for the extension
+     * @return      return a CommandOutput response
+     */
+   public ResponseEntity<CommandOutput> executeCodeFile(ExtensionUser user) {
+       // Write makefile to directory
+       writeMakefile(user);
+
+       // Fetch submission files from Canvas
+       Map<String, byte[]> submissionMap = new HashMap<>();
+       try {
+           submissionMap = canvasClientService.fetchSubmissionFilesFromStudent(user);
+       } catch (IOException e) {
+           e.printStackTrace();
+       }
+
+       // Write submission files to directory
+       for (Map.Entry<String, byte[]> entry : submissionMap.entrySet()) {
+           // Key: filename, Value: file bytes to write
+           fileService.writeFileFromBytes(entry.getKey(), entry.getValue(), fileService.getFileDirectory(user.getStudentId()));
+       }
+
+       // If code compiles successfully
+       if (compileCodeFiles(user.getStudentId()).isSuccess()) {
+           // Execute the code
+           CommandOutput codeExecutionOutput = executeCodeFiles(user.getStudentId());
+           System.out.println(codeExecutionOutput.getOutput());
+
+           // Cleanup
+           fileService.deleteDirectory(user.getStudentId());
+
+           return new ResponseEntity<>(codeExecutionOutput, HttpStatus.OK);
+       } else {
+           // Cleanup
+           fileService.deleteDirectory(user.getStudentId());
+           return ResponseEntity.badRequest().build();
+       }
+   }
+
+    private void writeMakefile(ExtensionUser user) {
+        // Retrieve file json from Canvas
+        byte[] makefileBytes = new byte[0];
+        try {
+            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
+    }
+
+    private CommandOutput compileCodeFiles(String userId) {
+        CommandOutput compileOutput = executeCommand(new String[] {"make"}, userId);
+        if (compileOutput.isSuccess()) {
+            compileOutput.setOutput("Your program compiled successfully!");
+        }
+        return compileOutput;
+    }
+
+    private CommandOutput executeCodeFiles(String userId) {
+        String exeFile = fileService.getFileNameWithExtension(".exe", userId);
+        return executeCommand(new String[] {exeFile}, userId);
+    }
+
+    private CommandOutput executeCommand(String[] commands, String userId) {
+        ProcessExecutor processExecutor = new ProcessExecutor(commands, fileService.getFileDirectory(userId));
+        boolean compileSuccess = processExecutor.executeProcess();
+        String output = processExecutor.getProcessOutput();
+        return new CommandOutput(compileSuccess, output);
     }
 
 }

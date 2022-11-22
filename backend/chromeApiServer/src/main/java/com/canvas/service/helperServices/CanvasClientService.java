@@ -167,13 +167,19 @@ public class CanvasClientService {
         return parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
     }
 
-    public Map<String, byte[]> fetchSubmissionFilesFromStudent(String courseId, String assignmentId, String studentId, String accessToken) throws IOException {
+    /**
+     * TODO: Add comments
+     * @param user
+     * @return
+     * @throws IOException
+     */
+    public Map<String, byte[]> fetchSubmissionFilesFromStudent(ExtensionUser user) throws IOException {
         Map<String, byte[]> submissionFilesBytes = new HashMap<>();
 
         Request request = new Request.Builder()
-                .url(CANVAS_URL + "/courses/" + courseId + "/assignments/" + assignmentId + "/submissions/" + studentId)
+                .url(CANVAS_URL + "/courses/" + user.getCourseId() + "/assignments/" + user.getAssignmentId() + "/submissions/" + user.getStudentId())
                 .get()
-                .addHeader(AUTH_HEADER, accessToken)
+                .addHeader(AUTH_HEADER, user.getBearerToken())
                 .build();
 
         JsonNode submissionResp = parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
@@ -181,7 +187,7 @@ public class CanvasClientService {
 
         for (JsonNode fileJson : filesAttachment) {
             String fileId = fileJson.get("id").asText();
-            byte[] fileBytes = fetchFile(fileId, accessToken);
+            byte[] fileBytes = fetchFile(fileId, user.getBearerToken());
             String fileName = fileJson.get("filename").asText();
             submissionFilesBytes.put(fileName, fileBytes);
         }

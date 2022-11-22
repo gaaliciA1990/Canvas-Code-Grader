@@ -31,6 +31,40 @@ public class ChromeApiController {
 
 
     /**
+     *
+     * @param bearerToken
+     * @param assignmentId
+     * @param courseId
+     * @param studentId
+     * @return
+     */
+    @GetMapping(
+            value = "/execute/courses/{courseId}/assignments/{assignmentId}/submissions/{studentId}",
+            produces = { "application/json" }
+    )
+    public ResponseEntity<CommandOutput> initiateInstructorCodeEvaluation(
+            @RequestHeader("Authorization") String bearerToken,
+            @PathVariable("assignmentId") String assignmentId,
+            @PathVariable("courseId") String courseId,
+            @PathVariable("studentId") String studentId,
+            @RequestParam("userType") UserType type
+    ) throws IOException {
+        // check the user type isn't null, unauthorized, or Student
+        if (type == null || type == UserType.UNAUTHORIZED || type == UserType.STUDENT) {
+            System.out.println(String.format("Exception: user type does not match expected [%s]", UserType.GRADER));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        // get the user id from the Canvas API
+        String userId = canvasClientService.fetchUserId(bearerToken);
+
+        // Create the user with the params
+        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, type);
+
+        return evaluation.executeCodeFile(user);
+
+    }
+
+    /**
      * Post request to start the evaluation service.
      * Depending on type of user, the correct evaluation path is called.
      * TODO: this should only return a success for starting the program
@@ -42,83 +76,31 @@ public class ChromeApiController {
      * @param type         User Type Enum indicating who is using the extension
      * @return Response CommandOutput
      */
-
-    @GetMapping(
-            value = "/execute/courses/{courseId}/assignments/{assignmentId}/submissions/{studentId}",
-            produces = { "application/json" }
-    )
-    public ResponseEntity<CommandOutput> executeCodeFiles(
-            @RequestHeader("Authorization") String bearerToken,
-            @PathVariable("assignmentId") String assignmentId,
-            @PathVariable("courseId") String courseId,
-            @PathVariable("studentId") String studentId
-    ) {
-        // Write makefile to directory
-        writeMakefile(studentId, courseId, assignmentId, bearerToken);
-
-        // Fetch submission files from Canvas
-        Map<String, byte[]> submissionMap = new HashMap<>();
-        try {
-            submissionMap = canvasClientService.fetchSubmissionFilesFromStudent(courseId, assignmentId, studentId, bearerToken);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // Write submission files to directory
-        for (Map.Entry<String, byte[]> entry : submissionMap.entrySet()) {
-            // Key: filename, Value: file bytes to write
-            fileService.writeFileFromBytes(entry.getKey(), entry.getValue(), fileService.getFileDirectory(studentId));
-        }
-
-        // If code compiles successfully
-        if (compileCodeFiles(studentId).isSuccess()) {
-            // Execute the code
-            CommandOutput codeExecutionOutput = executeCodeFiles(studentId);
-            System.out.println(codeExecutionOutput.getOutput());
-
-            // Cleanup
-            fileService.deleteDirectory(studentId);
-
-            return new ResponseEntity<>(codeExecutionOutput, HttpStatus.OK);
-        } else {
-            // Cleanup
-            fileService.deleteDirectory(studentId);
-            return ResponseEntity.badRequest().build();
-        }
-
-    }
-
     @PostMapping(
             value = "/evaluate",
             produces = {"application/json"}, //This method should only start the program and return a success response
             consumes = {"multipart/form-data"}
     )
-    public ResponseEntity<CommandOutput> initiateCodeEvaluation(
+    public ResponseEntity<CommandOutput> initiateStudentCodeEvaluation(
             @RequestHeader("Authorization") String bearerToken,
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("assignmentId") String assignmentId,
             @RequestParam("courseId") String courseId,
             @RequestParam("userType") UserType type
     ) throws IOException {
-        // check the user type isn't null or unauthorized
-        if (type == null || type == UserType.UNAUTHORIZED) {
-            System.out.println(String.format("Exception: user type does not match expected [%s] or [%s]",
-                    UserType.GRADER, UserType.STUDENT));
+        // check the user type isn't null, unauthorized, or Grader
+        if (type == null || type == UserType.UNAUTHORIZED || type == UserType.GRADER) {
+            System.out.println(String.format("Exception: user type does not match expected [%s]", UserType.STUDENT));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         // Get the user id from Canvas API
         String userId = canvasClientService.fetchUserId(bearerToken);
 
-        // Create a user object with params
-        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, type);
+        // Create a user object with params, studentId is null
+        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, null, type);
 
-        if (user.getUserType() == UserType.STUDENT) {
-            return evaluation.compileStudentCodeFile(user, files);
-        } else {
-            // TODO: Implement the path for the Instructor side, evaluation.runInstructorGrading for example
-            return new ResponseEntity<>(HttpStatus.CONTINUE);
-        }
+        return evaluation.compileStudentCodeFile(user, files);
     }
 
     /**
@@ -161,41 +143,6 @@ public class ChromeApiController {
         return new ResponseEntity<>("SAVED FILE", HttpStatus.OK);
     }
 
-    private void writeMakefile(
-            String userId,
-            String courseId,
-            String assignmentId,
-            String bearerToken
-    ) {
-        // Retrieve file json from Canvas
-        byte[] makefileBytes = new byte[0];
-        try {
-            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(courseId, assignmentId, MAKEFILE, bearerToken);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, userId);
-    }
-
-    private CommandOutput compileCodeFiles(String userId) {
-        CommandOutput compileOutput = executeCommand(new String[] {"make"}, userId);
-        if (compileOutput.isSuccess()) {
-            compileOutput.setOutput("Your program compiled successfully!");
-        }
-        return compileOutput;
-    }
-
-    private CommandOutput executeCodeFiles(String userId) {
-        String exeFile = fileService.getFileNameWithExtension(".exe", userId);
-        return executeCommand(new String[] {exeFile}, userId);
-    }
-
-    private CommandOutput executeCommand(String[] commands, String userId) {
-        ProcessExecutor processExecutor = new ProcessExecutor(commands, fileService.getFileDirectory(userId));
-        boolean compileSuccess = processExecutor.executeProcess();
-        String output = processExecutor.getProcessOutput();
-        return new CommandOutput(compileSuccess, output);
-    }
 
 }
