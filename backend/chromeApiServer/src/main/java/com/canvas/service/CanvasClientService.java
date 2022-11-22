@@ -43,8 +43,8 @@ public class CanvasClientService {
         return getFolderIdFromFoldersResponse(response, folderName);
     }
 
-    private String getFileId(String folderId, String fileName, String accessToken) throws IOException {
-        JsonNode response = fetchFilesUnderFolder(folderId, accessToken);
+    private String getFileId(String folderId, String fileName, String bearerToken) throws IOException {
+        JsonNode response = fetchFilesUnderFolder(folderId, bearerToken);
         return getFileIdFromFilesResponse(response, fileName);
     }
 
@@ -78,11 +78,11 @@ public class CanvasClientService {
         return null;
     }
 
-    public byte[] fetchFile(String fileId, String accessToken) throws IOException {
+    public byte[] fetchFile(String fileId, String bearerToken) throws IOException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/files/" + fileId)
                 .get()
-                .addHeader(AUTH_HEADER, accessToken)
+                .addHeader(AUTH_HEADER, bearerToken)
                 .build();
         JsonNode resp = parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
         String url = resp.get("url").asText();
@@ -108,11 +108,11 @@ public class CanvasClientService {
         return fetchFile(fileId, user.getBearerToken());
     }
 
-    public String fetchUserId(String accessToken) throws IOException {
+    public String fetchUserId(String bearerToken) throws IOException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/users/self")
                 .get()
-                .addHeader(AUTH_HEADER,accessToken)
+                .addHeader(AUTH_HEADER,bearerToken)
                 .build();
         JsonNode resp = parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
         String userId = resp.get("id").asText();

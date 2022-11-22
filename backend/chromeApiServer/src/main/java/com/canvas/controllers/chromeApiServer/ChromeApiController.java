@@ -13,23 +13,28 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @CrossOrigin
 public class ChromeApiController {
     private final StudentEvaluationService studentEval;
+    private final CanvasClientService canvasClientService;
 
     @Autowired
-    public ChromeApiController(StudentEvaluationService studentEval) {
+    public ChromeApiController(StudentEvaluationService studentEval, CanvasClientService canvasClientService) {
         this.studentEval = studentEval;
+        this.canvasClientService = canvasClientService;
     }
 
 
     /**
-     * Post request to evaluate files. Depending on type of user, the correct evaluation path is called.
+     * Post request to start the evaluation service.
+     * Depending on type of user, the correct evaluation path is called.
+     * TODO: this should only return a success for starting the program
      *
      * @param bearerToken  authorization token from Canvas API
      * @param files        file(s) to be evaluated
-     * @param userId       Canvas user id
      * @param assignmentId Canvas assignment id
      * @param courseId     Canvas course id
      * @param type         User Type Enum
@@ -92,7 +97,11 @@ public class ChromeApiController {
             @RequestParam("assignmentId") String assignmentId,
             @RequestParam("courseId") String courseId,
             @RequestParam("userType") UserType type
-    ) {
+    ) throws IOException {
+        // Get the user id from Canvas API
+        String userId = canvasClientService.fetchUserId(bearerToken);
+
+        // Create a user object with params
         ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, type);
 
         if (type == UserType.STUDENT) {
@@ -100,26 +109,38 @@ public class ChromeApiController {
         }
         if (type == UserType.GRADER) {
             // TODO: Implement the path for the Instructor side
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.CONTINUE);
         } else {
             System.out.println(String.format("Exception: user type does not match expected [%s] or [%s]", UserType.GRADER, UserType.STUDENT));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
+    /**
+     * TODO: Need a Get function to push the results of the evaluation service. This would be our CommandOutput that
+     * is constantly being updated during the program run time.
+     * Need to figure out how we
+     */
+    @GetMapping
+    public ResponseEntity<CommandOutput> getProgramResponse(
+            @RequestParam("Authorization") String bearerToken
+            ) {
+        return null;
+    }
 
-    @GetMapping(
-            value = "/fetchStudentSubmission",
-            produces = {"application/json"}
-    )
 
     /**
      * Test Route to get student submission given access token and studentId
      * Submission is expected to be saved under my files/CanvasCode/sample.cpp
+     *
      * @param studentId
      * @param token
      * @return
      */
+    @GetMapping(
+            value = "/fetchStudentSubmission",
+            produces = {"application/json"}
+    )
     public ResponseEntity<String> fetchFileFromCanvasAndSave(@RequestParam("studentId") String studentId,
                                                              @RequestParam("accessToken") String token,
                                                              @RequestParam("fileName") String fileName) {
