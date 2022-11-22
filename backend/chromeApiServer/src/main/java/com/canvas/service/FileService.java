@@ -18,9 +18,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static java.nio.file.StandardOpenOption.WRITE;
 
+/**
+ * This class handles all file management
+ */
 @Service
 public class FileService {
 
+    /**
+     * Constructor
+     */
     public FileService() {
     }
 
@@ -28,6 +34,13 @@ public class FileService {
         return "./" + id;
     }
 
+    /**
+     * TODO: What is this method creating?
+     *
+     * @param dataBufferFlux
+     * @param fileName
+     * @param id
+     */
     public void writeFileFromDataBufferPublisher(Publisher<DataBuffer> dataBufferFlux, String fileName, String id) {
         String fileDirectory = generateFileDirectory(id);
 
@@ -48,6 +61,14 @@ public class FileService {
         DataBufferUtils.write(dataBufferFlux, path, WRITE).block();
     }
 
+    /**
+     * Creates a file directory based on the url in Canvas TODO: please clarify
+     *
+     * @param url      Canvas url string
+     * @param filename file name of code submission
+     * @param id       Canvas user id, used for naming file
+     * @return
+     */
     public boolean writeFileFromUrl(String url, String filename, String id) {
         String fileDirectory = generateFileDirectory(id);
 
@@ -63,6 +84,13 @@ public class FileService {
         return true;
     }
 
+    /**
+     * Generates a file directory and named based on canvas user id.
+     *
+     * @param file code files to be evaluated
+     * @param id   Canvas user id
+     * @return Boolean response, true is successful, else false
+     */
     public boolean writeFileFromMultipart(MultipartFile file, String id) {
         String fileDirectory = generateFileDirectory(id);
 
@@ -83,6 +111,15 @@ public class FileService {
         return true;
     }
 
+
+    /**
+     * Creates a file directory from a byte array
+     *
+     * @param fileName File name to be evaluated
+     * @param bytes    byte array
+     * @param id       Canvas user id
+     * @return Boolean response, true is successful, else false
+     */
     public boolean writeFileFromBytes(String fileName, byte[] bytes, String id) {
         String fileDirectory = generateFileDirectory(id);
 
@@ -105,6 +142,12 @@ public class FileService {
         return file.getPath();
     }
 
+    /**
+     * Deletes the directory based on name
+     *
+     * @param id Canvas user id associated with the directory
+     * @return Boolean response, true is successful, else false
+     */
     public boolean deleteDirectory(String id) {
         String fileDirectory = generateFileDirectory(id);
 
@@ -118,16 +161,37 @@ public class FileService {
     }
 
 
+    /**
+     * Deletes all files from the directory based on multipart files
+     *
+     * @param file Mulitpart files to be deleted
+     * @param id   canvas user id
+     * @return Boolean response, true is successful, else false
+     */
     public boolean deleteFile(MultipartFile file, String id) {
         String fileDirectory = generateFileDirectory(id);
 
         return deleteFileHelper(concatFileDirAndName(fileDirectory, file.getOriginalFilename()), id);
     }
 
+    /**
+     * Deletes a file from the directory
+     *
+     * @param fileName name of the file to be deleted
+     * @param id       canvas user id
+     * @return Boolean response, true is successful, else false
+     */
     public boolean deleteFile(String fileName, String id) {
         return deleteFileHelper(fileName, id);
     }
 
+    /**
+     * TODO: What is this deleting?
+     *
+     * @param extension File extension
+     * @param id        canvas user id
+     * @return Boolean response, true is successful, else false
+     */
     public boolean deleteFilesEndingWithExtension(String extension, String id) {
         String fileDirectory = generateFileDirectory(id);
 
@@ -141,6 +205,13 @@ public class FileService {
         return true;
     }
 
+    /**
+     * Deletes a helper file
+     *
+     * @param fileName Name of the file to be deleted
+     * @param id       Canvas user id
+     * @return Boolean response, true is successful, else false
+     */
     private boolean deleteFileHelper(String fileName, String id) {
         String fileDirectory = generateFileDirectory(id);
 
@@ -154,12 +225,26 @@ public class FileService {
         return deleteSuccess;
     }
 
+    /**
+     * Getter for the file directory, based on canvas user id
+     *
+     * @param id Canvas user id
+     * @return Boolean response, true is successful, else false
+     */
     public String getFileDirectory(String id) {
         String fileDirectory = generateFileDirectory(id);
 
         return fileDirectory;
     }
 
+    /**
+     * Helper function for concatonating file directory and name
+     * TODO: What is this doing?
+     *
+     * @param fileDirectory  Our created directory for the files
+     * @param fileName       Name of the file
+     * @return               String format of the directory and file name
+     */
     private static String concatFileDirAndName(String fileDirectory, String fileName) {
         return fileDirectory + "/" + fileName;
     }

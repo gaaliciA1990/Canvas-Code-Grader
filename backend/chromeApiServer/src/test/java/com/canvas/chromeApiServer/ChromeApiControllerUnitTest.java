@@ -71,7 +71,7 @@ class ChromeApiControllerUnitTest {
         byte[] list = new byte[1];
 
         // mock all responses for called dependencies for fileService and canvasClientService
-        Mockito.when(canvasClientService.fetchFileUnderCourseAssignmentFolder(anyString(), anyString(), anyString(), anyString())).thenReturn(list);
+        Mockito.when(canvasClientService.fetchFileUnderCourseAssignmentFolder(any(), anyString())).thenReturn(list);
         Mockito.when(fileService.writeFileFromBytes(anyString(), any(), anyString())).thenReturn(true);
         Mockito.when(fileService.writeFileFromMultipart(any(), anyString())).thenReturn(true);
         Mockito.when(fileService.getFileDirectory(anyString())).thenReturn("returned test string");

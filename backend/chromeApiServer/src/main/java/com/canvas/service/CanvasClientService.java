@@ -1,5 +1,6 @@
 package com.canvas.service;
 
+import com.canvas.service.models.ExtensionUser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
@@ -91,20 +92,20 @@ public class CanvasClientService {
         return Objects.requireNonNull(fileResp.body()).bytes();
     }
 
-    public byte[] fetchFileUnderCourseAssignmentFolder(String courseId, String assignmentId, String fileName, String accessToken) throws IOException {
-        JsonNode foldersResp = fetchFoldersUnderCourse(courseId, accessToken);
+    public byte[] fetchFileUnderCourseAssignmentFolder(ExtensionUser user, String fileName) throws IOException {
+        JsonNode foldersResp = fetchFoldersUnderCourse(user.getCourseId(), user.getBearerToken());
         // assignmentId is the folder name
-        String filesRequestUrl = getFilesRequestUrlFromAssignmentFolder(foldersResp, assignmentId);
+        String filesRequestUrl = getFilesRequestUrlFromAssignmentFolder(foldersResp, user.getAssignmentId());
 
         Request filesRequest = new Request.Builder()
                 .url(filesRequestUrl)
                 .get()
-                .addHeader(AUTH_HEADER, accessToken)
+                .addHeader(AUTH_HEADER, user.getBearerToken())
                 .build();
 
         JsonNode filesResponse = parseResponseToJsonNode(this.okHttpClient.newCall(filesRequest).execute());
         String fileId = getFileIdFromFilesResponse(filesResponse, fileName + ".dms");
-        return fetchFile(fileId, accessToken);
+        return fetchFile(fileId, user.getBearerToken());
     }
 
     public String fetchUserId(String accessToken) throws IOException {

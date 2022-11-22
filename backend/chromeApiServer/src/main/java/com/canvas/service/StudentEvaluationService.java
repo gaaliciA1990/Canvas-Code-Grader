@@ -40,9 +40,7 @@ public class StudentEvaluationService {
         // Retrieve file json from Canvas
         byte[] makefileBytes = new byte[0];
         try {
-            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(
-                    user.getCourseId(), user.getAssignmentId(), makefileName, user.getBearerToken()
-            );
+            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, makefileName);
         } catch (IOException e) {
             e.printStackTrace();
         }
