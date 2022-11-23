@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 
@@ -31,7 +32,6 @@ public class ChromeApiController {
 
 
     /**
-     *
      * @param bearerToken
      * @param assignmentId
      * @param courseId
@@ -40,7 +40,7 @@ public class ChromeApiController {
      */
     @GetMapping(
             value = "/execute/courses/{courseId}/assignments/{assignmentId}/submissions/{studentId}",
-            produces = { "application/json" }
+            produces = {"application/json"}
     )
     public ResponseEntity<CommandOutput> initiateInstructorCodeEvaluation(
             @RequestHeader("Authorization") String bearerToken,
@@ -50,19 +50,10 @@ public class ChromeApiController {
             @RequestParam("userType") String type
     ) throws IOException {
         // check the user type isn't null
-        if (type == null) {
-            System.out.println(String.format("Exception: userType cannot be null"));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        validate_userType_String(type);
 
         // convert type to ENUM
-        UserType userType;
-        try{
-            userType = UserType.stringToEnum(type);
-        } catch (Exception e) {
-            System.out.println(String.format("User type error: Only accepted values are [student] or [grader]\n[%s]",e));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        UserType userType = convert_userTypeTo_Enum(type);
 
         // check userType isn't Unauthorized or Student
         if (userType == UserType.UNAUTHORIZED || userType == UserType.STUDENT) {
@@ -105,19 +96,10 @@ public class ChromeApiController {
     ) throws IOException {
 
         // check the user type isn't null
-        if (type == null) {
-            System.out.println(String.format("Exception: userType cannot be null"));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        validate_userType_String(type);
 
         // convert type to ENUM
-        UserType userType;
-        try{
-            userType = UserType.stringToEnum(type);
-        } catch (Exception e) {
-            System.out.println(String.format("User type error: Only accepted values are [student] or [grader]\n[%s]",e));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        UserType userType = convert_userTypeTo_Enum(type);
 
         // check userType isn't Unauthorized or Grader
         if (userType == UserType.UNAUTHORIZED || userType == UserType.GRADER) {
@@ -174,6 +156,30 @@ public class ChromeApiController {
         return new ResponseEntity<>("SAVED FILE", HttpStatus.OK);
     }
 
+    /**
+     * Helper method for validating the userType string isn't null
+     * @param type  String type passed as arg
+     */
+    private void validate_userType_String(String type){
+        String errorMessage = "Exception: userType cannot be null";
 
+        // check the user type isn't null
+        if (type == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
+        }
+    }
 
+    /**
+     * Helper method for converting string type to UserType Enum
+     * @param type  String type to convert
+     * @return      UserType Enum
+     */
+    private UserType convert_userTypeTo_Enum(String type) {
+        String errorMessage = "User type error: Only accepted values are [student] or [grader]";
+        try {
+            return UserType.stringToEnum(type);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
+        }
+    }
 }

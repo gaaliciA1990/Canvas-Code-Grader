@@ -110,7 +110,7 @@ class ChromeApiControllerUnitTest {
      */
     @ParameterizedTest
     @CsvFileSource(resources = "/chromeAPI_userType_tests.csv", numLinesToSkip = 1)
-    public void initiateStudentCodeEvaluation_should_badRequest_with_wrong_userType(UserType userType) throws Exception {
+    public void initiateStudentCodeEvaluation_should_badRequest_with_wrong_userType(String userType) throws Exception {
         // Set Up
         String authToken = "TestStringToken";
         MockMultipartFile multipartFile = new MockMultipartFile("files", "test.txt",
@@ -118,8 +118,7 @@ class ChromeApiControllerUnitTest {
         String userID = "132546";
         String assignmentID = "cs5461321";
         String courseID = "cpsc5023";
-        UserType type = userType;
-        CommandOutput commandOutput = new CommandOutput(true, "test");
+        String type = userType;
 
         // Act
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.multipart("/evaluate")
@@ -127,7 +126,7 @@ class ChromeApiControllerUnitTest {
                         .header("Authorization", authToken)
                         .param("assignmentId", assignmentID)
                         .param("courseId", courseID)
-                        .param("userType", String.valueOf(type))
+                        .param("userType", type)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())  // assert we get bad request response
@@ -136,5 +135,7 @@ class ChromeApiControllerUnitTest {
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
+
+
 
 }
