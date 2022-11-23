@@ -56,7 +56,13 @@ public class ChromeApiController {
         }
 
         // convert type to ENUM
-        UserType userType = UserType.stringToEnum(type);
+        UserType userType;
+        try{
+            userType = UserType.stringToEnum(type);
+        } catch (Exception e) {
+            System.out.println(String.format("User type error: Only accepted values are [student] or [grader]\n[%s]",e));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         // check userType isn't Unauthorized or Student
         if (userType == UserType.UNAUTHORIZED || userType == UserType.STUDENT) {
@@ -103,8 +109,15 @@ public class ChromeApiController {
             System.out.println(String.format("Exception: userType cannot be null"));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+
         // convert type to ENUM
-        UserType userType = UserType.stringToEnum(type);
+        UserType userType;
+        try{
+            userType = UserType.stringToEnum(type);
+        } catch (Exception e) {
+            System.out.println(String.format("User type error: Only accepted values are [student] or [grader]\n[%s]",e));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         // check userType isn't Unauthorized or Grader
         if (userType == UserType.UNAUTHORIZED || userType == UserType.GRADER) {
