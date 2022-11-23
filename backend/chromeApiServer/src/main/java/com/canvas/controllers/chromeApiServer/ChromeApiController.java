@@ -47,10 +47,19 @@ public class ChromeApiController {
             @PathVariable("assignmentId") String assignmentId,
             @PathVariable("courseId") String courseId,
             @PathVariable("studentId") String studentId,
-            @RequestParam("userType") UserType type
+            @RequestParam("userType") String type
     ) throws IOException {
-        // check the user type isn't null, unauthorized, or Student
-        if (type == null || type == UserType.UNAUTHORIZED || type == UserType.STUDENT) {
+        // check the user type isn't null
+        if (type == null) {
+            System.out.println(String.format("Exception: userType cannot be null"));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        // convert type to ENUM
+        UserType userType = UserType.stringToEnum(type);
+
+        // check userType isn't Unauthorized or Student
+        if (userType == UserType.UNAUTHORIZED || userType == UserType.STUDENT) {
             System.out.println(String.format("Exception: user type does not match expected [%s]", UserType.GRADER));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -58,7 +67,7 @@ public class ChromeApiController {
         String userId = canvasClientService.fetchUserId(bearerToken);
 
         // Create the user with the params
-        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, type);
+        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, userType);
 
         return evaluation.executeCodeFile(user);
 
@@ -86,10 +95,19 @@ public class ChromeApiController {
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("assignmentId") String assignmentId,
             @RequestParam("courseId") String courseId,
-            @RequestParam("userType") UserType type
+            @RequestParam("userType") String type
     ) throws IOException {
-        // check the user type isn't null, unauthorized, or Grader
-        if (type == null || type == UserType.UNAUTHORIZED || type == UserType.GRADER) {
+
+        // check the user type isn't null
+        if (type == null) {
+            System.out.println(String.format("Exception: userType cannot be null"));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        // convert type to ENUM
+        UserType userType = UserType.stringToEnum(type);
+
+        // check userType isn't Unauthorized or Grader
+        if (userType == UserType.UNAUTHORIZED || userType == UserType.GRADER) {
             System.out.println(String.format("Exception: user type does not match expected [%s]", UserType.STUDENT));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -98,7 +116,7 @@ public class ChromeApiController {
         String userId = canvasClientService.fetchUserId(bearerToken);
 
         // Create a user object with params, studentId is null
-        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, null, type);
+        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, null, userType);
 
         return evaluation.compileStudentCodeFile(user, files);
     }

@@ -106,7 +106,7 @@ class ChromeApiControllerUnitTest {
     /**
      * Tests the initiateStudentCodeEvaluation method return Bad_Request for wrong userTypes
      * @param userType      Enum UserType
-     * @throws Exception    exception 
+     * @throws Exception    exception
      */
     @ParameterizedTest
     @CsvFileSource(resources = "/chromeAPI_userType_tests.csv", numLinesToSkip = 1)
