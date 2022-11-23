@@ -64,21 +64,12 @@ public class EvaluationService {
         }
 
         // Compile the files and grab output
-        ProcessExecutor processExecutor = new ProcessExecutor(new String[]{"make"}, fileService.getFileDirectory(user.getUserId()));
-        boolean compileSuccess = processExecutor.executeProcess();
-        String output;
-        if (compileSuccess) {
-            output = "Your program compiled successfully!";
-        } else {
-            output = processExecutor.getProcessOutput();
-        }
+        CommandOutput commandOutput = compileCodeFiles(user.getUserId());
 
         // Cleanup
         fileService.deleteDirectory(user.getUserId());
 
         // Generate response
-        CommandOutput commandOutput = new CommandOutput(compileSuccess, output);
-
         return new ResponseEntity<>(commandOutput, HttpStatus.OK);
     }
 
