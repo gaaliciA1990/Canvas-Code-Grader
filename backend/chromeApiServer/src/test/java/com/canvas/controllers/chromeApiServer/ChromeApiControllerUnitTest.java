@@ -1,8 +1,10 @@
-package com.canvas.chromeApiServer;
+package com.canvas.controllers.chromeApiServer;
 
-import com.canvas.dto.CommandOutput;
-import com.canvas.service.CanvasClientService;
-import com.canvas.service.FileService;
+import com.canvas.service.EvaluationService;
+import com.canvas.service.models.CommandOutput;
+import com.canvas.service.helperServices.CanvasClientService;
+import com.canvas.service.models.ExtensionUser;
+import com.canvas.service.models.UserType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,15 +15,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -35,10 +39,13 @@ class ChromeApiControllerUnitTest {
     MockMvc mockMvc;
 
     @MockBean
-    FileService fileService;
+    ExtensionUser user;
 
     @MockBean
     CanvasClientService canvasClientService;
+
+    @MockBean
+    EvaluationService evaluationService;
 
     /**
      * Placeholder for action to take before running tests
@@ -68,30 +75,28 @@ class ChromeApiControllerUnitTest {
         String userID = "132546";
         String assignmentID = "cs5461321";
         String courseID = "cpsc5023";
-        byte[] list = new byte[1];
+        UserType type = UserType.STUDENT;
+        CommandOutput commandOutput = new CommandOutput(true, "test");
 
-        // mock all responses for called dependencies for fileService and canvasClientService
-        Mockito.when(canvasClientService.fetchFileUnderCourseAssignmentFolder(anyString(), anyString(), anyString(), anyString())).thenReturn(list);
-        Mockito.when(fileService.writeFileFromBytes(anyString(), any(), anyString())).thenReturn(true);
-        Mockito.when(fileService.writeFileFromMultipart(any(), anyString())).thenReturn(true);
-        Mockito.when(fileService.getFileDirectory(anyString())).thenReturn("returned test string");
-        Mockito.when(fileService.deleteDirectory(anyString())).thenReturn(true);
+        Mockito.when(canvasClientService.fetchUserId(authToken)).thenReturn(userID);
+        Mockito.when(evaluationService.compileStudentCodeFile(any(), any())).thenReturn(new ResponseEntity<>(commandOutput, HttpStatus.OK));
 
         // Act
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.multipart("/evaluate")
                         .file(multipartFile)
                         .header("Authorization", authToken)
-                        .param("userId", userID)
                         .param("assignmentId", assignmentID)
                         .param("courseId", courseID)
+                        .param("userType", String.valueOf(type))
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())  // assert we get OK response
                 .andReturn();
 
         // Assert
-        CommandOutput controllerResponse = new ObjectMapper().readValue(result.getResponse().getContentAsString(), CommandOutput.class);
-        assertEquals(true, controllerResponse.isSuccess());
+        CommandOutput controllerResponse = new ObjectMapper().readValue(result.getResponse().getContentAsString(),
+                CommandOutput.class);
+        assertTrue(controllerResponse.isSuccess());
     }
 
 

@@ -1,10 +1,12 @@
-package com.canvas.dto;
+package com.canvas.service.models;
 
+import com.canvas.service.models.CommandOutput;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals; //This is using JUnit5, the correct version
+
 
 class CommandOutputUnitTest {
 
