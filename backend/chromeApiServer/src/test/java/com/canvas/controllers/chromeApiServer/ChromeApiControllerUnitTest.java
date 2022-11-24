@@ -68,6 +68,79 @@ class ChromeApiControllerUnitTest {
     }
 
     /**
+     * Tests the ResponseEntity returns Ok with correct params:
+     * <p>
+     * Values passed through path:
+     * assignmentID = cs5461321
+     * courseID = cpsc5023
+     * studentID = 1235464
+     *
+     * @throws Exception
+     */
+    @Test
+    public void initiateInstructorCodeEvaluation_should_return_ResponseEntity_OK() throws Exception {
+        // Set Up
+        String authToken = "TESTStringToken";
+        String userID = "4625132";
+
+        UserType type = UserType.GRADER;
+        CommandOutput commandOutput = new CommandOutput(true, "test");
+
+        Mockito.when(canvasClientService.fetchUserId(authToken)).thenReturn(userID);
+        Mockito.when(evaluationService.executeCodeFile(any())).thenReturn(new ResponseEntity<>(commandOutput, HttpStatus.OK));
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/execute/courses/cpsc5023/assignments/cs5461321/submissions/1235464")
+                        .header("Authorization", authToken)
+                        .param("userType", String.valueOf(type))
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())  // assert we get OK response
+                .andReturn();
+
+        // Assert
+        CommandOutput controllerResponse = new ObjectMapper().readValue(result.getResponse().getContentAsString(),
+                CommandOutput.class);
+        assertTrue(controllerResponse.isSuccess());
+    }
+
+    /**
+     * Tests the initiateInstructorCodeEvaluation method return Bad_Request for wrong userTypes
+     * <p>
+     * Values passed through path:
+     * assignmentID = cs5461321
+     * courseID = cpsc5023
+     * studentID = 1235464
+     *
+     * @param userType Enum UserType
+     * @throws Exception exception
+     */
+    @ParameterizedTest
+    @CsvFileSource(resources = "/chromeAPI_userType_instructor_tests.csv", numLinesToSkip = 1)
+    public void initiateInstructorCodeEvaluation_should_return_badRequest_with_wrong_userType(String userType) throws Exception {
+        // Set Up
+        String authToken = "TestStringToken";
+        MockMultipartFile multipartFile = new MockMultipartFile("files", "test.txt",
+                "text/plain", "Spring Framework".getBytes());
+        String userID = "132546";
+        String assignmentID = "cs5461321";
+        String courseID = "cpsc5023";
+        String type = userType;
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/execute/courses/cpsc5023/assignments/cs5461321/submissions/1235464")
+                        .header("Authorization", authToken)
+                        .param("userType", String.valueOf(type))
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())  // assert we get bad request response
+                .andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+    }
+
+    /**
      * Tests ResponseEntity returns OK with correct params
      */
     @Test
@@ -105,12 +178,13 @@ class ChromeApiControllerUnitTest {
 
     /**
      * Tests the initiateStudentCodeEvaluation method return Bad_Request for wrong userTypes
-     * @param userType      Enum UserType
-     * @throws Exception    exception
+     *
+     * @param userType Enum UserType
+     * @throws Exception exception
      */
     @ParameterizedTest
-    @CsvFileSource(resources = "/chromeAPI_userType_tests.csv", numLinesToSkip = 1)
-    public void initiateStudentCodeEvaluation_should_badRequest_with_wrong_userType(String userType) throws Exception {
+    @CsvFileSource(resources = "/chromeAPI_userType_student_tests.csv",numLinesToSkip = 1)
+    public void initiateStudentCodeEvaluation_should_return_badRequest_with_wrong_userType(String userType) throws Exception {
         // Set Up
         String authToken = "TestStringToken";
         MockMultipartFile multipartFile = new MockMultipartFile("files", "test.txt",
@@ -135,7 +209,6 @@ class ChromeApiControllerUnitTest {
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
-
 
 
 }
