@@ -116,30 +116,14 @@ public class ChromeApiController {
         return evaluation.compileStudentCodeFile(user, files);
     }
 
-    /**
-     * TODO: Need a Get function to push the results of the evaluation service. This would be our CommandOutput that
-     * is constantly being updated during the program run time.
-     * Need to figure out how we
-     */
-    @GetMapping(
-            value = "/evaluate/output",
-            produces = {"application/json"}
-    )
-    public ResponseEntity<CommandOutput> getRunningProgramOutput(
-            @RequestParam("Authorization") String bearerToken
-    ) {
-        return null;
-    }
-
-
-    /**
+/*    *//**
      * Test Route to get student submission given access token and studentId
      * Submission is expected to be saved under my files/CanvasCode/sample.cpp
      *
      * @param studentId
      * @param token
      * @return
-     */
+     *//*
     @GetMapping(
             value = "/fetchStudentSubmission",
             produces = {"application/json"}
@@ -154,7 +138,7 @@ public class ChromeApiController {
             return new ResponseEntity<>("ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>("SAVED FILE", HttpStatus.OK);
-    }
+    }*/
 
     /**
      * Helper method for validating the userType string isn't null
