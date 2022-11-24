@@ -49,9 +49,6 @@ public class ChromeApiController {
             @PathVariable("studentId") String studentId,
             @RequestParam("userType") String type
     ) throws IOException {
-        // check the user type isn't null
-        validate_userType_String(type);
-
         // convert type to ENUM
         UserType userType = convert_userTypeTo_Enum(type);
 
@@ -95,9 +92,6 @@ public class ChromeApiController {
             @RequestParam("userType") String type
     ) throws IOException {
 
-        // check the user type isn't null
-        validate_userType_String(type);
-
         // convert type to ENUM
         UserType userType = convert_userTypeTo_Enum(type);
 
@@ -139,19 +133,6 @@ public class ChromeApiController {
         }
         return new ResponseEntity<>("SAVED FILE", HttpStatus.OK);
     }*/
-
-    /**
-     * Helper method for validating the userType string isn't null
-     * @param type  String type passed as arg
-     */
-    private void validate_userType_String(String type){
-        String errorMessage = "Exception: userType cannot be null";
-
-        // check the user type isn't null
-        if (type == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
-        }
-    }
 
     /**
      * Helper method for converting string type to UserType Enum

@@ -130,7 +130,7 @@ class ChromeApiControllerUnitTest {
         // Act
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/execute/courses/cpsc5023/assignments/cs5461321/submissions/1235464")
                         .header("Authorization", authToken)
-                        .param("userType", String.valueOf(type))
+                        .param("userType", type)
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())  // assert we get bad request response
@@ -183,7 +183,7 @@ class ChromeApiControllerUnitTest {
      * @throws Exception exception
      */
     @ParameterizedTest
-    @CsvFileSource(resources = "/chromeAPI_userType_student_tests.csv",numLinesToSkip = 1)
+    @CsvFileSource(resources = "/chromeAPI_userType_student_tests.csv", numLinesToSkip = 1)
     public void initiateStudentCodeEvaluation_should_return_badRequest_with_wrong_userType(String userType) throws Exception {
         // Set Up
         String authToken = "TestStringToken";
