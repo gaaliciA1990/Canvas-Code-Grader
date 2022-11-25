@@ -47,13 +47,10 @@ public class ChromeApiController {
             @PathVariable("assignmentId") String assignmentId,
             @PathVariable("courseId") String courseId,
             @PathVariable("studentId") String studentId,
-            @RequestParam("userType") String type
+            @RequestParam("userType") UserType type
     ) throws IOException {
-        // convert type to ENUM
-        UserType userType = convert_userTypeTo_Enum(type);
-
         // check userType isn't Unauthorized or Student
-        if (userType == UserType.UNAUTHORIZED || userType == UserType.STUDENT) {
+        if (type == UserType.UNAUTHORIZED || type == UserType.STUDENT) {
             System.out.println(String.format("Exception: user type does not match expected [%s]", UserType.GRADER));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -61,7 +58,7 @@ public class ChromeApiController {
         String userId = canvasClientService.fetchUserId(bearerToken);
 
         // Create the user with the params
-        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, userType);
+        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, type);
 
         return evaluation.executeCodeFile(user);
 
@@ -89,14 +86,10 @@ public class ChromeApiController {
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("assignmentId") String assignmentId,
             @RequestParam("courseId") String courseId,
-            @RequestParam("userType") String type
+            @RequestParam("userType") UserType type
     ) throws IOException {
-
-        // convert type to ENUM
-        UserType userType = convert_userTypeTo_Enum(type);
-
         // check userType isn't Unauthorized or Grader
-        if (userType == UserType.UNAUTHORIZED || userType == UserType.GRADER) {
+        if (type == UserType.UNAUTHORIZED || type == UserType.GRADER) {
             System.out.println(String.format("Exception: user type does not match expected [%s]", UserType.STUDENT));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -105,7 +98,7 @@ public class ChromeApiController {
         String userId = canvasClientService.fetchUserId(bearerToken);
 
         // Create a user object with params, studentId is null
-        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, null, userType);
+        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, null, type);
 
         return evaluation.compileStudentCodeFile(user, files);
     }
@@ -134,17 +127,4 @@ public class ChromeApiController {
         return new ResponseEntity<>("SAVED FILE", HttpStatus.OK);
     }*/
 
-    /**
-     * Helper method for converting string type to UserType Enum
-     * @param type  String type to convert
-     * @return      UserType Enum
-     */
-    private UserType convert_userTypeTo_Enum(String type) {
-        String errorMessage = "User type error: Only accepted values are [student] or [grader]";
-        try {
-            return UserType.stringToEnum(type);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
-        }
-    }
 }
