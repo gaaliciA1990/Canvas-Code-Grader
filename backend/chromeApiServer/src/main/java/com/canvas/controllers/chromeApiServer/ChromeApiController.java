@@ -58,7 +58,7 @@ public class ChromeApiController {
         String userId = canvasClientService.fetchUserId(bearerToken);
 
         // Create the user with the params
-        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, UserType.GRADER);
+        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, type);
 
         return evaluation.executeCodeFile(user);
 
