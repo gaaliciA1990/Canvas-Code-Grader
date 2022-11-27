@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Date;
 
+
+/**
+ * Error response object that will be seen by the client (as a JSON).
+ */
 @Getter
 @Setter
 public class ErrorResponse {
