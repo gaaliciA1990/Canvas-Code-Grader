@@ -81,7 +81,7 @@ public class ChromeApiController {
             produces = {"application/json"}, //This method should only start the program and return a success response
             consumes = {"multipart/form-data"}
     )
-    public ResponseEntity<?> initiateStudentCodeEvaluation(
+    public ResponseEntity<CommandOutput> initiateStudentCodeEvaluation(
             @RequestHeader("Authorization") String bearerToken,
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("assignmentId") String assignmentId,
