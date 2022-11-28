@@ -19,18 +19,25 @@ public class ExtensionUser {
      * Constructor for creating a new user
      *
      * @param authToken  authorization token from Canvas
-     * @param id         canvas user id
-     * @param course     canvas course id
-     * @param assignment canvas assignment id
+     * @param userId     canvas user id
+     * @param courseId   canvas course id
+     * @param assignmentId canvas assignment id
+     * @param userType   user type (enum)
      */
-    public ExtensionUser(String authToken, String id, String course, String assignment, String studentId, UserType type) {
+    public ExtensionUser(
+            String authToken,
+            String userId,
+            String courseId,
+            String assignmentId,
+            String studentId,
+            UserType userType
+    ) {
         this.bearerToken = authToken;
-        this.userId = id;
-        this.courseId = course;
-        this.assignmentId = assignment;
+        this.userId = userId;
+        this.courseId = courseId;
+        this.assignmentId = assignmentId;
         this.studentId = studentId;
-        this.userType = type;
-
+        this.userType = userType;
     }
 
 
