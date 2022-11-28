@@ -90,20 +90,22 @@ public class EvaluationService {
            e.printStackTrace();
        }
 
+       String userId = user.getUserId();
+
        // Write submission files to directory
        for (Map.Entry<String, byte[]> entry : submissionMap.entrySet()) {
            // Key: filename, Value: file bytes to write
-           fileService.writeFileFromBytes(entry.getKey(), entry.getValue(), fileService.getFileDirectory(user.getStudentId()));
+           fileService.writeFileFromBytes(entry.getKey(), entry.getValue(), fileService.getFileDirectory(userId));
        }
 
        // If code compiles successfully
-       if (compileCodeFiles(user.getStudentId()).isSuccess()) {
+       if (compileCodeFiles(userId).isSuccess()) {
            // Execute the code
-           CommandOutput codeExecutionOutput = executeCodeFiles(user.getStudentId());
+           CommandOutput codeExecutionOutput = executeCodeFiles(userId);
            System.out.println(codeExecutionOutput.getOutput());
 
            // Cleanup
-           fileService.deleteDirectory(user.getStudentId());
+           fileService.deleteDirectory(userId);
 
            return new ResponseEntity<>(codeExecutionOutput, HttpStatus.OK);
        } else {
