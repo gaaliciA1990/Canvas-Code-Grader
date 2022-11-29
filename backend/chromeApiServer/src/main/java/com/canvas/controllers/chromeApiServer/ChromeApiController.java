@@ -1,17 +1,16 @@
 package com.canvas.controllers.chromeApiServer;
 
+import com.canvas.exceptions.UserNotAuthorizedException;
 import com.canvas.service.EvaluationService;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
 import com.canvas.service.models.UserType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 
@@ -48,11 +47,12 @@ public class ChromeApiController {
             @PathVariable("courseId") String courseId,
             @PathVariable("studentId") String studentId,
             @RequestParam("userType") UserType type
-    ) throws IOException {
+    ) throws IOException, UserNotAuthorizedException {
         // check userType isn't Unauthorized or Student
         if (type == UserType.UNAUTHORIZED || type == UserType.STUDENT) {
-            System.out.println(String.format("Exception: user type does not match expected [%s]", UserType.GRADER));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            String errorMessage = String.format("user type [%s] does not match expected [%s]", type, UserType.GRADER);
+            System.out.println(errorMessage); // TODO use spring boot logger for printing messages to console
+            throw new UserNotAuthorizedException(errorMessage);
         }
         // get the user id from the Canvas API
         String userId = canvasClientService.fetchUserId(bearerToken);
@@ -87,11 +87,12 @@ public class ChromeApiController {
             @RequestParam("assignmentId") String assignmentId,
             @RequestParam("courseId") String courseId,
             @RequestParam("userType") UserType type
-    ) throws IOException {
+    ) throws IOException, UserNotAuthorizedException {
         // check userType isn't Unauthorized or Grader
         if (type == UserType.UNAUTHORIZED || type == UserType.GRADER) {
-            System.out.println(String.format("Exception: user type does not match expected [%s]", UserType.STUDENT));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            String errorMessage = String.format("user type [%s] does not match expected [%s]", type, UserType.STUDENT);
+            System.out.println(errorMessage); // TODO use spring boot logger for printing messages to console
+            throw new UserNotAuthorizedException(errorMessage);
         }
 
         // Get the user id from Canvas API
