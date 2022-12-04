@@ -21,8 +21,7 @@ jobs:
       id: jacoco
       uses: cicirello/jacoco-badge-generator@v2
       with:
-        name: jacoco-csv-file
-        path: ./backend/chromeApiServer/target/site/jacoco/jacoco.csv
+        jacoco-csv-file: ./backend/chromeApiServer/target/site/jacoco/jacoco.csv
 
     - name: Log coverage percentage
       run: |
