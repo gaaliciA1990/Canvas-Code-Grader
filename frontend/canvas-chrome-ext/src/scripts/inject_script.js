@@ -36,7 +36,7 @@
             //console.log(serv_response)
             alert(serv_response);
 
-            chrome.runtime.sendMessage({"message": serv_response});
+            chrome.runtime.sendMessage({ "message": serv_response });
 
             alert("sent message to background");
 
@@ -50,19 +50,21 @@
 
         //need to wait for file to be input
 
-        const endpoint ="http://127.0.0.1:8080/evaluate";
+        const endpoint = "http://127.0.0.1:8080/evaluate";
         const formData = new FormData();
 
-        //need to extract this somehow
-        let userId = "36497003";
-        let courseId = "5660191";
-        let assignmentId = "33719910";
-        let bearerToken = "Bearer 7~NXFfejf0q09Rx6d50rAOnZTcwjIXxaZk7pOsmCj2ITVZNoYBmuFtaEuou0asBH5U";
+        let params = extractParamsFromUrl(window.location.href);
 
-        fileInput.addEventListener("change", function (){
+        let courseId = params["courseId"];
+        let assignmentId = params["assignmentId"];
+        // FIXME: extract oauth token
+        let bearerToken = "Bearer 7~cQ7XoNd23PrQhB5XBAp8v9osuQsPnyQVsDsZcHb7oTjgnoWYh2lU5qg5RMRMN8rr    ";
+
+        fileInput.addEventListener("change", function () {
             formData.append("files", fileInput.files[0]);
             formData.append("courseId", courseId);
             formData.append("assignmentId", assignmentId);
+            formData.append("userType", "STUDENT");
 
 
             fetch(endpoint, {
@@ -71,7 +73,7 @@
                     'Authorization': bearerToken
                 }),
                 body: formData
-            }).catch(console.error).then( async response =>  {
+            }).catch(console.error).then(async response => {
                 let fileSubmit_response = await response.json();
 
                 console.log(fileSubmit_response);
@@ -80,7 +82,7 @@
                 let output = fileSubmit_response.output;
 
                 console.log("sending message to content")
-                window.postMessage( {type: "FROM_PAGE", output});
+                window.postMessage({ type: "FROM_PAGE", output });
 
             });
         });
@@ -98,3 +100,22 @@
     el.appendChild(btn_response);
 
 })();
+
+function extractParamsFromUrl(canvasUrl) {
+    console.log(canvasUrl);
+    let urlParts = canvasUrl.split('/');
+    console.log(urlParts);
+
+    let params = {};
+
+    for (var i = 0; i < urlParts.length; i++) {
+        if (urlParts[i] === "courses") {
+            params["courseId"] = urlParts[i + 1];
+        }
+        if (urlParts[i] === "assignments") {
+            params["assignmentId"] = urlParts[i + 1];
+        }
+    }
+
+    return params;
+}
