@@ -53,10 +53,29 @@
         const endpoint = "http://127.0.0.1:8080/evaluate";
         const formData = new FormData();
 
-        let params = extractParamsFromUrl(window.location.href);
+        const params = (() => {
+            let canvasUrl = window.location.href;
+            console.log(canvasUrl);
+            let urlParts = canvasUrl.split('/');
+            console.log(urlParts);
+
+            let params = {};
+
+            for (var i = 0; i < urlParts.length; i++) {
+                if (urlParts[i] === "courses") {
+                    params["courseId"] = urlParts[i + 1];
+                }
+                if (urlParts[i] === "assignments") {
+                    params["assignmentId"] = urlParts[i + 1];
+                }
+            }
+
+            return params;
+        })();
 
         let courseId = params["courseId"];
         let assignmentId = params["assignmentId"];
+        let userType = "STUDENT";
         // FIXME: extract oauth token
         let bearerToken = "Bearer 7~cQ7XoNd23PrQhB5XBAp8v9osuQsPnyQVsDsZcHb7oTjgnoWYh2lU5qg5RMRMN8rr    ";
 
@@ -64,7 +83,7 @@
             formData.append("files", fileInput.files[0]);
             formData.append("courseId", courseId);
             formData.append("assignmentId", assignmentId);
-            formData.append("userType", "STUDENT");
+            formData.append("userType", userType);
 
 
             fetch(endpoint, {
@@ -100,22 +119,3 @@
     el.appendChild(btn_response);
 
 })();
-
-function extractParamsFromUrl(canvasUrl) {
-    console.log(canvasUrl);
-    let urlParts = canvasUrl.split('/');
-    console.log(urlParts);
-
-    let params = {};
-
-    for (var i = 0; i < urlParts.length; i++) {
-        if (urlParts[i] === "courses") {
-            params["courseId"] = urlParts[i + 1];
-        }
-        if (urlParts[i] === "assignments") {
-            params["assignmentId"] = urlParts[i + 1];
-        }
-    }
-
-    return params;
-}
