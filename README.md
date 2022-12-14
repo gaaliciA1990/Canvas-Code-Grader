@@ -2,7 +2,7 @@
 
 [![Maven Build](https://github.com/Canvas-Code-Capstone/Canvas-Code/actions/workflows/build.yml/badge.svg)](https://github.com/Canvas-Code-Capstone/Canvas-Code/actions/workflows/build.yml)
 
-[![Code Coverage](https://github.com/Canvas-Code-Capstone/Canvas-Code/actions/workflows/CodeCoverage.yml/badge.svg)](https://github.com/Canvas-Code-Capstone/Canvas-Code/actions/workflows/CodeCoverage.yml)
+[![Code Coverage](https://github.com/Canvas-Code-Capstone/Canvas-Code/blob/master/.github/badges/jacoco.svg)](https://github.com/Canvas-Code-Capstone/Canvas-Code/actions/workflows/CodeCoverage.yml)
 
 
 # Canvas-Code Graduate Capstone
