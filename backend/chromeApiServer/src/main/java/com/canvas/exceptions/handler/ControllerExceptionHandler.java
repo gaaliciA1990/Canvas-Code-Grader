@@ -27,7 +27,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
      * Exception handler for incorrect request parameters. Calls the method for handling
      * this exception and returns a message built from ErrorResponse
      * @param e exception being handled
-     * @return  JSON message of the error encountered
+     * @return  message object from errorResponse class for the error encountered
      */
     @ExceptionHandler(IncorrectRequestParamsException.class)
     public ResponseEntity<ErrorResponse> handleIncorrectRequestParamsExceptions(
@@ -39,7 +39,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
      * Private method for building the exception message
      * @param exception any type of exception encountered
      * @param status    HTTP status code
-     * @return          a message in JSON form
+     * @return          a message object from errorResponse class
      */
     private ResponseEntity<ErrorResponse> buildErrorResponse(Exception exception, HttpStatus status) {
         ErrorResponse errorResponse = new ErrorResponse(status, exception.getMessage());
