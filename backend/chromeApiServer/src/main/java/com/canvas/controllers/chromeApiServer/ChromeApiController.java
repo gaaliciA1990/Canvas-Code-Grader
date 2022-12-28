@@ -1,5 +1,6 @@
 package com.canvas.controllers.chromeApiServer;
 
+import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.exceptions.UserNotAuthorizedException;
 import com.canvas.service.EvaluationService;
@@ -12,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 /**
  * API Controller for the Chrome Extension handling all the GET and POST requests.
@@ -48,7 +47,7 @@ public class ChromeApiController {
             @PathVariable("courseId") String courseId,
             @PathVariable("studentId") String studentId,
             @RequestParam("userType") UserType type
-    ) throws IOException, UserNotAuthorizedException, IncorrectRequestParamsException {
+    ) throws UserNotAuthorizedException, IncorrectRequestParamsException, CanvasAPIException {
         // Check request params are correct, not null or empty.
         // TODO: What do we consider incorrect? Define further
         if (bearerToken == null || assignmentId == null || courseId == null || studentId == null || type == null) {
@@ -102,7 +101,7 @@ public class ChromeApiController {
             @RequestParam("assignmentId") String assignmentId,
             @RequestParam("courseId") String courseId,
             @RequestParam("userType") UserType type
-    ) throws IOException, UserNotAuthorizedException, IncorrectRequestParamsException {
+    ) throws UserNotAuthorizedException, IncorrectRequestParamsException, CanvasAPIException {
         // Check request params are correct, not null or empty.
         // TODO: What do we consider incorrect? Define further
         if (bearerToken == null || assignmentId == null || courseId == null || files == null || type == null) {
