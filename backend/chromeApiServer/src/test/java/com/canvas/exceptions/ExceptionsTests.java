@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-public class IncorrectRequestParamsExceptionTests {
+public class ExceptionsTests {
 
     /**
      * Simple test for checking the exception handler is calling the correct methods
