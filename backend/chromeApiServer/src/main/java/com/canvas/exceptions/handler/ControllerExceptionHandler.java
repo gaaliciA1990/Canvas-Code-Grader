@@ -1,5 +1,6 @@
 package com.canvas.exceptions.handler;
 
+import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.exceptions.UserNotAuthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,24 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return buildErrorResponse(exception);
     }
 
-    private ResponseEntity<ErrorResponse> buildErrorResponse(UserNotAuthorizedException exception) {
+    /**
+     * Exception handler for incorrect request parameters. Calls the method for handling
+     * this exception and returns a message built from ErrorResponse
+     * @param e exception being handled
+     * @return  JSON message of the error encountered
+     */
+    @ExceptionHandler(IncorrectRequestParamsException.class)
+    public ResponseEntity<ErrorResponse> handleIncorrectRequestParamsExceptions(
+            IncorrectRequestParamsException e) {
+        return buildErrorResponse(e);
+    }
+
+    /**
+     * Private method for building the exception message
+     * @param exception any type of exception encountered
+     * @return          a message in JSON form
+     */
+    private ResponseEntity<ErrorResponse> buildErrorResponse(Exception exception) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, exception.getMessage());
         return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
     }
