@@ -20,7 +20,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<ErrorResponse> handleUserNotAuthorizedException(
             UserNotAuthorizedException exception
     ) {
-        return buildErrorResponse(exception);
+        return buildErrorResponse(exception, HttpStatus.UNAUTHORIZED);
     }
 
     /**
@@ -32,16 +32,17 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IncorrectRequestParamsException.class)
     public ResponseEntity<ErrorResponse> handleIncorrectRequestParamsExceptions(
             IncorrectRequestParamsException e) {
-        return buildErrorResponse(e);
+        return buildErrorResponse(e, HttpStatus.BAD_REQUEST);
     }
 
     /**
      * Private method for building the exception message
      * @param exception any type of exception encountered
+     * @param status    HTTP status code
      * @return          a message in JSON form
      */
-    private ResponseEntity<ErrorResponse> buildErrorResponse(Exception exception) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, exception.getMessage());
+    private ResponseEntity<ErrorResponse> buildErrorResponse(Exception exception, HttpStatus status) {
+        ErrorResponse errorResponse = new ErrorResponse(status, exception.getMessage());
         return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
     }
 }
