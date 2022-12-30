@@ -1,11 +1,14 @@
 package com.canvas.service;
 
+import com.canvas.controllers.chromeApiServer.ChromeApiController;
 import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.helperServices.FileService;
 import com.canvas.service.helperServices.ProcessExecutor;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.models.ExtensionUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,7 @@ import java.util.Map;
 public class EvaluationService {
     private final FileService fileService;
     private final CanvasClientService canvasClientService;
+
     String MAKEFILE = "makefile";
 
     /**
