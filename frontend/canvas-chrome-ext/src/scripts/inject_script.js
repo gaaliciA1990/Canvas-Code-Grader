@@ -79,12 +79,11 @@
         // FIXME: extract oauth token
         let bearerToken = "Bearer 7~cQ7XoNd23PrQhB5XBAp8v9osuQsPnyQVsDsZcHb7oTjgnoWYh2lU5qg5RMRMN8rr    ";
 
-        fileInput.addEventListener("change", function () {
+        fileInput.addEventListener("change", function requestFunction() {
             formData.append("files", fileInput.files[0]);
             formData.append("courseId", courseId);
             formData.append("assignmentId", assignmentId);
             formData.append("userType", userType);
-
 
             fetch(endpoint, {
                 method: "POST",
@@ -104,6 +103,8 @@
                 window.postMessage({ type: "FROM_PAGE", output });
 
             });
+
+            fileInput.removeEventListener("change", requestFunction);
         });
 
     })
