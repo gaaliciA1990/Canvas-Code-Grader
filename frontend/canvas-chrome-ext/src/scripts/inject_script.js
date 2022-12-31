@@ -6,6 +6,7 @@
     fileInput.id = "fileInput";
     fileInput.type = "file";
     fileInput.hidden = false;
+    fileInput.setAttribute("multiple", "");
 
     fileInput.onclick = function () {
         this.value = null;
@@ -80,7 +81,9 @@
         let bearerToken = "Bearer 7~cQ7XoNd23PrQhB5XBAp8v9osuQsPnyQVsDsZcHb7oTjgnoWYh2lU5qg5RMRMN8rr    ";
 
         fileInput.addEventListener("change", function requestFunction() {
-            formData.append("files", fileInput.files[0]);
+            for (var i = 0; i < this.files.length; i++) {
+                formData.append("files", fileInput.files[i]);
+            }
             formData.append("courseId", courseId);
             formData.append("assignmentId", assignmentId);
             formData.append("userType", userType);
