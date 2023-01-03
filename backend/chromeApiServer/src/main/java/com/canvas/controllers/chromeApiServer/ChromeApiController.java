@@ -8,6 +8,8 @@ import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
 import com.canvas.service.models.UserType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class ChromeApiController {
     private final EvaluationService evaluation;
     private final CanvasClientService canvasClientService;
+
+    // Logger object
+    private static Logger logger = LoggerFactory.getLogger(ChromeApiController.class);
+
 
     @Autowired
     public ChromeApiController(EvaluationService studentEval, CanvasClientService canvasClientService) {
@@ -51,21 +57,21 @@ public class ChromeApiController {
         // Check request params are correct, not null or empty.
         // TODO: What do we consider incorrect? Define further
         if (bearerToken == null || assignmentId == null || courseId == null || studentId == null || type == null) {
-            String errMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
-            System.out.println(errMsg); // TODO: use logger for printing to console
-            throw new IncorrectRequestParamsException(errMsg);
+            String warnMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
+            logger.warn(warnMsg);
+            throw new IncorrectRequestParamsException(warnMsg);
         }
 
         if (bearerToken.isEmpty() || assignmentId.isEmpty() || courseId.isEmpty() || studentId.isEmpty()) {
-            String errMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
-            System.out.println(errMsg); // TODO: use logger for printing to console
-            throw new IncorrectRequestParamsException(errMsg);
+            String warnMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
+            logger.warn(warnMsg);
+            throw new IncorrectRequestParamsException(warnMsg);
         }
 
         // check userType isn't Unauthorized or Student
         if (type == UserType.UNAUTHORIZED || type == UserType.STUDENT) {
             String errorMessage = String.format("user type [%s] does not match expected [%s]", type, UserType.GRADER);
-            System.out.println(errorMessage); // TODO use spring boot logger for printing messages to console
+            logger.error(errorMessage);
             throw new UserNotAuthorizedException(errorMessage);
         }
         // get the user id from the Canvas API
@@ -81,7 +87,6 @@ public class ChromeApiController {
     /**
      * Post request to start the evaluation service.
      * Depending on type of user, the correct evaluation path is called.
-     * TODO: this should only return a success for starting the program
      *
      * @param bearerToken  authorization token from Canvas API
      * @param files        file(s) to be evaluated
@@ -105,20 +110,20 @@ public class ChromeApiController {
         // Check request params are correct, not null or empty.
         // TODO: What do we consider incorrect? Define further
         if (bearerToken == null || assignmentId == null || courseId == null || files == null || type == null) {
-            String errMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
-            System.out.println(errMsg); // TODO: use logger for printing to console
-            throw new IncorrectRequestParamsException(errMsg);
+            String warnMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
+            logger.warn(warnMsg);
+            throw new IncorrectRequestParamsException(warnMsg);
         }
 
         if (bearerToken.isEmpty() || files.length == 0 || assignmentId.isEmpty() || courseId.isEmpty()) {
-            String errMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
-            System.out.println(errMsg); // TODO: use logger for printing to console
-            throw new IncorrectRequestParamsException(errMsg);
+            String warnMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
+            logger.warn(warnMsg);
+            throw new IncorrectRequestParamsException(warnMsg);
         }
         // check userType isn't Unauthorized or Grader
         if (type == UserType.UNAUTHORIZED || type == UserType.GRADER) {
             String errorMessage = String.format("user type [%s] does not match expected [%s]", type, UserType.STUDENT);
-            System.out.println(errorMessage); // TODO use spring boot logger for printing messages to console
+            logger.error(errorMessage);
             throw new UserNotAuthorizedException(errorMessage);
         }
 
