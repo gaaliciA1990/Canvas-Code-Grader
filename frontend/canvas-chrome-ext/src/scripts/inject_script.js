@@ -6,6 +6,7 @@
     fileInput.id = "fileInput";
     fileInput.type = "file";
     fileInput.hidden = false;
+    fileInput.setAttribute("multiple", "");
 
     fileInput.onclick = function () {
         this.value = null;
@@ -79,12 +80,13 @@
         // FIXME: extract oauth token
         let bearerToken = "Bearer 7~cQ7XoNd23PrQhB5XBAp8v9osuQsPnyQVsDsZcHb7oTjgnoWYh2lU5qg5RMRMN8rr    ";
 
-        fileInput.addEventListener("change", function () {
-            formData.append("files", fileInput.files[0]);
+        fileInput.addEventListener("change", function requestFunction() {
+            for (var i = 0; i < this.files.length; i++) {
+                formData.append("files", fileInput.files[i]);
+            }
             formData.append("courseId", courseId);
             formData.append("assignmentId", assignmentId);
             formData.append("userType", userType);
-
 
             fetch(endpoint, {
                 method: "POST",
@@ -104,6 +106,8 @@
                 window.postMessage({ type: "FROM_PAGE", output });
 
             });
+
+            fileInput.removeEventListener("change", requestFunction);
         });
 
     })
