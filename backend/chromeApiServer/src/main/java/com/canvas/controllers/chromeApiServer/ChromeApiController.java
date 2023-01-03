@@ -1,5 +1,7 @@
 package com.canvas.controllers.chromeApiServer;
 
+import com.canvas.exceptions.CanvasAPIException;
+import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.exceptions.UserNotAuthorizedException;
 import com.canvas.service.EvaluationService;
 import com.canvas.service.models.CommandOutput;
@@ -11,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 /**
  * API Controller for the Chrome Extension handling all the GET and POST requests.
@@ -47,7 +47,21 @@ public class ChromeApiController {
             @PathVariable("courseId") String courseId,
             @PathVariable("studentId") String studentId,
             @RequestParam("userType") UserType type
-    ) throws IOException, UserNotAuthorizedException {
+    ) throws UserNotAuthorizedException, IncorrectRequestParamsException, CanvasAPIException {
+        // Check request params are correct, not null or empty.
+        // TODO: What do we consider incorrect? Define further
+        if (bearerToken == null || assignmentId == null || courseId == null || studentId == null || type == null) {
+            String errMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
+            System.out.println(errMsg); // TODO: use logger for printing to console
+            throw new IncorrectRequestParamsException(errMsg);
+        }
+
+        if (bearerToken.isEmpty() || assignmentId.isEmpty() || courseId.isEmpty() || studentId.isEmpty()) {
+            String errMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
+            System.out.println(errMsg); // TODO: use logger for printing to console
+            throw new IncorrectRequestParamsException(errMsg);
+        }
+
         // check userType isn't Unauthorized or Student
         if (type == UserType.UNAUTHORIZED || type == UserType.STUDENT) {
             String errorMessage = String.format("user type [%s] does not match expected [%s]", type, UserType.GRADER);
@@ -87,7 +101,20 @@ public class ChromeApiController {
             @RequestParam("assignmentId") String assignmentId,
             @RequestParam("courseId") String courseId,
             @RequestParam("userType") UserType type
-    ) throws IOException, UserNotAuthorizedException {
+    ) throws UserNotAuthorizedException, IncorrectRequestParamsException, CanvasAPIException {
+        // Check request params are correct, not null or empty.
+        // TODO: What do we consider incorrect? Define further
+        if (bearerToken == null || assignmentId == null || courseId == null || files == null || type == null) {
+            String errMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
+            System.out.println(errMsg); // TODO: use logger for printing to console
+            throw new IncorrectRequestParamsException(errMsg);
+        }
+
+        if (bearerToken.isEmpty() || files.length == 0 || assignmentId.isEmpty() || courseId.isEmpty()) {
+            String errMsg = "Incorrect request parameters received. Check the parameters meet the requirements";
+            System.out.println(errMsg); // TODO: use logger for printing to console
+            throw new IncorrectRequestParamsException(errMsg);
+        }
         // check userType isn't Unauthorized or Grader
         if (type == UserType.UNAUTHORIZED || type == UserType.GRADER) {
             String errorMessage = String.format("user type [%s] does not match expected [%s]", type, UserType.STUDENT);
@@ -104,7 +131,7 @@ public class ChromeApiController {
         return evaluation.compileStudentCodeFile(user, files);
     }
 
-/*    *//**
+    /*    *//**
      * Test Route to get student submission given access token and studentId
      * Submission is expected to be saved under my files/CanvasCode/sample.cpp
      *

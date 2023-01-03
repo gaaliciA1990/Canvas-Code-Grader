@@ -1,11 +1,13 @@
 package com.canvas.service;
 
+import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.helperServices.FileService;
 import com.canvas.service.helperServices.ProcessExecutor;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.models.ExtensionUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -42,18 +44,14 @@ public class EvaluationService {
      *
      * @param user  User object holding all components associated with a user
      * @param files The files to compile
-     * @return      return a CommandOutput response
+     * @return return a CommandOutput response
      */
-    public ResponseEntity<CommandOutput> compileStudentCodeFile(ExtensionUser user, MultipartFile[] files) {
+    public ResponseEntity<CommandOutput> compileStudentCodeFile(ExtensionUser user, MultipartFile[] files) throws CanvasAPIException {
 
 
         // Retrieve file json from Canvas
         byte[] makefileBytes = new byte[0];
-        try {
-            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
 
         // Write makefile to file
         fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
@@ -75,60 +73,53 @@ public class EvaluationService {
 
     /**
      * Method executes student submitted code for instructors/graders to grade.
-     * @param user  User object for the extension
-     * @return      return a CommandOutput response
+     *
+     * @param user User object for the extension
+     * @return return a CommandOutput response
      */
-   public ResponseEntity<CommandOutput> executeCodeFile(ExtensionUser user) {
-       // Write makefile to directory
-       writeMakefile(user);
+    public ResponseEntity<CommandOutput> executeCodeFile(ExtensionUser user) throws CanvasAPIException {
+        // Write makefile to directory
+        writeMakefile(user);
 
-       // Fetch submission files from Canvas
-       Map<String, byte[]> submissionMap = new HashMap<>();
-       try {
-           submissionMap = canvasClientService.fetchSubmissionFilesFromStudent(user);
-       } catch (IOException e) {
-           e.printStackTrace();
-       }
+        // Fetch submission files from Canvas
+        Map<String, byte[]> submissionMap = new HashMap<>();
+        submissionMap = canvasClientService.fetchSubmissionFilesFromStudent(user);
 
-       String userId = user.getUserId();
+        String userId = user.getUserId();
 
-       // Write submission files to directory
-       for (Map.Entry<String, byte[]> entry : submissionMap.entrySet()) {
-           // Key: filename, Value: file bytes to write
-           fileService.writeFileFromBytes(entry.getKey(), entry.getValue(), fileService.getFileDirectory(userId));
-       }
+        // Write submission files to directory
+        for (Map.Entry<String, byte[]> entry : submissionMap.entrySet()) {
+            // Key: filename, Value: file bytes to write
+            fileService.writeFileFromBytes(entry.getKey(), entry.getValue(), fileService.getFileDirectory(userId));
+        }
 
-       // If code compiles successfully
-       if (compileCodeFiles(userId).isSuccess()) {
-           // Execute the code
-           CommandOutput codeExecutionOutput = executeCodeFiles(userId);
-           System.out.println(codeExecutionOutput.getOutput());
+        // If code compiles successfully
+        if (compileCodeFiles(userId).isSuccess()) {
+            // Execute the code
+            CommandOutput codeExecutionOutput = executeCodeFiles(userId);
+            System.out.println(codeExecutionOutput.getOutput());
 
-           // Cleanup
-           fileService.deleteDirectory(userId);
+            // Cleanup
+            fileService.deleteDirectory(userId);
 
-           return new ResponseEntity<>(codeExecutionOutput, HttpStatus.OK);
-       } else {
-           // Cleanup
-           fileService.deleteDirectory(user.getStudentId());
-           return ResponseEntity.badRequest().build();
-       }
-   }
+            return new ResponseEntity<>(codeExecutionOutput, HttpStatus.OK);
+        } else {
+            // Cleanup
+            fileService.deleteDirectory(user.getStudentId());
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
-    private void writeMakefile(ExtensionUser user) {
+    private void writeMakefile(ExtensionUser user) throws CanvasAPIException {
         // Retrieve file json from Canvas
         byte[] makefileBytes = new byte[0];
-        try {
-            makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
 
         fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
     }
 
     private CommandOutput compileCodeFiles(String userId) {
-        CommandOutput compileOutput = executeCommand(new String[] {"make"}, userId);
+        CommandOutput compileOutput = executeCommand(new String[]{"make"}, userId);
         if (compileOutput.isSuccess()) {
             compileOutput.setOutput("Your program compiled successfully!");
         }
@@ -137,7 +128,7 @@ public class EvaluationService {
 
     private CommandOutput executeCodeFiles(String userId) {
         String exeFile = fileService.getFileNameWithExtension(".exe", userId);
-        return executeCommand(new String[] {exeFile}, userId);
+        return executeCommand(new String[]{exeFile}, userId);
     }
 
     private CommandOutput executeCommand(String[] commands, String userId) {
