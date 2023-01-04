@@ -1,25 +1,30 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Extension Prototype",
   "description": "Prototype for Canvas Extension",
   "version": "0.1.0",
 
   "icons": {
   },
-  "web_accessible_resources": ["scripts/inject_script.js"],
-  "browser_action": {
+
+  "web_accessible_resources": [{
+    "resources": ["scripts/inject_script.js", "components/compilation_notification.html", "scripts/notification.js"],
+    "matches": ["<all_urls>"]
+  }],
+
+  "action": {
     "default_popup": "components/popup.html",
     "default_icon": "images/su_emblem.png"
   },
   "permissions": [
     "activeTab",
-    "<all_urls>",
-    "tabs"
+    "tabs",
+    "scripting"
   ],
 
-  "background": [{
-    "scripts": ["frontend/canvas-chrome-ext/src/scripts/background_script.js"]
-  }],
+  "background": {
+    "service_worker": "background.js"
+  },
 
   "content_scripts": [{
     "matches": ["https://seattleu.instructure.com/", "*://www.google.com/", "https://canvas.instructure.com/*"],

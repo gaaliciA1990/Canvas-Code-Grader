@@ -1,0 +1,17 @@
+body {
+    background: rgb(27,27,27);
+    margin: 0;
+    display: grid;
+    place-content: center;
+    height:100vh;
+    font-family: 'Poppins', sans-serif;
+    color: white;
+}
+
+.results-container {
+    position: relative;
+    width: 60%;
+    margin: 0 auto;
+    background: #232323;
+    padding: 2em;
+}
