@@ -35,7 +35,7 @@ public class CanvasClientService {
     private final OkHttpClient okHttpClient;
 
     // Logger object
-    private static final Logger logger = LoggerFactory.getLogger(ChromeApiController.class);
+    private static final Logger logger = LoggerFactory.getLogger(CanvasClientService.class);
 
 
     /**
