@@ -17,11 +17,18 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
+    /**
+     * Exception handler for unauthorized users. Calls method for handling this exception
+     * and return a message built from ErrorResponse
+     *
+     * @param e exception being handled
+     * @return message object from errorResponse class for the error encountered
+     */
     @ExceptionHandler(UserNotAuthorizedException.class)
     protected ResponseEntity<ErrorResponse> handleUserNotAuthorizedException(
-            UserNotAuthorizedException exception
+            UserNotAuthorizedException e
     ) {
-        return buildErrorResponse(exception, HttpStatus.UNAUTHORIZED);
+        return buildErrorResponse(e, HttpStatus.UNAUTHORIZED);
     }
 
     /**
