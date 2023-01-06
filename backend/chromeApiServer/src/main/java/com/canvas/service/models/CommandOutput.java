@@ -15,10 +15,10 @@ public class CommandOutput {
     }
 
     /**
-     * Constructor TODO: add details about the params
+     * Constructor
      *
-     * @param success
-     * @param output
+     * @param success   boolean for sucess of action
+     * @param output    string of expected output message
      */
     public CommandOutput(boolean success, String output) {
         this.success = success;
