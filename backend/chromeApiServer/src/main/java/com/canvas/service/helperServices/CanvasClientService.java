@@ -24,6 +24,7 @@ import java.util.Objects;
  * <p>
  * All tests should be written in test/java/com.canvas/service
  * <p>
+ * TODO: We should be referencing a user object here instead is possible
  */
 @Service
 public class CanvasClientService {
