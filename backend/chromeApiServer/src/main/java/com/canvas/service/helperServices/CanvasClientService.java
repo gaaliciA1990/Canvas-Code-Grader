@@ -283,7 +283,7 @@ public class CanvasClientService {
      * @return JsonNode
      * @throws IOException error message thrown
      */
-    private JsonNode parseResponseToJsonNode(Response response) throws IOException {
+    protected JsonNode parseResponseToJsonNode(Response response) throws IOException {
         String r = response.body().string();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readTree(r);
@@ -298,8 +298,8 @@ public class CanvasClientService {
      * @return a string of response and folder name
      * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
-    protected String getMyFilesFolderId(String userId, String folderName, String accessToken) throws CanvasAPIException {
-        JsonNode response = fetchFoldersUnderStudent(userId, accessToken);
+    protected String getMyFilesFolderId(String userId, String folderName, String bearerToken) throws CanvasAPIException {
+        JsonNode response = fetchFoldersUnderStudent(userId, bearerToken);
         return getFolderIdFromFoldersResponse(response, folderName);
     }
 
@@ -312,8 +312,8 @@ public class CanvasClientService {
      * @return String of JsonNode respons and folder name
      * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
-    protected String getCanvasCodeFolderId(String folderId, String folderName, String accessToken) throws CanvasAPIException {
-        JsonNode response = fetchFolders(folderId, accessToken);
+    protected String getCanvasCodeFolderId(String folderId, String folderName, String bearerToken) throws CanvasAPIException {
+        JsonNode response = fetchFolders(folderId, bearerToken);
         return getFolderIdFromFoldersResponse(response, folderName);
     }
 
