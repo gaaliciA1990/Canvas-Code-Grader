@@ -1,16 +1,6 @@
 console.log("Chrome ext ready");
 
 const site = window.location.hostname;
-alert("Canvas-Code JS has been injected into: " + site);
-
-if (site.includes("https://seattleu.instructure.com")) {
-    alert("inside SU");
-}
-
-if (site.includes("https://canvas.instructure.com/")) {
-    alert("inside canvas");
-}
-
 
 function injectScript(file_path, tag){
 
@@ -24,8 +14,12 @@ function injectScript(file_path, tag){
 }
 
 let script_url = chrome.runtime.getURL("scripts/inject_script.js");
-injectScript(script_url, 'body');
 
+const regex = /^https:\/\/canvas\.instructure\.com\/courses\/[0-9][0-9][0-9][0-9][0-9][0-9][0-9]\/assignments/;
+
+if(window.location.toString().match(regex)) {
+    injectScript(script_url, 'body');
+}
 
 try {
     window.addEventListener("message", function(msg) {
