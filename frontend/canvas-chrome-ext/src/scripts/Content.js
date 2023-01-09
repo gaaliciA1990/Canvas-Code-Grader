@@ -1,25 +1,30 @@
 console.log("Chrome ext ready");
 
-const site = window.location.hostname;
 
-function injectScript(file_path, tag){
 
+function injectScript(file_path){
     let node = document.body;
     let script = document.createElement("script");
     script.setAttribute('type', 'text/javascript');
     script.setAttribute('src', file_path);
     console.log(script);
-
     node.appendChild(script);
 }
 
 let script_url = chrome.runtime.getURL("scripts/inject_script.js");
-
 const regex = /^https:\/\/canvas\.instructure\.com\/courses\/[0-9][0-9][0-9][0-9][0-9][0-9][0-9]\/assignments/;
 
-if(window.location.toString().match(regex)) {
-    injectScript(script_url, 'body');
-}
+
+//event listener that makes sure all DOM elements are loaded prior to running injection script
+document.addEventListener('readystatechange', event => {
+    if (event.target.readyState === "complete") {
+        if(window.location.toString().match(regex)) {
+            //onload inject the script
+            injectScript(script_url, 'ag-list');
+        }
+    }
+})
+
 
 try {
     window.addEventListener("message", function(msg) {

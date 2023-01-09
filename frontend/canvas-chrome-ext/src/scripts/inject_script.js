@@ -1,5 +1,5 @@
 
-(function () {
+(function (tag) {
 
 
     var fileInput = document.createElement("input");
@@ -113,10 +113,8 @@
 
     })
 
-    //find where to add upload button
-    //eesy eesy-tab2-container
-    //const el = document.querySelector(".FPdoLc.lJ9FBc center");
-    const el = document.body;
+    //making assumption all assignment pages have an "ag-list"
+    const el = document.getElementById("ag-list");
     console.log(el);
     el.appendChild(fileInput);
     el.appendChild(btn_code_submission);
