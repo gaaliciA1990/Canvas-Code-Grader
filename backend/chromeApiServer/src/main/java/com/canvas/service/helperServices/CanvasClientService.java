@@ -1,5 +1,6 @@
 package com.canvas.service.helperServices;
 
+import com.canvas.controllers.chromeApiServer.ChromeApiController;
 import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.service.models.ExtensionUser;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,6 +9,8 @@ import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -32,6 +35,13 @@ public class CanvasClientService {
 
     private final OkHttpClient okHttpClient;
 
+    // Logger object
+    private static final Logger logger = LoggerFactory.getLogger(CanvasClientService.class);
+
+
+    /**
+     * Constructor with not arguments
+     */
     public CanvasClientService() {
         this.okHttpClient = new OkHttpClient();
     }
@@ -45,7 +55,7 @@ public class CanvasClientService {
      *
      * @param bearerToken authorization token from canvas
      * @return String of user id
-     * @throws CanvasAPIException
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
     public String fetchUserId(String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
@@ -55,8 +65,7 @@ public class CanvasClientService {
                 .build();
         try {
             JsonNode resp = parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
-            String userId = resp.get("id").asText();
-            return userId;
+            return resp.get("id").asText();
         } catch (Exception e) {
             throw throwCanvasException(e);
         }
@@ -68,7 +77,7 @@ public class CanvasClientService {
      * @param user     Canvas user ID
      * @param fileName file name to fetch
      * @return returns a byte array of the file
-     * @throws CanvasAPIException
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
     public byte[] fetchFileUnderCourseAssignmentFolder(ExtensionUser user, String fileName) throws CanvasAPIException {
         try {
@@ -96,7 +105,7 @@ public class CanvasClientService {
      * @param fileId      file to fetch from Canvas
      * @param bearerToken authorization token
      * @return returns a byte array of the file
-     * @throws CanvasAPIException
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
     public byte[] fetchFile(String fileId, String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
@@ -123,7 +132,7 @@ public class CanvasClientService {
      * @param courseId    Canvas course id
      * @param bearerToken authorization token
      * @return JsonNode
-     * @throws CanvasAPIException
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
     public JsonNode fetchFoldersUnderCourse(String courseId, String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
@@ -139,12 +148,12 @@ public class CanvasClientService {
     }
 
     /**
-     * Gets all the folder associated with a student
+     * Gets all the folders associated with a student
      *
      * @param userId      Canvas user id
      * @param bearerToken Authorization Token
      * @return JsonNode
-     * @throws CanvasAPIException
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
     public JsonNode fetchFoldersUnderStudent(String userId, String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
@@ -165,7 +174,7 @@ public class CanvasClientService {
      * @param folderId    folder id to return
      * @param bearerToken Authorization Token
      * @return JsonNode
-     * @throws CanvasAPIException
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
     public JsonNode fetchFolders(String folderId, String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
@@ -186,7 +195,7 @@ public class CanvasClientService {
      * @param folderId    folder to extract files from
      * @param bearerToken Authorization token
      * @return JsonNode
-     * @throws CanvasAPIException
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
     public JsonNode fetchFilesUnderFolder(String folderId, String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
@@ -202,11 +211,11 @@ public class CanvasClientService {
     }
 
     /**
-     * TODO: Add comments
+     * Gets submission file for a Student
      *
-     * @param user
-     * @return
-     * @throws CanvasAPIException
+     * @param user Canvas user object
+     * @return map of files and their bytes
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
     public Map<String, byte[]> fetchSubmissionFilesFromStudent(ExtensionUser user) throws CanvasAPIException {
         Map<String, byte[]> submissionFilesBytes = new HashMap<>();
@@ -233,11 +242,12 @@ public class CanvasClientService {
     }
 
     /**
-     * Gets an assignment submission from a file and saves it TODO: elaborate on what this is doing?
+     * Gets an assignment submission from a file and saves it.
+     * BOILER PLATE CODE FOR INTERACTING WITH CANVAS.
      *
      * @param fileName    file name to search the submission under
      * @param bearerToken Authorization token
-     * @throws CanvasAPIException
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
     public void fetchSubmissionFromMyFilesAndSave(String fileName, String bearerToken) throws CanvasAPIException {
         try {
@@ -256,22 +266,22 @@ public class CanvasClientService {
     }
 
     /**
-     * Helper method for throwing exceptions associated with Canvas connection issues
+     * Helper method for throwing exception associated with Canvas connection issues
      *
      * @return CanvasAPI exception
      */
-    private CanvasAPIException throwCanvasException(Exception e){
+    private CanvasAPIException throwCanvasException(Exception e) {
         String errMsg = "Failure to connect with Canvas API";
-        System.out.println(errMsg);  // TODO: use logger for printing to console
+        logger.error(errMsg);
         return new CanvasAPIException(errMsg, e);
     }
 
     /**
-     * Parses a response to a JSON node Todo: explain more about what this is doing
+     * Parses a response to a JSON node
      *
-     * @param response
-     * @return
-     * @throws IOException
+     * @param response okhttp3 response type
+     * @return JsonNode
+     * @throws IOException error message thrown
      */
     protected JsonNode parseResponseToJsonNode(Response response) throws IOException {
         String r = response.body().string();
@@ -280,41 +290,41 @@ public class CanvasClientService {
     }
 
     /**
-     * Todo: Add comments explaining this helpder method
+     * Helper method for retrieving folders for a given Canvas user
      *
-     * @param userId
-     * @param folderName
-     * @param accessToken
-     * @return
-     * @throws CanvasAPIException
+     * @param userId      Canvas userId
+     * @param folderName  name of folder returned
+     * @param bearerToken authorization token
+     * @return a string of response and folder name
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
-    protected String getMyFilesFolderId(String userId, String folderName, String accessToken) throws CanvasAPIException {
-        JsonNode response = fetchFoldersUnderStudent(userId, accessToken);
+    protected String getMyFilesFolderId(String userId, String folderName, String bearerToken) throws CanvasAPIException {
+        JsonNode response = fetchFoldersUnderStudent(userId, bearerToken);
         return getFolderIdFromFoldersResponse(response, folderName);
     }
 
     /**
-     * Help function to extract the Canvas folder id TODO: explain more about where this is coming from
+     * Helper function to extract the Canvas folder id
      *
-     * @param folderId
-     * @param folderName
-     * @param accessToken
-     * @return
-     * @throws IOException
+     * @param folderId folder id to get
+     * @param folderName name of folder to search
+     * @param bearerToken authorization token
+     * @return String of JsonNode respons and folder name
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
-    protected String getCanvasCodeFolderId(String folderId, String folderName, String accessToken) throws CanvasAPIException {
-        JsonNode response = fetchFolders(folderId, accessToken);
+    protected String getCanvasCodeFolderId(String folderId, String folderName, String bearerToken) throws CanvasAPIException {
+        JsonNode response = fetchFolders(folderId, bearerToken);
         return getFolderIdFromFoldersResponse(response, folderName);
     }
 
     /**
-     * Helper method to get the file id TODO: explain more about what this is doing
+     * Helper method to get the file id
      *
-     * @param folderId
-     * @param fileName
-     * @param bearerToken
-     * @return
-     * @throws CanvasAPIException
+     * @param folderId  folder id where file is contain
+     * @param fileName name of file to look for
+     * @param bearerToken authorization token
+     * @return String of JsonNode response and filename
+     * @throws CanvasAPIException error message thrown if connection to canvas fails
      */
     protected String getFileId(String folderId, String fileName, String bearerToken) throws CanvasAPIException {
         JsonNode response = fetchFilesUnderFolder(folderId, bearerToken);
@@ -322,12 +332,11 @@ public class CanvasClientService {
     }
 
     /**
-     * Helper method for something? TODO: explain more about what this is doing
+     * Helper method for getting a folder Id based on JsonNode response
      *
-     * @param response
-     * @param folderName
-     * @return
-     * @throws IOException
+     * @param response   JsonNode response type
+     * @param folderName name of folder to return
+     * @return String of folder Id
      */
     protected String getFolderIdFromFoldersResponse(JsonNode response, String folderName) {
         for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
@@ -341,12 +350,11 @@ public class CanvasClientService {
     }
 
     /**
-     * Help method for TODO: explain more about what this is doing
+     * Help method for getting file name based on JsonNode response
      *
-     * @param response
-     * @param fileName
-     * @return
-     * @throws IOException
+     * @param response JsonNode respone type
+     * @param fileName name of file to retrieve
+     * @return string of file id
      */
     protected String getFileIdFromFilesResponse(JsonNode response, String fileName) {
         for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
@@ -360,12 +368,11 @@ public class CanvasClientService {
     }
 
     /**
-     * Helper method for extracting something from the url TODO: explain more about what this is doing
+     * Helper method for extracting foldername from the url
      *
-     * @param response
-     * @param folderName
-     * @return
-     * @throws IOException
+     * @param response   JsonNode response type
+     * @param folderName name of folder to return
+     * @return String of file url for the folder search
      */
     protected String getFilesRequestUrlFromAssignmentFolder(JsonNode response, String folderName) {
         for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
+
 import java.util.Date;
 
 
@@ -22,6 +23,13 @@ public class ErrorResponse {
 
     private String message;
 
+    /**
+     * Error Response containing the timestamp, http status,
+     * http code, and custom message
+     *
+     * @param httpStatus HTTP Status type
+     * @param message    custom message string to display
+     */
     public ErrorResponse(HttpStatus httpStatus, String message) {
         this.timestamp = new Date();
         this.status = httpStatus;

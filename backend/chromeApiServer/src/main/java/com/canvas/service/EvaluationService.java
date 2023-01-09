@@ -114,6 +114,12 @@ public class EvaluationService {
         }
     }
 
+    /**
+     * Helper method for writing the makefile
+     *
+     * @param user User object the make file is associated with
+     * @throws CanvasAPIException
+     */
     private void writeMakefile(ExtensionUser user) throws CanvasAPIException {
         // Retrieve file json from Canvas
         byte[] makefileBytes = new byte[0];
@@ -122,6 +128,12 @@ public class EvaluationService {
         fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
     }
 
+    /**
+     * Helper method for compiling code files based on userId
+     *
+     * @param userId canvas User ID for naming executable
+     * @return message associated with action
+     */
     private CommandOutput compileCodeFiles(String userId) {
         CommandOutput compileOutput = executeCommand(new String[]{"make"}, userId);
         if (compileOutput.isSuccess()) {
@@ -130,11 +142,24 @@ public class EvaluationService {
         return compileOutput;
     }
 
+    /**
+     * Helper method for executing the code files based on userId
+     *
+     * @param userId canvas User ID for naming executable
+     * @return message associated with action
+     */
     private CommandOutput executeCodeFiles(String userId) {
         String exeFile = fileService.getFileNameWithExtension(".exe", userId);
         return executeCommand(new String[]{exeFile}, userId);
     }
 
+    /**
+     * Helper method for executing process commands
+     *
+     * @param commands Array of commands to run for execution
+     * @param userId   message associated with action
+     * @return message associated with action
+     */
     private CommandOutput executeCommand(String[] commands, String userId) {
         ProcessExecutor processExecutor = new ProcessExecutor(commands, fileService.getFileDirectory(userId));
         boolean compileSuccess = processExecutor.executeProcess();
