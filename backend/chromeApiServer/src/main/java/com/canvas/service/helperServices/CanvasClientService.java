@@ -4,6 +4,7 @@ import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.service.models.ExtensionUser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -33,6 +34,10 @@ public class CanvasClientService {
 
     public CanvasClientService() {
         this.okHttpClient = new OkHttpClient();
+    }
+
+    protected CanvasClientService(OkHttpClient okHttpClient) {
+        this.okHttpClient = okHttpClient;
     }
 
     /**
@@ -268,7 +273,7 @@ public class CanvasClientService {
      * @return
      * @throws IOException
      */
-    private JsonNode parseResponseToJsonNode(Response response) throws IOException {
+    protected JsonNode parseResponseToJsonNode(Response response) throws IOException {
         String r = response.body().string();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readTree(r);
@@ -283,7 +288,7 @@ public class CanvasClientService {
      * @return
      * @throws CanvasAPIException
      */
-    private String getMyFilesFolderId(String userId, String folderName, String accessToken) throws CanvasAPIException {
+    protected String getMyFilesFolderId(String userId, String folderName, String accessToken) throws CanvasAPIException {
         JsonNode response = fetchFoldersUnderStudent(userId, accessToken);
         return getFolderIdFromFoldersResponse(response, folderName);
     }
@@ -297,7 +302,7 @@ public class CanvasClientService {
      * @return
      * @throws IOException
      */
-    private String getCanvasCodeFolderId(String folderId, String folderName, String accessToken) throws CanvasAPIException {
+    protected String getCanvasCodeFolderId(String folderId, String folderName, String accessToken) throws CanvasAPIException {
         JsonNode response = fetchFolders(folderId, accessToken);
         return getFolderIdFromFoldersResponse(response, folderName);
     }
@@ -311,7 +316,7 @@ public class CanvasClientService {
      * @return
      * @throws CanvasAPIException
      */
-    private String getFileId(String folderId, String fileName, String bearerToken) throws CanvasAPIException {
+    protected String getFileId(String folderId, String fileName, String bearerToken) throws CanvasAPIException {
         JsonNode response = fetchFilesUnderFolder(folderId, bearerToken);
         return getFileIdFromFilesResponse(response, fileName);
     }
@@ -324,10 +329,11 @@ public class CanvasClientService {
      * @return
      * @throws IOException
      */
-    private String getFolderIdFromFoldersResponse(JsonNode response, String folderName) {
+    protected String getFolderIdFromFoldersResponse(JsonNode response, String folderName) {
         for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
             JsonNode folder = it.next();
-            if (folder.get("name").asText().equals(folderName)) {
+            JsonNode name = folder.get("name");
+            if (name != null && folder.get("name").asText().equals(folderName)) {
                 return folder.get("id").toString();
             }
         }
@@ -342,10 +348,11 @@ public class CanvasClientService {
      * @return
      * @throws IOException
      */
-    private String getFileIdFromFilesResponse(JsonNode response, String fileName) {
+    protected String getFileIdFromFilesResponse(JsonNode response, String fileName) {
         for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
             JsonNode folder = it.next();
-            if (folder.get("filename").asText().equals(fileName)) {
+            JsonNode name = folder.get("filename");
+            if (name != null && folder.get("filename").asText().equals(fileName)) {
                 return folder.get("id").toString();
             }
         }
@@ -360,10 +367,11 @@ public class CanvasClientService {
      * @return
      * @throws IOException
      */
-    private String getFilesRequestUrlFromAssignmentFolder(JsonNode response, String folderName) {
+    protected String getFilesRequestUrlFromAssignmentFolder(JsonNode response, String folderName) {
         for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
             JsonNode folder = it.next();
-            if (folder.get("name").asText().equals(folderName)) {
+            JsonNode name = folder.get("name");
+            if (name != null && folder.get("name").asText().equals(folderName)) {
                 return folder.get("files_url").asText();
             }
         }
