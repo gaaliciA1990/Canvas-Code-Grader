@@ -1,12 +1,12 @@
 package com.canvas.service.helperServices;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
@@ -95,6 +95,27 @@ public class FileService {
         File file = Objects.requireNonNull(dir.listFiles((d, name) -> name.endsWith(ext)))[0];
         return file.getPath();
     }
+
+    /**
+     * Parses each line from the file and stores each line in an array.
+     *
+     * @param fileName name of file
+     * @param fileDirectory directory where file is located
+     * @return array of each line from the file
+     */
+    public String[] parseLinesFromFile(String fileName, String fileDirectory) {
+        List<String> fileLines = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(concatFileDirAndName(fileDirectory, fileName)))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                fileLines.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return fileLines.toArray(new String[0]);
+    }
+
 
     /**
      * Deletes the directory based on name
