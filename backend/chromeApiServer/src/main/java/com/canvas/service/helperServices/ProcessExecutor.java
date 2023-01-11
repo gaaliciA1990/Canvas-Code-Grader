@@ -17,20 +17,20 @@ public class ProcessExecutor {
     private final String directory;
 
     /**
-     * Constructor
+     * Constructor for list of commands
      *
      * @param commands  list of commands to execute
-     * @param directory TODO: what is this?
+     * @param directory directory name to generate
      */
     public ProcessExecutor(List<String> commands, String directory) {
         this(commands.toArray(new String[0]), directory);
     }
 
     /**
-     * Constructor TODO: differentiate between this and the one above
+     * Constructor for array of commands
      *
-     * @param executeCommands
-     * @param directory
+     * @param executeCommands array of commands to execute
+     * @param directory       directory name to generate
      */
     public ProcessExecutor(String[] executeCommands, String directory) {
         this.commands = Arrays.copyOf(executeCommands, executeCommands.length);
@@ -40,8 +40,9 @@ public class ProcessExecutor {
     }
 
     /**
-     * TODO: What process is being executed?
-     * @return
+     * Executes the process using the commands passed in the constructor
+     *
+     * @return whether the process was successful or not
      */
     public boolean executeProcess() {
         ProcessBuilder processBuilder = new ProcessBuilder(this.commands);
@@ -67,9 +68,9 @@ public class ProcessExecutor {
     }
 
     /**
-     * Getter for the output of the program TODO: verify this is correct
+     * Getter for the output of the program
      *
-     * @return  string of the process output
+     * @return string of the process output
      */
     public String getProcessOutput() {
         return this.output.toString();

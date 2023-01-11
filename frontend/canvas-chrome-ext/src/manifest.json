@@ -27,7 +27,7 @@
   },
 
   "content_scripts": [{
-    "matches": ["https://seattleu.instructure.com/", "*://www.google.com/", "https://canvas.instructure.com/*"],
+    "matches": ["https://seattleu.instructure.com/courses/*/assignments/*", "*://www.google.com/", "https://canvas.instructure.com/courses/*/assignments/*", "http://10.242.15.70:3000/courses/*/assignments/*"],
     "js": ["scripts/Content.js"]
   }]
 }

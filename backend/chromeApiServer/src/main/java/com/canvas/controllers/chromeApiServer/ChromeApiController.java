@@ -26,7 +26,7 @@ public class ChromeApiController {
     private final CanvasClientService canvasClientService;
 
     // Logger object
-    private static Logger logger = LoggerFactory.getLogger(ChromeApiController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChromeApiController.class);
 
 
     @Autowired
@@ -37,11 +37,13 @@ public class ChromeApiController {
 
 
     /**
-     * @param bearerToken
-     * @param assignmentId
-     * @param courseId
-     * @param studentId
-     * @return
+     * Get request for initiating instructor grading based on course, assignment and submissions
+     *
+     * @param bearerToken authorization token
+     * @param assignmentId canvas assignment to be graded
+     * @param courseId course assoicated with the assignment
+     * @param studentId student to be graded
+     * @return Response CommandOutput
      */
     @GetMapping(
             value = "/execute/courses/{courseId}/assignments/{assignmentId}/submissions/{studentId}",
@@ -135,29 +137,4 @@ public class ChromeApiController {
 
         return evaluation.compileStudentCodeFile(user, files);
     }
-
-    /*    *//**
-     * Test Route to get student submission given access token and studentId
-     * Submission is expected to be saved under my files/CanvasCode/sample.cpp
-     *
-     * @param studentId
-     * @param token
-     * @return
-     *//*
-    @GetMapping(
-            value = "/fetchStudentSubmission",
-            produces = {"application/json"}
-    )
-    public ResponseEntity<String> fetchFileFromCanvasAndSave(@RequestParam("studentId") String studentId,
-                                                             @RequestParam("accessToken") String token,
-                                                             @RequestParam("fileName") String fileName) {
-        CanvasClientService canvasClientService = new CanvasClientService();
-        try {
-            canvasClientService.fetchSubmissionFromMyFilesAndSave(fileName, token);
-        } catch (Exception e) {
-            return new ResponseEntity<>("ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<>("SAVED FILE", HttpStatus.OK);
-    }*/
-
 }
