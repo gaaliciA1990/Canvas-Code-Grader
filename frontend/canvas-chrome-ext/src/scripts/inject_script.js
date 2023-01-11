@@ -50,8 +50,8 @@
         fileInput.click();
 
         //need to wait for file to be input
-        http://csrh51.cslab.seattleu.edu:8080
-        "http://127.0.0.1:8080/evaluate"
+        //http://csrh51.cslab.seattleu.edu:8080
+        //"http://127.0.0.1:8080/evaluate"
         const endpoint = "http://127.0.0.1:8080/evaluate"; //"https://csrh51.cslab.seattleu.edu:8080/evaluate";
         const formData = new FormData();
 
