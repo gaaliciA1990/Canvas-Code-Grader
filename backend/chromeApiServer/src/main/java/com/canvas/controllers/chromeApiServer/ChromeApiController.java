@@ -4,7 +4,6 @@ import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.exceptions.UserNotAuthorizedException;
 import com.canvas.service.EvaluationService;
-import com.canvas.service.helperServices.SubmissionService;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
@@ -13,7 +12,6 @@ import com.canvas.service.models.submission.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,12 +52,7 @@ public class ChromeApiController {
 
         String userId = canvasClientService.fetchUserId(bearerToken);
         ExtensionUser graderUser = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, userType);
-
-        SubmissionService submissionService = new SubmissionService(canvasClientService);
-
-        Submission submission = submissionService.generateStudentSubmissionAndDirectory(graderUser);
-
-        return new ResponseEntity<>(submission, HttpStatus.OK);
+        return evaluation.generateSubmissionDirectory(graderUser);
     }
 
     /**

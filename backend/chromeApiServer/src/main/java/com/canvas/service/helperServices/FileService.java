@@ -63,7 +63,7 @@ public class FileService {
     }
 
     /**
-     * Creates a file directory from a byte array
+     * Writes a file to the directory from a byte array
      *
      * @param fileName File name to be evaluated
      * @param bytes    byte array

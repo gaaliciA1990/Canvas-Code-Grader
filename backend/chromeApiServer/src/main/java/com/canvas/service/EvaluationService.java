@@ -7,6 +7,8 @@ import com.canvas.service.helperServices.FileService;
 import com.canvas.service.helperServices.ProcessExecutor;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.models.ExtensionUser;
+import com.canvas.service.models.submission.Submission;
+import com.canvas.service.models.submission.SubmissionFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,7 +32,7 @@ public class EvaluationService {
     private final FileService fileService;
     private final CanvasClientService canvasClientService;
 
-    String MAKEFILE = "makefile";
+    private static final String MAKEFILE = "makefile";
 
     /**
      * Constructor for creating our instances of FileService and CanvasClientService
@@ -83,11 +87,10 @@ public class EvaluationService {
      */
     public ResponseEntity<CommandOutput> executeCodeFile(ExtensionUser user) throws CanvasAPIException {
         // Write makefile to directory
-        writeMakefile(user);
+        writeMakefile(user, user.getUserId());
 
         // Fetch submission files from Canvas
-        Map<String, byte[]> submissionMap = new HashMap<>();
-        submissionMap = canvasClientService.fetchSubmissionFilesFromStudent(user);
+        Map<String, byte[]> submissionMap = canvasClientService.fetchStudentSubmissionFileBytes(user);
 
         String userId = user.getUserId();
 
@@ -114,18 +117,44 @@ public class EvaluationService {
         }
     }
 
+    public ResponseEntity<Submission> generateSubmissionDirectory(ExtensionUser user) throws CanvasAPIException {
+        Submission submission = canvasClientService.fetchStudentSubmission(user);
+        String submissionDirectory = "12345"; // TODO hash(courseId, assignmentId, studentId)
+
+        writeMakefile(user, submissionDirectory);
+        SubmissionFile[] submissionFiles = writeSubmissionFiles(submission.getSubmissionFileBytes(), submissionDirectory);
+
+        submission.setSubmissionFiles(submissionFiles);
+        submission.setSubmissionDirectory(submissionDirectory);
+
+        return new ResponseEntity<>(submission, HttpStatus.OK);
+    }
+
+    private SubmissionFile[] writeSubmissionFiles(Map<String, byte[]> submissionFilesBytes, String fileDirectory) {
+        List<SubmissionFile> submissionFiles = new ArrayList<>();
+
+        for (Map.Entry<String, byte[]> entry : submissionFilesBytes.entrySet()) {
+            String fileName = entry.getKey();
+            byte[] fileBytes = entry.getValue();
+            fileService.writeFileFromBytes(fileName, fileBytes, fileDirectory);
+            String[] fileContent = fileService.parseLinesFromFile(fileName, fileDirectory);
+            submissionFiles.add(new SubmissionFile(fileName, fileContent));
+        }
+
+        return submissionFiles.toArray(new SubmissionFile[0]);
+    }
+
     /**
      * Helper method for writing the makefile
      *
      * @param user User object the make file is associated with
      * @throws CanvasAPIException
      */
-    private void writeMakefile(ExtensionUser user) throws CanvasAPIException {
+    private void writeMakefile(ExtensionUser user, String directory) throws CanvasAPIException {
         // Retrieve file json from Canvas
-        byte[] makefileBytes = new byte[0];
-        makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
+        byte[] makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
 
-        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
+        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, directory);
     }
 
     /**
