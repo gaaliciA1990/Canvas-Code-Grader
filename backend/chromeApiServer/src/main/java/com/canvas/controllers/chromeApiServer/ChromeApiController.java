@@ -37,6 +37,19 @@ public class ChromeApiController {
         this.canvasClientService = canvasClientService;
     }
 
+    /**
+     * API for retrieving the student submission files and generating the student submission directory.
+     *
+     * @param bearerToken authorization token
+     * @param assignmentId Canvas assignment ID
+     * @param courseId Canvas course ID
+     * @param studentId Canvas student ID
+     * @param userType User Type Enum indicating who is using the extension
+     * @return student submission JSON
+     * @throws CanvasAPIException
+     * @throws IncorrectRequestParamsException
+     * @throws UserNotAuthorizedException
+     */
     @GetMapping(
             value = "/submission/courses/{courseId}/assignments/{assignmentId}",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -139,6 +152,17 @@ public class ChromeApiController {
         return evaluation.compileStudentCodeFile(user, files);
     }
 
+    /**
+     * Helper method for validating a request.
+     *
+     * @param bearerToken authorization token
+     * @param assignmentId Canvas assignment ID
+     * @param courseId Canvas course ID
+     * @param studentId Canvas student ID
+     * @param userType User Type Enum indicating who is using the extension
+     * @throws IncorrectRequestParamsException
+     * @throws UserNotAuthorizedException
+     */
     private void validateGraderRequest(
             String bearerToken,
             String assignmentId,

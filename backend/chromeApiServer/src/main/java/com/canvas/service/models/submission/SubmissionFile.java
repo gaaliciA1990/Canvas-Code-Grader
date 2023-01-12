@@ -5,6 +5,9 @@ import lombok.Setter;
 
 import java.util.Arrays;
 
+/**
+ * Submission file model to be included as part of the Submission model.
+ */
 @Getter
 @Setter
 public class SubmissionFile {

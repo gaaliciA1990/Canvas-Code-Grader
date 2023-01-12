@@ -117,6 +117,13 @@ public class EvaluationService {
         }
     }
 
+    /**
+     * Generates the student submission and directory and writes the submission files to the directory.
+     *
+     * @param user Extension user
+     * @return Submission model response
+     * @throws CanvasAPIException
+     */
     public ResponseEntity<Submission> generateSubmissionDirectory(ExtensionUser user) throws CanvasAPIException {
         Submission submission = canvasClientService.fetchStudentSubmission(user);
         String submissionDirectory = "12345"; // TODO hash(courseId, assignmentId, studentId)
@@ -130,6 +137,13 @@ public class EvaluationService {
         return new ResponseEntity<>(submission, HttpStatus.OK);
     }
 
+    /**
+     * Helper method for writing submission files to the submission directory.
+     *
+     * @param submissionFilesBytes submission file byte map
+     * @param fileDirectory directory to write files to
+     * @return array of submission files
+     */
     private SubmissionFile[] writeSubmissionFiles(Map<String, byte[]> submissionFilesBytes, String fileDirectory) {
         List<SubmissionFile> submissionFiles = new ArrayList<>();
 

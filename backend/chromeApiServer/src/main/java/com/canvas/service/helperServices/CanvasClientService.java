@@ -211,6 +211,13 @@ public class CanvasClientService {
         }
     }
 
+    /**
+     * Fetches the Canvas submission JSON.
+     *
+     * @param user Extension user
+     * @return Canvas submission JSON
+     * @throws CanvasAPIException
+     */
     public JsonNode fetchCanvasSubmissionJson(ExtensionUser user) throws CanvasAPIException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/courses/" + user.getCourseId() + "/assignments/" + user.getAssignmentId() + "/submissions/" + user.getStudentId())
@@ -224,6 +231,13 @@ public class CanvasClientService {
         }
     }
 
+    /**
+     * Creates the student submission model using the Canvas submission JSON.
+     *
+     * @param user Extension user
+     * @return Submission model
+     * @throws CanvasAPIException
+     */
     public Submission fetchStudentSubmission(ExtensionUser user) throws CanvasAPIException {
         JsonNode submissionResp = fetchCanvasSubmissionJson(user);
         Map<String, byte[]> submissionFilesBytes = generateSubmissionFileBytes(submissionResp, user.getBearerToken());
@@ -238,6 +252,13 @@ public class CanvasClientService {
                 .build();
     }
 
+    /**
+     * Fetch the submission file byte map.
+     *
+     * @param user Extension user
+     * @return submission file byte map
+     * @throws CanvasAPIException
+     */
     public Map<String, byte[]> fetchStudentSubmissionFileBytes(ExtensionUser user) throws CanvasAPIException {
         JsonNode submissionResp = fetchCanvasSubmissionJson(user);
         return generateSubmissionFileBytes(submissionResp, user.getBearerToken());
