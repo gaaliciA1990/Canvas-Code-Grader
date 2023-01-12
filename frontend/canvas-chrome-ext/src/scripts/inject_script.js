@@ -79,7 +79,7 @@
         let assignmentId = params["assignmentId"];
         let userType = "STUDENT";
         // FIXME: extract oauth token
-        let bearerToken = "Bearer 7~cQ7XoNd23PrQhB5XBAp8v9osuQsPnyQVsDsZcHb7oTjgnoWYh2lU5qg5RMRMN8rr    ";
+        let bearerToken = "Bearer 7~cQ7XoNd23PrQhB5XBAp8v9osuQsPnyQVsDsZcHb7oTjgnoWYh2lU5qg5RMRMN8rr";
 
         fileInput.addEventListener("change", function requestFunction() {
             for (var i = 0; i < this.files.length; i++) {
