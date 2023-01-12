@@ -3,6 +3,7 @@ package com.canvas.service.helperServices;
 import com.canvas.controllers.chromeApiServer.ChromeApiController;
 import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.service.models.ExtensionUser;
+import com.canvas.service.models.submission.Submission;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.Call;
@@ -210,35 +211,36 @@ public class CanvasClientService {
         }
     }
 
-    /**
-     * Gets submission file for a Student
-     *
-     * @param user Canvas user object
-     * @return map of files and their bytes
-     * @throws CanvasAPIException error message thrown if connection to canvas fails
-     */
-    public Map<String, byte[]> fetchSubmissionFilesFromStudent(ExtensionUser user) throws CanvasAPIException {
-        Map<String, byte[]> submissionFilesBytes = new HashMap<>();
-
+    public JsonNode fetchCanvasSubmissionJson(ExtensionUser user) throws CanvasAPIException {
         Request request = new Request.Builder()
                 .url(CANVAS_URL + "/courses/" + user.getCourseId() + "/assignments/" + user.getAssignmentId() + "/submissions/" + user.getStudentId())
                 .get()
                 .addHeader(AUTH_HEADER, user.getBearerToken())
                 .build();
         try {
-            JsonNode submissionResp = parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
-            JsonNode filesAttachment = submissionResp.get("attachments");
-            for (JsonNode fileJson : filesAttachment) {
-                String fileId = fileJson.get("id").asText();
-                byte[] fileBytes = fetchFile(fileId, user.getBearerToken());
-                String fileName = fileJson.get("filename").asText();
-                submissionFilesBytes.put(fileName, fileBytes);
-            }
-
-            return submissionFilesBytes;
+            return parseResponseToJsonNode(this.okHttpClient.newCall(request).execute());
         } catch (Exception e) {
             throw throwCanvasException(e);
         }
+    }
+
+    public Submission fetchStudentSubmission(ExtensionUser user) throws CanvasAPIException {
+        JsonNode submissionResp = fetchCanvasSubmissionJson(user);
+        Map<String, byte[]> submissionFilesBytes = generateSubmissionFileBytes(submissionResp, user.getBearerToken());
+
+        String submissionId = submissionResp.get("id").asText();
+
+        return Submission.builder()
+                .submissionId(submissionId)
+                .studentId(user.getStudentId())
+                .assignmentId(user.getAssignmentId())
+                .submissionFileBytes(submissionFilesBytes)
+                .build();
+    }
+
+    public Map<String, byte[]> fetchStudentSubmissionFileBytes(ExtensionUser user) throws CanvasAPIException {
+        JsonNode submissionResp = fetchCanvasSubmissionJson(user);
+        return generateSubmissionFileBytes(submissionResp, user.getBearerToken());
     }
 
     /**
@@ -263,6 +265,19 @@ public class CanvasClientService {
         } catch (Exception e) {
             throw throwCanvasException(e);
         }
+    }
+
+    private Map<String, byte[]> generateSubmissionFileBytes(JsonNode submissionResp, String bearerToken) throws CanvasAPIException {
+        Map<String, byte[]> submissionFilesBytes = new HashMap<>();
+        JsonNode filesAttachment = submissionResp.get("attachments");
+        for (JsonNode fileJson : filesAttachment) {
+            String fileId = fileJson.get("id").asText();
+            byte[] fileBytes = fetchFile(fileId, bearerToken);
+            String fileName = fileJson.get("filename").asText();
+            submissionFilesBytes.put(fileName, fileBytes);
+        }
+
+        return submissionFilesBytes;
     }
 
     /**
