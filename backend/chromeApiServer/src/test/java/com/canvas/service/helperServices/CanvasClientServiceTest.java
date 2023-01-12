@@ -312,7 +312,7 @@ class CanvasClientServiceTest {
         when(call.execute()).thenReturn(attachmentResponse, filesResponse2, filesResponse3);
 
 
-        Map<String, byte[]> submissionFileMap = canvasClientService.fetchSubmissionFilesFromStudent(extensionUser);
+        Map<String, byte[]> submissionFileMap = canvasClientService.fetchStudentSubmissionFileBytes(extensionUser);
 
         Assertions.assertEquals(1, submissionFileMap.size());
         Assertions.assertEquals(93, submissionFileMap.get("fooFileName").length);
@@ -325,7 +325,7 @@ class CanvasClientServiceTest {
 
         Assertions.assertThrows(
                 CanvasAPIException.class,
-                () -> canvasClientService.fetchSubmissionFilesFromStudent(extensionUser)
+                () -> canvasClientService.fetchStudentSubmissionFileBytes(extensionUser)
         );
     }
 
