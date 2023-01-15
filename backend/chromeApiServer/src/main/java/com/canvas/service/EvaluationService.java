@@ -19,10 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class handles the Student side of the evaluation process.
@@ -126,7 +123,7 @@ public class EvaluationService {
      */
     public ResponseEntity<Submission> generateSubmissionDirectory(ExtensionUser user) throws CanvasAPIException {
         Submission submission = canvasClientService.fetchStudentSubmission(user);
-        String submissionDirectory = "12345"; // TODO hash(courseId, assignmentId, studentId)
+        String submissionDirectory = getDirectoryName(user.getCourseId(), user.getAssignmentId(), user.getStudentId());
 
         writeMakefile(user, submissionDirectory);
         SubmissionFile[] submissionFiles = writeSubmissionFiles(submission.getSubmissionFileBytes(), submissionDirectory);
@@ -135,6 +132,16 @@ public class EvaluationService {
         submission.setSubmissionDirectory(submissionDirectory);
 
         return new ResponseEntity<>(submission, HttpStatus.OK);
+    }
+
+    /**
+     * Creates a unique directory name by hashing the arguments provided.
+     * @param idArgs IDs to hash
+     * @return unique hash value
+     */
+    private String getDirectoryName(String ... idArgs) {
+        String[] idList = Arrays.copyOf(idArgs, idArgs.length);
+        return String.valueOf(Arrays.hashCode(idList));
     }
 
     /**
