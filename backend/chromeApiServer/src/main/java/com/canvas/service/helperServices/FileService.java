@@ -36,7 +36,7 @@ public class FileService {
      * @param id canvas user id
      * @return string of names directory
      */
-    private String generateFileDirectory(String id) {
+    protected String generateFileDirectory(String id) {
         return "./" + id;
     }
 
@@ -169,7 +169,7 @@ public class FileService {
      * @param fileName      Name of the file
      * @return String format of the directory and file name
      */
-    private static String concatFileDirAndName(String fileDirectory, String fileName) {
+    protected static String concatFileDirAndName(String fileDirectory, String fileName) {
         return fileDirectory + "/" + fileName;
     }
 
