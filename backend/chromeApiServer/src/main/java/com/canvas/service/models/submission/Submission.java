@@ -1,6 +1,7 @@
 package com.canvas.service.models.submission;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import java.util.Map;
 /**
  * Student submission model for the JSON response.
  */
+@AllArgsConstructor // for testing
 @Getter
 public class Submission {
     private final String submissionId;
