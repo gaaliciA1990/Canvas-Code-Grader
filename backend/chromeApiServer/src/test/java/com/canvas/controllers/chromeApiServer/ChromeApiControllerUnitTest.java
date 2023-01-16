@@ -1,11 +1,20 @@
 package com.canvas.controllers.chromeApiServer;
 
+import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.service.EvaluationService;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
 import com.canvas.service.models.UserType;
+import com.canvas.service.models.submission.Submission;
+import com.canvas.service.models.submission.SubmissionFile;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import org.apache.catalina.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,8 +36,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Map;
+
+import static java.util.Map.entry;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -184,6 +197,7 @@ class ChromeApiControllerUnitTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())  // assert we get OK response
                 .andReturn();
+        System.out.println("RESPONSE " + result.getResponse().getContentAsString());
 
         // Assert
         CommandOutput controllerResponse = new ObjectMapper().readValue(result.getResponse().getContentAsString(),
@@ -253,5 +267,52 @@ class ChromeApiControllerUnitTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
     }
 
+    @Test
+    public void retrieveStudentSubmissionFiles_shouldReturnResponseEntityOK() throws Exception {
+        // Arrange
+        String bearerToken = "authToken";
+        String assignmentId = "fooAssignmentId";
+        String courseId = "fooCourseId";
+        String studentId = "fooStudentId";
+        UserType userType = UserType.GRADER;
+        String userId = "fooUserId";
+        Map<String, byte[]> fileBytes = Map.ofEntries(entry("testName", "test".getBytes()));
+        SubmissionFile[] submissionFiles = new SubmissionFile[] {
+                new SubmissionFile("hello.cpp", new String[] {"Hello", "World"} )
+        };
+        String submissionId = "fooSubmissionId";
+        String submissionDirectory = "fooSubmissionDirectory";
+
+        String endpoint = String.format("/submission/courses/%s/assignments/%s", courseId, assignmentId);
+        Submission submission = new Submission(
+                submissionId, studentId, assignmentId, fileBytes, submissionFiles, submissionDirectory
+        );
+
+        Mockito.when(canvasClientService.fetchUserId(bearerToken)).thenReturn(userId);
+        Mockito.when(evaluationService.generateSubmissionDirectory(any()))
+                .thenReturn(new ResponseEntity<>(submission, HttpStatus.OK));
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(endpoint)
+                        .header("Authorization", bearerToken)
+                        .param("userType", String.valueOf(userType))
+                        .param("studentId", studentId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())  // assert we get OK response
+                .andReturn();
+
+        Submission submissionResp = new ObjectMapper()
+                .readValue(result.getResponse().getContentAsString(), Submission.class);
+
+        // Assert
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        assertEquals("fooSubmissionId", submissionResp.getSubmissionId());
+        assertEquals("fooAssignmentId", submissionResp.getAssignmentId());
+        assertEquals("fooStudentId", submissionResp.getStudentId());
+        assertEquals("hello.cpp", submissionResp.getSubmissionFiles()[0].getName());
+        assertArrayEquals(new String[]{"Hello", "World"}, submissionResp.getSubmissionFiles()[0].getFileContent());
+        assertEquals("fooSubmissionDirectory", submissionResp.getSubmissionDirectory());
+        assertNull(submissionResp.getSubmissionFileBytes());
+    }
 
 }

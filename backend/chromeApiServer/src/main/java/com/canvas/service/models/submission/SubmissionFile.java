@@ -1,21 +1,18 @@
 package com.canvas.service.models.submission;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Arrays;
 
 /**
  * Submission file model to be included as part of the Submission model.
  */
 @Getter
 @Setter
+@NoArgsConstructor // for testing
+@AllArgsConstructor // for testing
 public class SubmissionFile {
-    private final String name;
-    private final String[] fileContent;
-
-    public SubmissionFile(String name, String[] fileContent) {
-        this.name = name;
-        this.fileContent = Arrays.copyOf(fileContent, fileContent.length);
-    }
+    private String name;
+    private String[] fileContent;
 }

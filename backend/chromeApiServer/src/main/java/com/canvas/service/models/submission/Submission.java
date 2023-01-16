@@ -1,10 +1,7 @@
 package com.canvas.service.models.submission;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Map;
 
@@ -12,15 +9,16 @@ import java.util.Map;
  * Student submission model for the JSON response.
  */
 @AllArgsConstructor // for testing
+@NoArgsConstructor
 @Getter
 public class Submission {
-    private final String submissionId;
-    private final String studentId;
-    private final String assignmentId;
+    private String submissionId;
+    private String studentId;
+    private String assignmentId;
 
     // Ignore this field in the response body
     @JsonIgnore
-    private final Map<String, byte[]> submissionFileBytes;
+    private Map<String, byte[]> submissionFileBytes;
 
     // Adding setters for these fields so they can be set later
     @Setter
@@ -35,4 +33,6 @@ public class Submission {
         this.assignmentId = assignmentId;
         this.submissionFileBytes = submissionFileBytes;
     }
+
+    //public Submission() {}
 }
