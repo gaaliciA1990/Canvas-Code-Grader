@@ -19,9 +19,9 @@ class SubmissionTest {
                 "testSubmissionId",
                 "testStudentId",
                 "testAssignmentId",
+                Map.ofEntries(entry("testName", TEST_FILE_BYTE)),
                 new SubmissionFile[] {new SubmissionFile("test.cpp", new String[] {"test"})},
-                "testDirectory",
-                Map.ofEntries(entry("testName", TEST_FILE_BYTE))
+                "testDirectory"
         );
     }
 
