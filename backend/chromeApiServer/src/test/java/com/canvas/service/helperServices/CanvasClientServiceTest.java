@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.mockito.Mockito.*;
@@ -100,7 +101,29 @@ class CanvasClientServiceTest {
             .message("")
             .body(ResponseBody.create(
                     MediaType.get("application/json; charset=utf-8"),
-                    "{\"attachments\": [{\"id\": \"fooId\", \"filename\": \"fooFileName\", \"preview_url\": \"foo/bar\"}] }"
+                    "{\"id\": \"fooSubmissionId\", \"attachments\": [{\"id\": \"fooId\", \"filename\": \"fooFileName\", \"preview_url\": \"foo/bar\"}] }"
+            ))
+            .build();
+
+    private final Response fetchFileResponse = new Response.Builder()
+            .request(USER_ID_REQUEST)
+            .protocol(Protocol.HTTP_2)
+            .code(401) // status code
+            .message("")
+            .body(ResponseBody.create(
+                    MediaType.get("application/json; charset=utf-8"),
+                    "{\"url\": \"http://foo/bar/url\"}] }"
+            ))
+            .build();
+
+    private final Response fileUrlResponse = new Response.Builder()
+            .request(USER_ID_REQUEST)
+            .protocol(Protocol.HTTP_2)
+            .code(401) // status code
+            .message("")
+            .body(ResponseBody.create(
+                    MediaType.get("application/json; charset=utf-8"),
+                    "{\"foo\": \"bar\"}]}"
             ))
             .build();
 
@@ -343,13 +366,15 @@ class CanvasClientServiceTest {
 
     @Test
     public void testFetchCanvasSubmissionJson() throws IOException, CanvasAPIException {
+        // Arrange
         when(okHttpClient.newCall(any())).thenReturn(call);
         when(call.execute()).thenReturn(canvasSubmissionResponse);
 
-
+        // Act
         JsonNode response = canvasClientService.fetchCanvasSubmissionJson(extensionUser);
         JsonNode attachments = response.get("attachments").get(0);
 
+        // Assert
         Assertions.assertEquals(
                 attachments.get("id").asText(),
                 "fooId"
@@ -375,17 +400,26 @@ class CanvasClientServiceTest {
         );
     }
 
-    // TODO fix test
-//    @Test
-//    public void testStudentSubmission() throws IOException, CanvasAPIException {
-//        when(okHttpClient.newCall(any())).thenReturn(call);
-//        when(call.execute()).thenReturn(canvasSubmissionResponse);
-//
-//
-//        Submission submission = canvasClientService.fetchStudentSubmission(extensionUser);
-//
-//        Assertions.assertEquals(submission.getAssignmentId(), "fooId");
-//    }
+    @Test
+    public void testFetchStudentSubmission() throws IOException, CanvasAPIException {
+        // Arrange
+        when(okHttpClient.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(canvasSubmissionResponse, fetchFileResponse, fileUrlResponse);
+
+        // Act
+        Submission submission = canvasClientService.fetchStudentSubmission(extensionUser);
+
+        // Assert
+        Assertions.assertEquals("fooSubmissionId", submission.getSubmissionId());
+        Assertions.assertEquals("fooAssignmentId", submission.getAssignmentId());
+        Assertions.assertEquals("fooStudentId", submission.getStudentId());
+        Assertions.assertArrayEquals(
+                "{\"foo\": \"bar\"}]}".getBytes(),
+                submission.getSubmissionFileBytes().get("fooFileName")
+        );
+        Assertions.assertNull(submission.getSubmissionFiles());
+        Assertions.assertNull(submission.getSubmissionDirectory());
+    }
 
     @Test
     public void testGetMyFilesFolderId() throws CanvasAPIException, IOException {
