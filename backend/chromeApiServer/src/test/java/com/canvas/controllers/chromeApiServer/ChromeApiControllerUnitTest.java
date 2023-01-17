@@ -1,6 +1,7 @@
 package com.canvas.controllers.chromeApiServer;
 
 import com.canvas.exceptions.CanvasAPIException;
+import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.service.EvaluationService;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
@@ -19,7 +20,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,12 +68,14 @@ class ChromeApiControllerUnitTest {
     @MockBean
     EvaluationService evaluationService;
 
+    ChromeApiController controller;
+
     /**
      * Placeholder for action to take before running tests
      */
     @BeforeEach
     void setUp() {
-
+        controller = new ChromeApiController(evaluationService, canvasClientService);
     }
 
     /**
@@ -313,6 +319,98 @@ class ChromeApiControllerUnitTest {
         assertArrayEquals(new String[]{"Hello", "World"}, submissionResp.getSubmissionFiles()[0].getFileContent());
         assertEquals("fooSubmissionDirectory", submissionResp.getSubmissionDirectory());
         assertNull(submissionResp.getSubmissionFileBytes());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"UNAUTHORIZED", "STUDENT"})
+    void retrieveStudentSubmissionFiles_shouldThrowUserNotAuthorizedException_whenUserTypeNotGrader(String userType) throws Exception {
+        // Arrange
+        String bearerToken = "authToken";
+        String assignmentId = "fooAssignmentId";
+        String courseId = "fooCourseId";
+        String studentId = "fooStudentId";
+        String endpoint = String.format("/submission/courses/%s/assignments/%s", courseId, assignmentId);
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(endpoint)
+                        .header("Authorization", bearerToken)
+                        .param("userType", userType)
+                        .param("studentId", studentId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())  // assert we get OK response
+                .andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void retrieveStudentSubmissionFiles_shouldThrowIncorrectRequestParamsException_whenAnyParameterIsNull(
+            String bearerToken,
+            String assignmentId,
+            String courseId,
+            String studentId,
+            UserType userType
+    ) {
+        // Act
+        IncorrectRequestParamsException exception = assertThrows(
+                IncorrectRequestParamsException.class,
+                () -> controller.retrieveStudentSubmissionFiles(bearerToken, assignmentId, courseId, studentId, userType),
+                "Expected IncorrectRequestParamsException to be thrown."
+        );
+
+        // Assert
+        assertEquals(
+                "Incorrect request parameters received. Check the parameters meet the requirements",
+                exception.getMessage()
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void retrieveStudentSubmissionFiles_shouldThrowIncorrectRequestParamsException_whenTokenOrAnyIdIsEmptyString(
+            String bearerToken,
+            String assignmentId,
+            String courseId,
+            String studentId,
+            UserType userType
+    ) {
+        // Act
+        IncorrectRequestParamsException exception = assertThrows(
+                IncorrectRequestParamsException.class,
+                () -> controller.retrieveStudentSubmissionFiles(bearerToken, assignmentId, courseId, studentId, userType),
+                "Expected IncorrectRequestParamsException to be thrown."
+        );
+
+        // Assert
+        assertEquals(
+                "Incorrect request parameters received. Check the parameters meet the requirements",
+                exception.getMessage()
+        );
+    }
+
+    /******************** Static methods for providing parameters to parameterized tests ***************************/
+
+    private static Stream<Arguments> retrieveStudentSubmissionFiles_shouldThrowIncorrectRequestParamsException_whenAnyParameterIsNull() {
+        return Stream.of(
+                Arguments.of(null, "fooAssignmentId", "fooCourseId", "fooStudentId", UserType.GRADER),
+                Arguments.of("fooBearerToken", null, "fooCourseId", "fooStudentId", UserType.GRADER),
+                Arguments.of("fooBearerToken", "fooAssignmentId", null, "fooStudentId", UserType.GRADER),
+                Arguments.of("fooBearerToken", "fooAssignmentId", "fooCourseId", null, UserType.GRADER),
+                Arguments.of("fooBearerToken", "fooAssignmentId", "fooCourseId", "fooStudentId", null),
+                Arguments.of(null, null, null, null, null)
+        );
+    }
+
+    private static Stream<Arguments> retrieveStudentSubmissionFiles_shouldThrowIncorrectRequestParamsException_whenTokenOrAnyIdIsEmptyString() {
+        return Stream.of(
+                Arguments.of("", "fooAssignmentId", "fooCourseId", "fooStudentId", UserType.GRADER),
+                Arguments.of("fooBearerToken", "", "fooCourseId", "fooStudentId", UserType.GRADER),
+                Arguments.of("fooBearerToken", "fooAssignmentId", "", "fooStudentId", UserType.GRADER),
+                Arguments.of("fooBearerToken", "fooAssignmentId", "fooCourseId", "", UserType.GRADER),
+                Arguments.of("", "", "", "", UserType.GRADER)
+        );
     }
 
 }
