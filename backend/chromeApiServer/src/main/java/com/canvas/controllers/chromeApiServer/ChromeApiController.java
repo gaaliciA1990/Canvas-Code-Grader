@@ -4,6 +4,7 @@ import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.exceptions.UserNotAuthorizedException;
 import com.canvas.service.EvaluationService;
+import com.canvas.service.SubmissionDirectoryService;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
@@ -26,15 +27,21 @@ import org.springframework.web.multipart.MultipartFile;
 public class ChromeApiController {
     private final EvaluationService evaluation;
     private final CanvasClientService canvasClientService;
+    private final SubmissionDirectoryService submissionDirectoryService;
 
     // Logger object
     private static final Logger logger = LoggerFactory.getLogger(ChromeApiController.class);
 
 
     @Autowired
-    public ChromeApiController(EvaluationService studentEval, CanvasClientService canvasClientService) {
+    public ChromeApiController(
+            EvaluationService studentEval,
+            CanvasClientService canvasClientService,
+            SubmissionDirectoryService submissionDirectoryService
+    ) {
         this.evaluation = studentEval;
         this.canvasClientService = canvasClientService;
+        this.submissionDirectoryService = submissionDirectoryService;
     }
 
     /**
@@ -65,39 +72,7 @@ public class ChromeApiController {
 
         String userId = canvasClientService.fetchUserId(bearerToken);
         ExtensionUser graderUser = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, userType);
-        return evaluation.generateSubmissionDirectory(graderUser);
-    }
-
-    /**
-     * Get request for initiating instructor grading based on course, assignment and submissions
-     *
-     * @param bearerToken authorization token
-     * @param assignmentId canvas assignment to be graded
-     * @param courseId course assoicated with the assignment
-     * @param studentId student to be graded
-     * @return Response CommandOutput
-     */
-    @GetMapping(
-            value = "/execute/courses/{courseId}/assignments/{assignmentId}/submissions/{studentId}",
-            produces = {"application/json"}
-    )
-    public ResponseEntity<CommandOutput> initiateInstructorCodeEvaluation(
-            @RequestHeader("Authorization") String bearerToken,
-            @PathVariable("assignmentId") String assignmentId,
-            @PathVariable("courseId") String courseId,
-            @PathVariable("studentId") String studentId,
-            @RequestParam("userType") UserType type
-    ) throws UserNotAuthorizedException, IncorrectRequestParamsException, CanvasAPIException {
-        validateGraderRequest(bearerToken, assignmentId, courseId, studentId, type);
-
-        // get the user id from the Canvas API
-        String userId = canvasClientService.fetchUserId(bearerToken);
-
-        // Create the user with the params
-        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, type);
-
-        return evaluation.executeCodeFile(user);
-
+        return submissionDirectoryService.generateSubmissionDirectory(graderUser);
     }
 
     /**
