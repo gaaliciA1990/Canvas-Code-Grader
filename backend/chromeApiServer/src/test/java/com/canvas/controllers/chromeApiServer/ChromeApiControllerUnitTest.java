@@ -3,6 +3,7 @@ package com.canvas.controllers.chromeApiServer;
 import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.service.EvaluationService;
+import com.canvas.service.SubmissionDirectoryService;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
@@ -68,6 +69,9 @@ class ChromeApiControllerUnitTest {
     @MockBean
     EvaluationService evaluationService;
 
+    @MockBean
+    SubmissionDirectoryService submissionDirectoryService;
+
     ChromeApiController controller;
 
     /**
@@ -75,7 +79,7 @@ class ChromeApiControllerUnitTest {
      */
     @BeforeEach
     void setUp() {
-        controller = new ChromeApiController(evaluationService, canvasClientService);
+        controller = new ChromeApiController(evaluationService, canvasClientService, submissionDirectoryService);
     }
 
     /**
@@ -84,94 +88,6 @@ class ChromeApiControllerUnitTest {
     @AfterEach
     void tearDown() {
 
-    }
-
-    /**
-     * Tests the ResponseEntity returns Ok with correct params:
-     * <p>
-     * Values passed through path:
-     * assignmentID = cs5461321
-     * courseID = cpsc5023
-     * studentID = 1235464
-     *
-     * @throws Exception
-     */
-    @Test
-    public void initiateInstructorCodeEvaluation_should_return_ResponseEntity_OK() throws Exception {
-        // Set Up
-        String authToken = "TESTStringToken";
-        String userID = "4625132";
-
-        UserType type = UserType.GRADER;
-        CommandOutput commandOutput = new CommandOutput(true, "test");
-
-        Mockito.when(canvasClientService.fetchUserId(authToken)).thenReturn(userID);
-        Mockito.when(evaluationService.executeCodeFile(any())).thenReturn(new ResponseEntity<>(commandOutput, HttpStatus.OK));
-
-        // Act
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/execute/courses/cpsc5023/assignments/cs5461321/submissions/1235464")
-                        .header("Authorization", authToken)
-                        .param("userType", String.valueOf(type))
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is2xxSuccessful())  // assert we get OK response
-                .andReturn();
-
-        // Assert
-        CommandOutput controllerResponse = new ObjectMapper().readValue(result.getResponse().getContentAsString(),
-                CommandOutput.class);
-        assertTrue(controllerResponse.isSuccess());
-    }
-
-    /**
-     * Tests the initiateInstructorCodeEvaluation method return Bad_Request for wrong userTypes
-     * <p>
-     * Values passed through path:
-     * assignmentID = cs5461321
-     * courseID = cpsc5023
-     * studentID = 1235464
-     *
-     * @param userType Enum UserType
-     * @throws Exception exception
-     */
-    @ParameterizedTest
-    @CsvFileSource(resources = "/chromeAPI_userType_instructor_tests.csv", numLinesToSkip = 1)
-    public void initiateInstructorCodeEvaluation_should_return_badRequest_when_userType_not_valid_enum(String userType) throws Exception {
-        // Set Up
-        String authToken = "TestStringToken";
-        String type = userType;
-
-        // Act
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/execute/courses/cpsc5023/assignments/cs5461321/submissions/1235464")
-                        .header("Authorization", authToken)
-                        .param("userType", type)
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())  // assert we get bad request response
-                .andReturn();
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"UNAUTHORIZED", "STUDENT"})
-    public void initiateInstructorCodeEvaluation_should_return_unauthorized_when_userType_not_GRADER(String userType) throws Exception {
-        // Set Up
-        String authToken = "TestStringToken";
-        String type = userType;
-
-        // Act
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/execute/courses/cpsc5023/assignments/cs5461321/submissions/1235464")
-                        .header("Authorization", authToken)
-                        .param("userType", type)
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized())  // assert we get unauthorized response
-                .andReturn();
-
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
     }
 
     /**
@@ -295,7 +211,7 @@ class ChromeApiControllerUnitTest {
         );
 
         Mockito.when(canvasClientService.fetchUserId(bearerToken)).thenReturn(userId);
-        Mockito.when(evaluationService.generateSubmissionDirectory(any()))
+        Mockito.when(submissionDirectoryService.generateSubmissionDirectory(any()))
                 .thenReturn(new ResponseEntity<>(submission, HttpStatus.OK));
 
         // Act
