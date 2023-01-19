@@ -124,14 +124,23 @@ class SubmissionDirectoryServiceTest {
         @Test
         void writeMakefile_shouldWriteFileToDirectory() throws IOException, CanvasAPIException {
             // Arrange
+            String userId = "fooUserId";
+            ExtensionUser user = new ExtensionUser(
+                    userId,
+                    "fooUserId",
+                    "fooCourseId",
+                    "fooAssignmentId",
+                    "fooStudentId",
+                    UserType.GRADER
+            );
             byte[] bytes = {1, 2, 3};
             when(canvasClientService.fetchFileUnderCourseAssignmentFolder(any(), any())).thenReturn(bytes);
 
             // Act
-            fileService.writeFileFromBytes("fileName", bytes, "fooId");
+            submissionDirectoryService.writeMakefile(user, userId);
 
             // Get Contents
-            byte[] data = Files.readAllBytes(Path.of("./fooId/fileName"));
+            byte[] data = Files.readAllBytes(Path.of("./" + userId + "/makefile"));
 
             // Verify
             for (int i=0; i<3; i++) {
@@ -139,8 +148,8 @@ class SubmissionDirectoryServiceTest {
             }
 
             // Delete directory
-            Files.deleteIfExists(Path.of("./fooId/fileName"));
-            File directory = new File("fooId");
+            Files.deleteIfExists(Path.of("./" + userId + "/makefile"));
+            File directory = new File(userId);
             directory.delete();
         }
 
@@ -182,7 +191,6 @@ class SubmissionDirectoryServiceTest {
             when(multipartFile.getBytes()).thenReturn(bytes);
             when(multipartFile.getOriginalFilename()).thenReturn("fooOriginalFileName.txt");
 
-            fileService.writeFileFromMultipart(multipartFile, "fooId");
             submissionDirectoryService.writeSubmissionFiles(new MultipartFile[] {multipartFile}, "fooId");
 
             // Verify contents
