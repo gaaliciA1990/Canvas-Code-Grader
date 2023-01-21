@@ -150,4 +150,26 @@ class FileServiceTest {
         assertEquals("fooId/fooFile", FileService.concatFileDirAndName("fooId", "fooFile"));
     }
 
+    @Test
+    public void testParseLinesFromFile() {
+        // Arrange
+        String fileDirectory = "./fooId";
+        new File(fileDirectory).mkdirs();
+        String fileName = "foo.txt";
+        byte[] fileBytes = "foo\nbar\nhype\n".getBytes();
+        fileService.writeFileFromBytes(fileName, fileBytes, fileDirectory);
+
+        // Act
+        String[] fileContents = fileService.parseLinesFromFile(fileName, fileDirectory);
+
+        // Assert
+        assertEquals(3, fileContents.length);
+        assertEquals("foo", fileContents[0]);
+        assertEquals("bar", fileContents[1]);
+        assertEquals("hype", fileContents[2]);
+
+        // Cleanup
+        fileService.deleteDirectory(fileDirectory);
+    }
+
 }
