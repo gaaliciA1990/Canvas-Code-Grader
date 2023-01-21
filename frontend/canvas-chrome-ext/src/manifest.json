@@ -3,18 +3,21 @@
   "name": "Extension Prototype",
   "description": "Prototype for Canvas Extension",
   "version": "0.1.0",
-
-  "icons": {
-  },
-
-  "web_accessible_resources": [{
-    "resources": ["scripts/inject_script.js",
-                  "components/compilation_notification.html",
-                  "scripts/notification.js",
-                  "styles/popup.css"],
-    "matches": ["<all_urls>"]
-  }],
-
+  "icons": {},
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "scripts/inject_script.js",
+        "components/compilation_notification.html",
+        "scripts/notification.js",
+        "styles/popup.css",
+        "components/submission_read_only_view.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
   "action": {
     "default_popup": "components/popup.html",
     "default_icon": "images/su_emblem.png"
@@ -24,16 +27,29 @@
     "tabs",
     "scripting"
   ],
-
   "background": {
     "service_worker": "background.js"
   },
-
-  "content_scripts": [{
-    "matches": ["https://seattleu.instructure.com/courses/*/assignments/*", "*://www.google.com/",
-              "https://canvas.instructure.com/courses/*/assignments/*",
-              "http://10.242.15.70:3000/courses/*/assignments/*",
-               "https://canvas.instructure.com/*"],
-    "js": ["scripts/Content.js"]
-  }]
+  "content_scripts": [
+    {
+      "matches": [
+        "https://seattleu.instructure.com/courses/*/assignments/*",
+        "*://www.google.com/",
+        "https://canvas.instructure.com/courses/*/assignments/*",
+        "http://10.242.15.70:3000/courses/*/assignments/*",
+        "https://canvas.instructure.com/*"
+      ],
+      "js": [
+        "scripts/Content.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://canvas.instructure.com/courses/*/gradebook/speed_grader?assignment_id=*&student_id=*"
+      ],
+      "js": [
+        "scripts/InstructorContent.js"
+      ]
+    }
+  ]
 }
