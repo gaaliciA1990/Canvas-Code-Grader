@@ -19,5 +19,4 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
         sendResponse("background recv msg");
     }
-
 })
