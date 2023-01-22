@@ -7,6 +7,8 @@ import com.canvas.service.helperServices.FileService;
 import com.canvas.service.helperServices.ProcessExecutor;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.models.ExtensionUser;
+import com.canvas.service.models.submission.Submission;
+import com.canvas.service.models.submission.SubmissionFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,29 +19,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class handles the Student side of the evaluation process.
  */
 @Service
 public class EvaluationService {
-    private final FileService fileService;
-    private final CanvasClientService canvasClientService;
-
-    String MAKEFILE = "makefile";
+    private final SubmissionDirectoryService submissionDirectoryService;
 
     /**
-     * Constructor for creating our instances of FileService and CanvasClientService
+     * Constructor for creating the SubmissionDirectoryService instance
      *
-     * @param fileService         File service instance
-     * @param canvasClientService Canvas client service instance
+     * @param submissionDirectoryService SubmissionDirectoryService instance
      */
     @Autowired
-    public EvaluationService(FileService fileService, CanvasClientService canvasClientService) {
-        this.fileService = fileService;
-        this.canvasClientService = canvasClientService;
+    public EvaluationService(SubmissionDirectoryService submissionDirectoryService) {
+        this.submissionDirectoryService = submissionDirectoryService;
     }
 
     /**
@@ -51,82 +47,22 @@ public class EvaluationService {
      * @return return a CommandOutput response
      */
     public ResponseEntity<CommandOutput> compileStudentCodeFile(ExtensionUser user, MultipartFile[] files) throws CanvasAPIException {
-
-
         // Retrieve file json from Canvas
-        byte[] makefileBytes = new byte[0];
-        makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
-
-        // Write makefile to file
-        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
+        submissionDirectoryService.writeMakefile(user, user.getUserId());
 
         // Write submitted code files
-        for (MultipartFile file : files) {
-            fileService.writeFileFromMultipart(file, user.getUserId());
-        }
+        submissionDirectoryService.writeSubmissionFiles(files, user.getUserId());
 
         // Compile the files and grab output
         CommandOutput commandOutput = compileCodeFiles(user.getUserId());
 
         // Cleanup
-        fileService.deleteDirectory(user.getUserId());
+        submissionDirectoryService.deleteDirectory(user.getUserId());
 
         // Generate response
         return new ResponseEntity<>(commandOutput, HttpStatus.OK);
     }
 
-    /**
-     * Method executes student submitted code for instructors/graders to grade.
-     *
-     * @param user User object for the extension
-     * @return return a CommandOutput response
-     */
-    public ResponseEntity<CommandOutput> executeCodeFile(ExtensionUser user) throws CanvasAPIException {
-        // Write makefile to directory
-        writeMakefile(user);
-
-        // Fetch submission files from Canvas
-        Map<String, byte[]> submissionMap = new HashMap<>();
-        submissionMap = canvasClientService.fetchSubmissionFilesFromStudent(user);
-
-        String userId = user.getUserId();
-
-        // Write submission files to directory
-        for (Map.Entry<String, byte[]> entry : submissionMap.entrySet()) {
-            // Key: filename, Value: file bytes to write
-            fileService.writeFileFromBytes(entry.getKey(), entry.getValue(), fileService.getFileDirectory(userId));
-        }
-
-        // If code compiles successfully
-        if (compileCodeFiles(userId).isSuccess()) {
-            // Execute the code
-            CommandOutput codeExecutionOutput = executeCodeFiles(userId);
-            System.out.println(codeExecutionOutput.getOutput());
-
-            // Cleanup
-            fileService.deleteDirectory(userId);
-
-            return new ResponseEntity<>(codeExecutionOutput, HttpStatus.OK);
-        } else {
-            // Cleanup
-            fileService.deleteDirectory(user.getStudentId());
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    /**
-     * Helper method for writing the makefile
-     *
-     * @param user User object the make file is associated with
-     * @throws CanvasAPIException
-     */
-    private void writeMakefile(ExtensionUser user) throws CanvasAPIException {
-        // Retrieve file json from Canvas
-        byte[] makefileBytes = new byte[0];
-        makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
-
-        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
-    }
 
     /**
      * Helper method for compiling code files based on userId
@@ -143,17 +79,6 @@ public class EvaluationService {
     }
 
     /**
-     * Helper method for executing the code files based on userId
-     *
-     * @param userId canvas User ID for naming executable
-     * @return message associated with action
-     */
-    private CommandOutput executeCodeFiles(String userId) {
-        String exeFile = fileService.getFileNameWithExtension(".exe", userId);
-        return executeCommand(new String[]{exeFile}, userId);
-    }
-
-    /**
      * Helper method for executing process commands
      *
      * @param commands Array of commands to run for execution
@@ -161,7 +86,7 @@ public class EvaluationService {
      * @return message associated with action
      */
     private CommandOutput executeCommand(String[] commands, String userId) {
-        ProcessExecutor processExecutor = new ProcessExecutor(commands, fileService.getFileDirectory(userId));
+        ProcessExecutor processExecutor = new ProcessExecutor(commands, submissionDirectoryService.getSubmissionDirectory(userId));
         boolean compileSuccess = processExecutor.executeProcess();
         String output = processExecutor.getProcessOutput();
         return new CommandOutput(compileSuccess, output);
