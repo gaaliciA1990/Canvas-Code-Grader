@@ -10,7 +10,8 @@
         "scripts/inject_script.js",
         "components/compilation_notification.html",
         "scripts/notification.js",
-        "components/submission_read_only_view.html"
+        "components/submission_read_only_view.html",
+        "scripts/InstructorInjectScript.js"
       ],
       "matches": [
         "<all_urls>"
