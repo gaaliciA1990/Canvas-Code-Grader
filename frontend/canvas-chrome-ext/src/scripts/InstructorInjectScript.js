@@ -72,6 +72,15 @@ async function callGetFileSubmissionApi() {
         .then((responseJson) => {
             console.log(responseJson);
             console.log(responseJson.submissionFiles);
+
+            var displayCode = document.createElement("textarea");
+            displayCode.value = responseJson.submissionFiles[0].fileContent;
+            displayCode.style = "border: 2px solid blue;background-color: lightblue;padding: 10px;"
+
+            console.log("displayCode: " + displayCode);
+
+            document.body.appendChild(displayCode);
+
             return responseJson;
         });
 }
