@@ -44,7 +44,8 @@
     },
     {
       "matches": [
-        "https://canvas.instructure.com/courses/*/gradebook/speed_grader?assignment_id=*&student_id=*"
+        "https://canvas.instructure.com/courses/*/gradebook/speed_grader?assignment_id=*&student_id=*",
+        "https://canvas.instructure.com/courses/*/gradebook/speed_grader?assignment_id=*"
       ],
       "js": [
         "scripts/InstructorContent.js"
