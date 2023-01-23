@@ -1,9 +1,26 @@
 console.log("inside InstructorInjectScript.js")
 
-// Initial page load API call
-callGetFileSubmissionApi();
+initUrlChangeListener();
 
-// event listener (for when new student is clicked)
+// Listen for on initial page load for student_id to get appended 
+// and when new student is clicked in speedgrader
+function initUrlChangeListener() {
+    let previousUrl = '';
+
+    const urlObserver = new MutationObserver(function (mutations) {
+        if (window.location.href !== previousUrl) {
+            previousUrl = window.location.href;
+            console.log(`URL changed from ${previousUrl} to ${window.location.href}`);
+
+            // On URL change, update UI with new student submission data
+            callGetFileSubmissionApi();
+        }
+    });
+    const config = { subtree: true, childList: true };
+
+    // begin listener for URL changes
+    urlObserver.observe(document, config);
+}
 
 function callGetFileSubmissionApi() {
     let bearerToken = "Bearer 7~c5V3FHLUmCwn8II4CvwhMOqZ5HLjxwRt8mVZIspclX9hzlSx6aHg493QMtYidwXp";
