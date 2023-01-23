@@ -4,16 +4,16 @@ initUrlChangeListener();
 
 // Listen for on initial page load for student_id to get appended 
 // and when new student is clicked in speedgrader
-function initUrlChangeListener() {
+async function initUrlChangeListener() {
     let previousUrl = '';
 
-    const urlObserver = new MutationObserver(function (mutations) {
+    const urlObserver = new MutationObserver(async function (mutations) {
         if (window.location.href !== previousUrl) {
             previousUrl = window.location.href;
             console.log(`URL changed from ${previousUrl} to ${window.location.href}`);
 
             // On URL change, update UI with new student submission data
-            callGetFileSubmissionApi();
+            await callGetFileSubmissionApi();
         }
     });
     const config = { subtree: true, childList: true };
@@ -22,7 +22,13 @@ function initUrlChangeListener() {
     urlObserver.observe(document, config);
 }
 
-function callGetFileSubmissionApi() {
+
+async function secondFunction() {
+    //const result = await callGetFileSubmissionApi();
+    return await callGetFileSubmissionApi()
+}
+
+async function callGetFileSubmissionApi() {
     let bearerToken = "Bearer 7~c5V3FHLUmCwn8II4CvwhMOqZ5HLjxwRt8mVZIspclX9hzlSx6aHg493QMtYidwXp";
 
     const params = (() => {
@@ -54,22 +60,19 @@ function callGetFileSubmissionApi() {
 
     let endpoint = `http://localhost:8080/submission/courses/${params["courseId"]}/assignments/${params["assignmentId"]}/?studentId=${params["studentId"]}&userType=GRADER`
 
-    fetch(
+    await fetch(
         endpoint, {
         method: "GET",
         headers: new Headers({
             'Authorization': bearerToken
         })
-    }).catch(console.error).then(async response => {
-        //console.log(response);
-        const serv_response = await response.text();
-        //console.log(serv_response)
-        console.log(serv_response);
-
-        chrome.runtime.sendMessage({ "message": serv_response });
-
-        alert("sent message to background");
-
-    });
+    })
+        .catch(console.error)
+        .then((response) => response.json())
+        .then((responseJson) => {
+            console.log(responseJson);
+            console.log(responseJson.submissionFiles);
+            return responseJson;
+        });
 }
 
