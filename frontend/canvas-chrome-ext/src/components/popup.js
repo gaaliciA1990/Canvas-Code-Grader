@@ -8,6 +8,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
         background.console.log(results);
     })
+
+
+    document.getElementById("oAuth-signIn").addEventListener('click', canvasOauthRedirect);
+
+    //oAuth redirect link should go here
+    function canvasOauthRedirect(){
+        chrome.tabs.create({active: true, url: "https://www.google.com/"});
+    }
+
+
 })
 
 
@@ -21,3 +31,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
 
 })
+
+
+
