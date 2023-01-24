@@ -44,15 +44,14 @@
         });
     })
 
-
-
     btn_code_submission.addEventListener("click", function () {
         fileInput.click();
 
         //need to wait for file to be input
         //http://csrh51.cslab.seattleu.edu:8080
         //"http://127.0.0.1:8080/evaluate"
-        const endpoint = "http://127.0.0.1:8080/evaluate"; //"https://csrh51.cslab.seattleu.edu:8080/evaluate";
+        //"http://127.0.0.1:8080/evaluate";
+        const endpoint ="http://127.0.0.1:8080/evaluate"; //"http://csrh51.cslab.seattleu.edu:8080/evaluate";
         const formData = new FormData();
 
         const params = (() => {
@@ -114,9 +113,19 @@
     })
 
     //making assumption all assignment pages have an "ag-list"
-    const el = document.getElementById("ag-list");
+
+    //if url ends with assignments then insert at the bottom of "ag-list"
+    //otherwise insert within the assignment page
+
+
+    //create a div
+
+
+    const el = document.getElementById("content-wrapper");
     console.log(el);
+
     el.appendChild(fileInput);
+    console.log("appending to ag-list");
     el.appendChild(btn_code_submission);
 
     el.appendChild(btn_response);
