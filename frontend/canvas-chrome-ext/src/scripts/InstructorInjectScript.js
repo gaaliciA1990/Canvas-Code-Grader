@@ -75,11 +75,15 @@ async function callGetFileSubmissionApi() {
 
             var displayCode = document.createElement("textarea");
             displayCode.value = responseJson.submissionFiles[0].fileContent;
-            displayCode.style = "border: 2px solid blue;background-color: lightblue;padding: 10px;"
+            displayCode.style = "border: 2px solid blue;background-color:" +
+                " lightblue;padding: 10px; height: 300px;"
+
+            document.getElementById("submissions_container").prepend(displayCode)
+            document.getElementById("iframe_holder").style.display = "none";
 
             console.log("displayCode: " + displayCode);
 
-            document.body.appendChild(displayCode);
+            // document.body.prepend(displayCode);
 
             return responseJson;
         });
