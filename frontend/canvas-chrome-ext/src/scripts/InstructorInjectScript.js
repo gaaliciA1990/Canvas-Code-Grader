@@ -2,38 +2,6 @@ console.log("inside InstructorInjectScript.js")
 
 
 initUrlChangeListener();
-// window.onload = function () {
-//     const styleElement = document.createElement("style");
-//     styleElement.appendChild(document.createTextNode(`
-//         .codeView {
-//             border: 2px solid blue;
-//             background-color: lightblue;
-//             padding: 10px;
-//             height: 300px;
-//         }
-//     `));
-// }
-
-
-// style.type = "text/css";
-// styleLink.href = "../styles/submission_read_only_view.css";
-//document.head.appendChild(styleElement);
-
-function addStyle(element) {
-    // const styleElement = document.createElement("style");
-    // styleElement.appendChild(document.createTextNode(`
-    //     .codeView {
-    //         border: 2px solid blue;
-    //         background-color: lightblue;
-    //         padding: 10px;
-    //         height: 300px;
-    //     }
-    // `));
-    // // style.type = "text/css";
-    // // styleLink.href = "../styles/submission_read_only_view.css";
-    // document.head.appendChild(styleElement);
-    // //console.log(__dirname);
-}
 
 // Listen for on initial page load for student_id to get appended 
 // and when new student is clicked in speedgrader
