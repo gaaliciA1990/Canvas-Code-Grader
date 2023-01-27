@@ -1,6 +1,39 @@
 console.log("inside InstructorInjectScript.js")
 
+
 initUrlChangeListener();
+// window.onload = function () {
+//     const styleElement = document.createElement("style");
+//     styleElement.appendChild(document.createTextNode(`
+//         .codeView {
+//             border: 2px solid blue;
+//             background-color: lightblue;
+//             padding: 10px;
+//             height: 300px;
+//         }
+//     `));
+// }
+
+
+// style.type = "text/css";
+// styleLink.href = "../styles/submission_read_only_view.css";
+//document.head.appendChild(styleElement);
+
+function addStyle(element) {
+    // const styleElement = document.createElement("style");
+    // styleElement.appendChild(document.createTextNode(`
+    //     .codeView {
+    //         border: 2px solid blue;
+    //         background-color: lightblue;
+    //         padding: 10px;
+    //         height: 300px;
+    //     }
+    // `));
+    // // style.type = "text/css";
+    // // styleLink.href = "../styles/submission_read_only_view.css";
+    // document.head.appendChild(styleElement);
+    // //console.log(__dirname);
+}
 
 // Listen for on initial page load for student_id to get appended 
 // and when new student is clicked in speedgrader
@@ -73,13 +106,20 @@ async function callGetFileSubmissionApi() {
             console.log(responseJson);
             console.log(responseJson.submissionFiles);
 
-            var displayCode = document.createElement("textarea");
-            displayCode.value = responseJson.submissionFiles[0].fileContent;
-            displayCode.style = "border: 2px solid blue;background-color:" +
-                " lightblue;padding: 10px; height: 300px;"
+            (() => {
+                var displayCode = document.createElement("textarea");
+                displayCode.value = responseJson.submissionFiles[0].fileContent;
 
-            document.getElementById("submissions_container").prepend(displayCode)
-            document.getElementById("iframe_holder").style.display = "none";
+                displayCode.style.border = "2px solid blue";
+                displayCode.style.backgroundColor = "lightblue";
+                displayCode.style.padding = "10px";
+                displayCode.style.height = "300px";
+                displayCode.style.margin = "auto";
+                displayCode.style.display = "block";
+
+                document.getElementById("submissions_container").prepend(displayCode)
+                document.getElementById("iframe_holder").style.display = "none";
+            })();
 
             console.log("displayCode: " + displayCode);
 
