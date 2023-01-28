@@ -93,7 +93,7 @@ public class CanvasClientService {
                     .build();
 
             JsonNode filesResponse = parseResponseToJsonNode(this.okHttpClient.newCall(filesRequest).execute());
-            String fileId = getFileIdFromFilesResponse(filesResponse, fileName + ".dms");
+            String fileId = getFileIdFromFilesResponse(filesResponse, fileName);
             return fetchFile(fileId, user.getBearerToken());
         } catch (Exception e) {
             throw throwCanvasException(e);
@@ -395,8 +395,8 @@ public class CanvasClientService {
     protected String getFileIdFromFilesResponse(JsonNode response, String fileName) {
         for (Iterator<JsonNode> it = response.elements(); it.hasNext(); ) {
             JsonNode folder = it.next();
-            JsonNode name = folder.get("filename");
-            if (name != null && folder.get("filename").asText().equals(fileName)) {
+            JsonNode name = folder.get("display_name");
+            if (name != null && folder.get("display_name").asText().equalsIgnoreCase(fileName)) {
                 return folder.get("id").toString();
             }
         }
