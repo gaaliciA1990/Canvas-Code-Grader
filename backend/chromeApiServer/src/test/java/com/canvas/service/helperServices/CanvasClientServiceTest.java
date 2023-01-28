@@ -55,7 +55,7 @@ class CanvasClientServiceTest {
             .message("")
             .body(ResponseBody.create(
                     MediaType.get("application/json; charset=utf-8"),
-                    "{\"id\":\"fooId\", \"assignment\": {\"filename\": \"fooAssignmentId.dms\", \"id\": 12345} }"
+                    "{\"id\":\"fooId\", \"assignment\": {\"display_name\": \"fooAssignmentId\", \"id\": 12345} }"
             ))
             .build();
 
@@ -447,7 +447,7 @@ class CanvasClientServiceTest {
 
         Assertions.assertEquals(
                 "12345",
-                canvasClientService.getFileId("folderId", "fooAssignmentId.dms", BEARER_TOKEN)
+                canvasClientService.getFileId("folderId", "fooAssignmentId", BEARER_TOKEN)
         );
     }
 
