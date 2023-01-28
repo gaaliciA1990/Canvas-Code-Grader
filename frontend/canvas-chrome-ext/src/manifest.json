@@ -8,7 +8,10 @@
   },
 
   "web_accessible_resources": [{
-    "resources": ["scripts/inject_script.js", "components/compilation_notification.html", "scripts/notification.js"],
+    "resources": ["scripts/inject_script.js",
+                  "components/compilation_notification.html",
+                  "scripts/notification.js",
+                  "styles/popup.css"],
     "matches": ["<all_urls>"]
   }],
 
@@ -27,7 +30,10 @@
   },
 
   "content_scripts": [{
-    "matches": ["https://seattleu.instructure.com/courses/*/assignments/*", "*://www.google.com/", "https://canvas.instructure.com/courses/*/assignments/*", "http://10.242.15.70:3000/courses/*/assignments/*"],
+    "matches": ["https://seattleu.instructure.com/courses/*/assignments/*", "*://www.google.com/",
+              "https://canvas.instructure.com/courses/*/assignments/*",
+              "http://10.242.15.70:3000/courses/*/assignments/*",
+               "https://canvas.instructure.com/*"],
     "js": ["scripts/Content.js"]
   }]
 }

@@ -1,11 +1,11 @@
 
-(function () {
+(function (tag) {
 
 
     var fileInput = document.createElement("input");
     fileInput.id = "fileInput";
     fileInput.type = "file";
-    fileInput.hidden = false;
+    fileInput.hidden = true;
     fileInput.setAttribute("multiple", "");
 
     fileInput.onclick = function () {
@@ -44,14 +44,14 @@
         });
     })
 
-
-
     btn_code_submission.addEventListener("click", function () {
         fileInput.click();
 
         //need to wait for file to be input
-
-        const endpoint = "http://127.0.0.1:8080/evaluate";
+        //http://csrh51.cslab.seattleu.edu:8080
+        //"http://127.0.0.1:8080/evaluate"
+        //"http://127.0.0.1:8080/evaluate";
+        const endpoint ="http://127.0.0.1:8080/evaluate"; //"http://csrh51.cslab.seattleu.edu:8080/evaluate";
         const formData = new FormData();
 
         const params = (() => {
@@ -78,7 +78,7 @@
         let assignmentId = params["assignmentId"];
         let userType = "STUDENT";
         // FIXME: extract oauth token
-        let bearerToken = "Bearer 7~cQ7XoNd23PrQhB5XBAp8v9osuQsPnyQVsDsZcHb7oTjgnoWYh2lU5qg5RMRMN8rr    ";
+        let bearerToken = "Bearer 7~cQ7XoNd23PrQhB5XBAp8v9osuQsPnyQVsDsZcHb7oTjgnoWYh2lU5qg5RMRMN8rr";
 
         fileInput.addEventListener("change", function requestFunction() {
             for (var i = 0; i < this.files.length; i++) {
@@ -112,12 +112,20 @@
 
     })
 
-    //find where to add upload button
-    //eesy eesy-tab2-container
-    //const el = document.querySelector(".FPdoLc.lJ9FBc center");
-    const el = document.body;
+    //making assumption all assignment pages have an "ag-list"
+
+    //if url ends with assignments then insert at the bottom of "ag-list"
+    //otherwise insert within the assignment page
+
+
+    //create a div
+
+
+    const el = document.getElementById("content-wrapper");
     console.log(el);
+
     el.appendChild(fileInput);
+    console.log("appending to ag-list");
     el.appendChild(btn_code_submission);
 
     el.appendChild(btn_response);
