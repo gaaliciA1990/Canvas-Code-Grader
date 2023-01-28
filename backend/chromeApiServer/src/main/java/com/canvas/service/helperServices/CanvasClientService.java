@@ -3,12 +3,12 @@ package com.canvas.service.helperServices;
 import com.canvas.controllers.chromeApiServer.ChromeApiController;
 import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.service.models.ExtensionUser;
+import com.canvas.service.models.OAuthRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import lombok.Singular;
+import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,8 +30,11 @@ import java.util.Objects;
 public class CanvasClientService {
 
     // seattleU host: https://seattleu.instructure.com/api/v1
-    public static final String CANVAS_URL = "https://canvas.instructure.com/api/v1";
+    public static final String CANVAS_URL = "http://10.242.15.70:3000/";
     public static final String AUTH_HEADER = "Authorization";
+
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
 
     private final OkHttpClient okHttpClient;
 
@@ -69,6 +72,38 @@ public class CanvasClientService {
         } catch (Exception e) {
             throw throwCanvasException(e);
         }
+    }
+
+    /**
+     * Makes a call to canvas login/oauth2/token with the required parameters, to get a response code
+     * @param clientId clientId registered with canvas server
+     * @param clientSecret clientSecret generated from canvas server
+     * @param redirectUri redirectUri registered with canvas
+     * @param code code returned from canvas passed as param
+     * @return Response object
+     * @throws CanvasAPIException
+     */
+    public Response fetchAccessTokenResponse (String clientId, String clientSecret, String redirectUri, String code) throws CanvasAPIException {
+        RequestBody formBody = new FormBody.Builder()
+                .addEncoded("grant_type", "authorization_code")
+                .addEncoded("client_id", clientId)
+                .addEncoded("client_secret", clientSecret)
+                .addEncoded("redirect_uri", redirectUri)
+                .addEncoded("code", code)
+                .build();
+
+        try {
+            Request request = new Request.Builder()
+                    .url(CANVAS_URL + "login/oauth2/token")
+                    .addHeader("ContentType", "application/x-www-form-urlencoded;charset=utf-8")
+                    .post(formBody)
+                    .build();
+            return this.okHttpClient.newCall(request).execute();
+
+        } catch (IOException e) {
+            throw throwCanvasException(e);
+        }
+
     }
 
     /**
@@ -283,7 +318,7 @@ public class CanvasClientService {
      * @return JsonNode
      * @throws IOException error message thrown
      */
-    protected JsonNode parseResponseToJsonNode(Response response) throws IOException {
+    public static JsonNode parseResponseToJsonNode(Response response) throws IOException {
         String r = response.body().string();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readTree(r);
