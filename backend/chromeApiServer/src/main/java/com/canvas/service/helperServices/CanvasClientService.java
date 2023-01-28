@@ -30,7 +30,7 @@ import java.util.Objects;
 public class CanvasClientService {
 
     // seattleU host: https://seattleu.instructure.com/api/v1
-    public static final String CANVAS_URL = "http://10.242.15.70:3000/";
+    public static final String CANVAS_URL = "https://canvas.instructure.com/api/v1";
     public static final String AUTH_HEADER = "Authorization";
 
     public static final MediaType JSON
