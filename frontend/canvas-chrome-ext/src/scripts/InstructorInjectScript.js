@@ -1,5 +1,6 @@
 console.log("inside InstructorInjectScript.js")
 
+
 initUrlChangeListener();
 
 // Listen for on initial page load for student_id to get appended 
@@ -27,6 +28,8 @@ async function secondFunction() {
     //const result = await callGetFileSubmissionApi();
     return await callGetFileSubmissionApi()
 }
+
+
 
 async function callGetFileSubmissionApi() {
     let bearerToken = "Bearer 7~c5V3FHLUmCwn8II4CvwhMOqZ5HLjxwRt8mVZIspclX9hzlSx6aHg493QMtYidwXp";
@@ -73,15 +76,61 @@ async function callGetFileSubmissionApi() {
             console.log(responseJson);
             console.log(responseJson.submissionFiles);
 
-            var displayCode = document.createElement("textarea");
-            displayCode.value = responseJson.submissionFiles[0].fileContent;
-            displayCode.style = "border: 2px solid blue;background-color:" +
-                " lightblue;padding: 10px; height: 300px;"
+            (() => {
+                /******************  BOILERPLATE *****************/
+                var displayCode = document.createElement("textarea");
+                displayCode.value = responseJson.submissionFiles[0].fileContent;
 
-            document.getElementById("submissions_container").prepend(displayCode)
-            document.getElementById("iframe_holder").style.display = "none";
+                displayCode.style.border = "2px solid blue";
+                displayCode.style.backgroundColor = "lightblue";
+                displayCode.style.padding = "10px";
+                displayCode.style.height = "300px";
+                displayCode.style.margin = "auto";
+                displayCode.style.display = "block";
 
-            console.log("displayCode: " + displayCode);
+                document.getElementById("submissions_container").prepend(displayCode)
+                document.getElementById("iframe_holder").style.display = "none";
+                /******************************************************/
+
+                var submissionFiles = responseJson.submissionFiles;
+                var readOnlyContainer = document.createElement("div");
+                readOnlyContainer.id = "read-only-container";
+
+                for (var i = 0; i < submissionFiles.length; i++) {
+                    let content = submissionFiles[i].fileContent;
+                    let name = submissionFiles[i].name;
+
+                    var tab = document.createElement("button");
+                    tab.id = name;
+                    tab.textContent = name;
+                    // TODO: print code in window
+                    // TODO: format code, apply css
+                    // TODO: append codeWindow to the readOnlyContainer
+
+                    const openTab = (name, content) => {
+                        console.log(document.getElementById("read-only-container"));
+                        alert(name);
+                        alert(content);
+                    }
+
+                    tab.addEventListener("click", function () {
+                        // TODO: hide previous tab that was open
+                        openTab(name, content);
+                    });
+
+                    readOnlyContainer.appendChild(tab);
+                }
+
+                // Center readOnlyContainer
+                readOnlyContainer.style.margin = "auto";
+                readOnlyContainer.style.display = "block";
+                readOnlyContainer.style.textAlign = "center"
+                document.getElementById("submissions_container").prepend(readOnlyContainer);
+
+                console.log("displayCode: " + displayCode);
+            })();
+
+
 
             // document.body.prepend(displayCode);
 
