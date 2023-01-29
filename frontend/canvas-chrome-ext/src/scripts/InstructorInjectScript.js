@@ -94,11 +94,18 @@ async function callGetFileSubmissionApi() {
                 var submissionFiles = responseJson.submissionFiles;
                 var readOnlyContainer = document.createElement("div");
                 readOnlyContainer.id = "read-only-container";
+
+                var tabContainer = document.createElement("div");
+                tabContainer.id = "tab-container";
+                readOnlyContainer.appendChild(tabContainer);
+
                 var codeContainer = document.createElement("div");
                 codeContainer.id = "code-container";
                 readOnlyContainer.appendChild(codeContainer);
+
                 let previousCodeId = getCodeWindowId(submissionFiles[0].name);
 
+                // Then create code windows
                 for (var i = 0; i < submissionFiles.length; i++) {
                     let content = submissionFiles[i].fileContent;
                     let name = submissionFiles[i].name;
@@ -106,32 +113,34 @@ async function callGetFileSubmissionApi() {
                     var tab = document.createElement("button");
                     tab.id = getTabId(name);
                     tab.textContent = name;
-                    codeContainer.appendChild(tab);
+                    tabContainer.appendChild(tab);
 
                     var codeWindow = document.createElement("div");
                     codeWindow.id = getCodeWindowId(name);
                     codeWindow.textContent = content;
-                    codeWindow.style.display = "none";
+                    //codeWindow.style.display = "none";
+                    if (i == 0) {
+                        codeWindow.style.display = "block";
+                    } else {
+                        codeWindow.style.display = "none";
+                    }
                     codeContainer.appendChild(codeWindow);
 
                     // TODO: print code in window
                     // TODO: format code, apply css
                     // TODO: append codeWindow to the readOnlyContainer
 
-                    const openTab = (name, content) => {
-                        console.log(document.getElementById("read-only-container"));
-                        document.getElementById(name + "-code").style.display = "block";
-                        //alert(name);
-                        //alert(content);
+                    const openTab = (name) => {
+                        var currCodeWindow = document.getElementById(getCodeWindowId(name));
+                        console.log(currCodeWindow);
+                        currCodeWindow.style.display = "block";
                     }
 
                     tab.addEventListener("click", function () {
-                        // TODO: hide previous tab that was open
                         document.getElementById(previousCodeId).style.display = "none";
                         previousCodeId = getCodeWindowId(name);
-                        openTab(name, content);
+                        openTab(name);
                     });
-
 
                 }
 
