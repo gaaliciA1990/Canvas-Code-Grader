@@ -146,7 +146,7 @@ public class ChromeApiController {
     public ResponseEntity<String> oAuth2Response (
             @RequestParam(value = "code", required = true) String code) {
         try {
-            String accessToken = this.oauthService.fetchAccessTokenResponse(code,"http://localhost:8080/oauth2Response");
+            String accessToken = this.oauthService.fetchAccessTokenResponse(code,"http://csrh51.cslab.seattleu.edu:8080/oauth2Response");
             // TODO: Encrypt access token with a key and send to user in the URL
             // TODO: For each API call, decrypt the token from the headers and use it when making canvas API calls
             HttpHeaders headers = new HttpHeaders();
