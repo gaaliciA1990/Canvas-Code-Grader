@@ -101,6 +101,7 @@ async function callGetFileSubmissionApi() {
 
                 var codeContainer = document.createElement("div");
                 codeContainer.id = "code-container";
+                codeContainer.style.overflowY = "scroll";
                 readOnlyContainer.appendChild(codeContainer);
 
                 let previousCodeId = getCodeWindowId(submissionFiles[0].name);
@@ -117,7 +118,11 @@ async function callGetFileSubmissionApi() {
 
                     var codeWindow = document.createElement("div");
                     codeWindow.id = getCodeWindowId(name);
-                    codeWindow.textContent = content;
+                    var formattedCodeElement = document.createElement("p")
+                    var readOnlyCodeView = formatCodeView(formattedCodeElement, content);
+                    codeWindow.appendChild(readOnlyCodeView);
+
+
                     //codeWindow.style.display = "none";
                     if (i == 0) {
                         codeWindow.style.display = "block";
@@ -159,6 +164,24 @@ async function callGetFileSubmissionApi() {
 
             return responseJson;
         });
+}
+
+function formatCodeView(pTagElement, content) {
+    cleanCodeView = "";
+
+    for (var i = 0; i < content.length; i++) {
+        cleanCodeView += content[i] + "\n";
+        pTagElement.textContent += content[i] + "\r\n";
+
+        // pTagElement.appendChild(document.createElement('br'));
+    }
+
+    console.log("formatted code:" + cleanCodeView);
+
+    pTagElement.style.whiteSpace = "pre-line";
+    pTagElement.style.overflowY = "auto";
+
+    return pTagElement;
 }
 
 function getTabId(filename) {
