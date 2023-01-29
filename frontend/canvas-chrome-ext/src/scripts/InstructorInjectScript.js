@@ -93,7 +93,13 @@ async function callGetFileSubmissionApi() {
                 /******************************************************/
                 var submissionFiles = responseJson.submissionFiles;
                 var readOnlyContainer = document.createElement("div");
+                readOnlyContainer.style.border = "2px solid blue";
                 readOnlyContainer.id = "read-only-container";
+                // readOnlyContainer.style.margin = "auto";
+                // readOnlyContainer.style.display = "block";
+                // readOnlyContainer.style.padding = "10px";
+                // readOnlyContainer.style.width = "auto";
+                // readOnlyContainer.style.height = "auto";
 
                 var tabContainer = document.createElement("div");
                 tabContainer.id = "tab-container";
@@ -101,7 +107,6 @@ async function callGetFileSubmissionApi() {
 
                 var codeContainer = document.createElement("div");
                 codeContainer.id = "code-container";
-                codeContainer.style.overflowY = "scroll";
                 readOnlyContainer.appendChild(codeContainer);
 
                 let previousCodeId = getCodeWindowId(submissionFiles[0].name);
@@ -118,22 +123,16 @@ async function callGetFileSubmissionApi() {
 
                     var codeWindow = document.createElement("div");
                     codeWindow.id = getCodeWindowId(name);
-                    var formattedCodeElement = document.createElement("p")
+                    var formattedCodeElement = document.createElement("textarea")
                     var readOnlyCodeView = formatCodeView(formattedCodeElement, content);
                     codeWindow.appendChild(readOnlyCodeView);
 
-
-                    //codeWindow.style.display = "none";
                     if (i == 0) {
                         codeWindow.style.display = "block";
                     } else {
                         codeWindow.style.display = "none";
                     }
                     codeContainer.appendChild(codeWindow);
-
-                    // TODO: print code in window
-                    // TODO: format code, apply css
-                    // TODO: append codeWindow to the readOnlyContainer
 
                     const openTab = (name) => {
                         var currCodeWindow = document.getElementById(getCodeWindowId(name));
@@ -166,22 +165,24 @@ async function callGetFileSubmissionApi() {
         });
 }
 
-function formatCodeView(pTagElement, content) {
+function formatCodeView(textAreaElement, content) {
     cleanCodeView = "";
 
     for (var i = 0; i < content.length; i++) {
         cleanCodeView += content[i] + "\n";
-        pTagElement.textContent += content[i] + "\r\n";
+        textAreaElement.value += content[i] + "\r\n";
 
         // pTagElement.appendChild(document.createElement('br'));
     }
 
     console.log("formatted code:" + cleanCodeView);
+    textAreaElement.style.height = "300px";
+    textAreaElement.style.width = "700px";
+    textAreaElement.style.fontFamily = "Consolas"
+    textAreaElement.readOnly = true;
+    textAreaElement.style.cursor = "default";
 
-    pTagElement.style.whiteSpace = "pre-line";
-    pTagElement.style.overflowY = "auto";
-
-    return pTagElement;
+    return textAreaElement;
 }
 
 function getTabId(filename) {
