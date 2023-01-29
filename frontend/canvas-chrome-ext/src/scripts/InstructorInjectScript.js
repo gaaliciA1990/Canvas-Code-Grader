@@ -87,27 +87,25 @@ function getParameters() {
 }
 
 function generateReadOnlyCodeView(submissionFiles) {
-    /******************  BOILERPLATE *****************/
-    var displayCode = document.createElement("textarea");
-    displayCode.value = submissionFiles[0].fileContent;
-    displayCode.style.border = "2px solid blue";
-    displayCode.style.backgroundColor = "lightblue";
-    displayCode.style.padding = "10px";
-    displayCode.style.height = "300px";
-    displayCode.style.margin = "auto";
-    displayCode.style.display = "block";
-    /******************************************************/
-
     document.getElementById("iframe_holder").style.display = "none";
 
     let readOnlyContainer = initReadOnlyContainer();
     let tabContainer = initTabContainer();
     let codeContainer = initCodeContainer();
 
+
+
     readOnlyContainer.appendChild(tabContainer);
     readOnlyContainer.appendChild(codeContainer);
 
-    let previousCodeWindowId = getCodeWindowId(submissionFiles[0].name);
+    let fileName = submissionFiles[0].name;
+    let previousCodeWindowId = getCodeWindowId(fileName);
+    let previousTabId = getTabId(fileName)
+
+    let darkModeButton = document.createElement("button");
+    let isInDarkMode = false;
+    darkModeButton.textContent = "DARK MODE"
+    readOnlyContainer.appendChild(darkModeButton);
 
     for (var i = 0; i < submissionFiles.length; i++) {
         let content = submissionFiles[i].fileContent;
@@ -118,31 +116,56 @@ function generateReadOnlyCodeView(submissionFiles) {
 
         var codeWindow;
         if (i == 0) {
-            codeWindow = initCodeWindow(name, false);
-        } else {
             codeWindow = initCodeWindow(name, true);
+            tab.style.backgroundColor = "#ccc";
+        } else {
+            codeWindow = initCodeWindow(name, false);
         }
 
-        let formattedCodeElement = formatCodeView(content);
+        let formattedCodeElement = formatCodeView(name, content);
         codeWindow.appendChild(formattedCodeElement);
         codeContainer.appendChild(codeWindow);
 
         tab.addEventListener("click", function () {
+            document.getElementById(previousTabId).style.backgroundColor = "#f1f1f1";
             document.getElementById(previousCodeWindowId).style.display = "none";
+            let currentTabId = getTabId(name);
             let currentCodeWindowId = getCodeWindowId(name);
+            previousTabId = currentTabId;
             previousCodeWindowId = currentCodeWindowId;
+            document.getElementById(currentTabId).style.backgroundColor = "#ccc";
             document.getElementById(currentCodeWindowId).style.display = "block";
+        });
+
+        tab.addEventListener("mouseenter", () => {
+            let previousColor = tab.style.backgroundColor;
+            tab.style.backgroundColor = "#ddd";
+
+            tab.addEventListener("mouseleave", () => {
+                if (document.getElementById(getCodeWindowId(name)).style.display === "none") {
+                    tab.style.backgroundColor = previousColor;
+                }
+            })
+        });
+
+        // TODO: not working quite right yet
+        darkModeButton.addEventListener("click", function () {
+            let textAreaElement = document.getElementById(name + "-textarea");
+            console.log("tea: " + textAreaElement)
+            if (isInDarkMode) {
+                textAreaElement.style.backgroundColor = "#f1f1f1";
+                textAreaElement.style.color = "black"
+                isInDarkMode = false;
+            } else {
+                textAreaElement.style.backgroundColor = "black";
+                textAreaElement.style.color = "white";
+                isInDarkMode = true;
+            }
         });
 
     }
 
-    // Center readOnlyContainer
-    readOnlyContainer.style.margin = "auto";
-    readOnlyContainer.style.display = "block";
-    readOnlyContainer.style.textAlign = "center"
     document.getElementById("submissions_container").prepend(readOnlyContainer);
-
-    console.log("displayCode: " + displayCode);
 }
 
 function generateTerminalView(submissionDirectory) {
@@ -151,25 +174,25 @@ function generateTerminalView(submissionDirectory) {
 
 function initReadOnlyContainer() {
     let readOnlyContainer = document.createElement("div");
-    readOnlyContainer.style.border = "2px solid blue";
     readOnlyContainer.id = "read-only-container";
-    // readOnlyContainer.style.margin = "auto";
-    // readOnlyContainer.style.display = "block";
-    // readOnlyContainer.style.padding = "10px";
-    // readOnlyContainer.style.width = "auto";
-    // readOnlyContainer.style.height = "auto";
+    readOnlyContainer.style.margin = "20px";
+    readOnlyContainer.style.height = "50%";
     return readOnlyContainer;
 }
 
 function initTabContainer() {
     let tabContainer = document.createElement("div");
     tabContainer.id = "tab-container";
+    tabContainer.style.border = "2px solid #9D2E1A";
+    tabContainer.style.backgroundColor = "#f1f1f1";
     return tabContainer;
 }
 
 function initCodeContainer() {
     let codeContainer = document.createElement("div");
     codeContainer.id = "code-container";
+    codeContainer.style.height = "100%";
+
     return codeContainer;
 }
 
@@ -177,18 +200,24 @@ function initTabElement(fileName) {
     let tab = document.createElement("button");
     tab.id = getTabId(fileName);
     tab.textContent = fileName;
+    tab.style.transition = "0.3s";
+    tab.style.border = "none";
+    tab.style.padding = "14px 16px";
     return tab;
 }
 
-function initCodeWindow(fileName, isHidden) {
+function initCodeWindow(fileName, isDisplayed) {
     let codeWindow = document.createElement("div");
     codeWindow.id = getCodeWindowId(fileName);
-    codeWindow.style.display = isHidden ? "none" : "block";
+    codeWindow.style.display = isDisplayed ? "inline-block" : "none";
+    codeWindow.style.height = "100%";
+    codeWindow.style.width = "100%";
     return codeWindow;
 }
 
-function formatCodeView(content) {
+function formatCodeView(name, content) {
     let formattedCodeElement = document.createElement("textarea")
+    formattedCodeElement.id = name + "-textarea"
 
     for (var i = 0; i < content.length; i++) {
         formattedCodeElement.value += content[i] + "\r\n";
@@ -196,11 +225,15 @@ function formatCodeView(content) {
 
     console.log("formatted code:" + formattedCodeElement.value);
 
-    formattedCodeElement.style.height = "300px";
-    formattedCodeElement.style.width = "700px";
+    formattedCodeElement.style.width = "100%";
+    formattedCodeElement.style.height = "100%";
+    formattedCodeElement.style.boxSizing = "border-box";
     formattedCodeElement.style.fontFamily = "Consolas"
     formattedCodeElement.readOnly = true;
     formattedCodeElement.style.cursor = "default";
+    formattedCodeElement.style.border = "2px solid #9D2E1A";
+    formattedCodeElement.style.resize = "none";
+    formattedCodeElement.style.backgroundColor = "#f1f1f1";
 
     return formattedCodeElement;
 }
