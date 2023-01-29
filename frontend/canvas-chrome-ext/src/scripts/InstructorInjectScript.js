@@ -92,20 +92,16 @@ function generateReadOnlyCodeView(submissionFiles) {
     let readOnlyContainer = initReadOnlyContainer();
     let tabContainer = initTabContainer();
     let codeContainer = initCodeContainer();
+    let darkModeButton = initDarkModeButton();
 
-
-
+    readOnlyContainer.appendChild(darkModeButton);
     readOnlyContainer.appendChild(tabContainer);
     readOnlyContainer.appendChild(codeContainer);
 
+    let isInDarkMode = false;
     let fileName = submissionFiles[0].name;
     let previousCodeWindowId = getCodeWindowId(fileName);
     let previousTabId = getTabId(fileName)
-
-    let darkModeButton = document.createElement("button");
-    let isInDarkMode = false;
-    darkModeButton.textContent = "DARK MODE"
-    readOnlyContainer.appendChild(darkModeButton);
 
     for (var i = 0; i < submissionFiles.length; i++) {
         let content = submissionFiles[i].fileContent;
@@ -148,19 +144,22 @@ function generateReadOnlyCodeView(submissionFiles) {
             })
         });
 
-        // TODO: not working quite right yet
         darkModeButton.addEventListener("click", function () {
-            let textAreaElement = document.getElementById(name + "-textarea");
-            console.log("tea: " + textAreaElement)
-            if (isInDarkMode) {
-                textAreaElement.style.backgroundColor = "#f1f1f1";
-                textAreaElement.style.color = "black"
-                isInDarkMode = false;
-            } else {
-                textAreaElement.style.backgroundColor = "black";
-                textAreaElement.style.color = "white";
-                isInDarkMode = true;
+            let codeContainerChildElements = codeContainer.getElementsByTagName("textarea");
+            for (var i = 0; i < codeContainerChildElements.length; i++) {
+                if (isInDarkMode) {
+                    let textAreaElement = codeContainerChildElements[i];
+                    textAreaElement.style.backgroundColor = "#f1f1f1";
+                    textAreaElement.style.color = "black"
+                } else {
+                    let textAreaElement = codeContainerChildElements[i];
+                    textAreaElement.style.backgroundColor = "black";
+                    textAreaElement.style.color = "white";
+                }
             }
+
+            // Flip to other mode
+            isInDarkMode = !isInDarkMode;
         });
 
     }
@@ -213,6 +212,12 @@ function initCodeWindow(fileName, isDisplayed) {
     codeWindow.style.height = "100%";
     codeWindow.style.width = "100%";
     return codeWindow;
+}
+
+function initDarkModeButton() {
+    let darkModeButton = document.createElement("button");
+    darkModeButton.textContent = "DARK MODE";
+    return darkModeButton;
 }
 
 function formatCodeView(name, content) {
