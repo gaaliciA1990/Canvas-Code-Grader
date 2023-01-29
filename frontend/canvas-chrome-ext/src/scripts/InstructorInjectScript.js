@@ -88,37 +88,51 @@ async function callGetFileSubmissionApi() {
                 displayCode.style.margin = "auto";
                 displayCode.style.display = "block";
 
-                document.getElementById("submissions_container").prepend(displayCode)
+                //document.getElementById("submissions_container").prepend(displayCode)
                 document.getElementById("iframe_holder").style.display = "none";
                 /******************************************************/
-
                 var submissionFiles = responseJson.submissionFiles;
                 var readOnlyContainer = document.createElement("div");
                 readOnlyContainer.id = "read-only-container";
+                var codeContainer = document.createElement("div");
+                codeContainer.id = "code-container";
+                readOnlyContainer.appendChild(codeContainer);
+                let previousCodeId = getCodeWindowId(submissionFiles[0].name);
 
                 for (var i = 0; i < submissionFiles.length; i++) {
                     let content = submissionFiles[i].fileContent;
                     let name = submissionFiles[i].name;
 
                     var tab = document.createElement("button");
-                    tab.id = name;
+                    tab.id = getTabId(name);
                     tab.textContent = name;
+                    codeContainer.appendChild(tab);
+
+                    var codeWindow = document.createElement("div");
+                    codeWindow.id = getCodeWindowId(name);
+                    codeWindow.textContent = content;
+                    codeWindow.style.display = "none";
+                    codeContainer.appendChild(codeWindow);
+
                     // TODO: print code in window
                     // TODO: format code, apply css
                     // TODO: append codeWindow to the readOnlyContainer
 
                     const openTab = (name, content) => {
                         console.log(document.getElementById("read-only-container"));
-                        alert(name);
-                        alert(content);
+                        document.getElementById(name + "-code").style.display = "block";
+                        //alert(name);
+                        //alert(content);
                     }
 
                     tab.addEventListener("click", function () {
                         // TODO: hide previous tab that was open
+                        document.getElementById(previousCodeId).style.display = "none";
+                        previousCodeId = getCodeWindowId(name);
                         openTab(name, content);
                     });
 
-                    readOnlyContainer.appendChild(tab);
+
                 }
 
                 // Center readOnlyContainer
@@ -138,3 +152,10 @@ async function callGetFileSubmissionApi() {
         });
 }
 
+function getTabId(filename) {
+    return filename + "-tab";
+}
+
+function getCodeWindowId(filename) {
+    return filename + "-code";
+}
