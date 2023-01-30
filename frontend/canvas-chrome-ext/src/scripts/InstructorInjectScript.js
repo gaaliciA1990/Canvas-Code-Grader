@@ -12,9 +12,13 @@ async function beginUrlChangeListener() {
             console.log(`URL changed from ${previousUrl} to ${window.location.href}`);
             previousUrl = window.location.href;
 
+            // TODO: call delete API to erase previous student submission directory
+
             if (studentHasSubmission()) {
                 // On URL change, update UI with new student submission data
                 await updateStudentSubmissionView();
+            } else {
+                console.log("student missing submission, did not update view");
             }
         }
     });
@@ -182,7 +186,7 @@ function initReadOnlyContainer() {
 function initTabContainer() {
     let tabContainer = document.createElement("div");
     tabContainer.id = "tab-container";
-    tabContainer.style.border = "2px solid #9D2E1A";
+    tabContainer.style.border = "2px solid #43A6C6";
     tabContainer.style.backgroundColor = "#f1f1f1";
     return tabContainer;
 }
@@ -216,7 +220,9 @@ function initCodeWindow(fileName, isDisplayed) {
 
 function initDarkModeButton() {
     let darkModeButton = document.createElement("button");
-    darkModeButton.textContent = "DARK MODE";
+    darkModeButton.textContent = "Toggle Dark Mode";
+    darkModeButton.style.padding = "10px";
+    darkModeButton.style.margin = "5px";
     return darkModeButton;
 }
 
@@ -236,7 +242,7 @@ function formatCodeView(name, content) {
     formattedCodeElement.style.fontFamily = "Consolas"
     formattedCodeElement.readOnly = true;
     formattedCodeElement.style.cursor = "default";
-    formattedCodeElement.style.border = "2px solid #9D2E1A";
+    formattedCodeElement.style.border = "2px solid #43A6C6";
     formattedCodeElement.style.resize = "none";
     formattedCodeElement.style.backgroundColor = "#f1f1f1";
 
