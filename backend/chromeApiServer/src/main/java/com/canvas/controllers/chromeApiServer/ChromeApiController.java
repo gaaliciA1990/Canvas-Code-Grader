@@ -4,15 +4,19 @@ import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.exceptions.UserNotAuthorizedException;
 import com.canvas.service.EvaluationService;
+import com.canvas.service.helperServices.OAuthService;
 import com.canvas.service.SubmissionDirectoryService;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
 import com.canvas.service.models.UserType;
 import com.canvas.service.models.submission.Submission;
+import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +32,7 @@ public class ChromeApiController {
     private final EvaluationService evaluation;
     private final CanvasClientService canvasClientService;
     private final SubmissionDirectoryService submissionDirectoryService;
+    private final OAuthService oauthService;
 
     // Logger object
     private static final Logger logger = LoggerFactory.getLogger(ChromeApiController.class);
@@ -41,6 +46,7 @@ public class ChromeApiController {
     ) {
         this.evaluation = studentEval;
         this.canvasClientService = canvasClientService;
+        this.oauthService = new OAuthService(canvasClientService);
         this.submissionDirectoryService = submissionDirectoryService;
     }
 
@@ -125,6 +131,51 @@ public class ChromeApiController {
         ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, null, type);
 
         return evaluation.compileStudentCodeFile(user, files);
+    }
+
+    /**
+     * Get request to fetch access token from canvas.
+     *
+     * @param code code returned by canvas after login
+     * @return Redirects to loginSuccess/loginFailure route based on access token response from canvas
+     * @throws IncorrectRequestParamsException
+     */
+    @GetMapping(
+            value = "/oauth2Response"
+    )
+    public ResponseEntity<String> oAuth2Response (
+            @RequestParam(value = "code", required = true) String code) {
+        try {
+            String accessToken = this.oauthService.fetchAccessTokenResponse(code,"http://csrh51.cslab.seattleu.edu:8080/oauth2Response");
+            // TODO: Encrypt access token with a key and send to user in the URL
+            // TODO: For each API call, decrypt the token from the headers and use it when making canvas API calls
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Location", "/loginSuccess?access_token=" + accessToken);
+            return new ResponseEntity<String>("Login Success",headers, HttpStatus.FOUND);
+        } catch (Exception e) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Location", "/loginFail");
+            return new ResponseEntity<String>(e.getMessage(),headers,HttpStatus.FOUND);
+        }
+    }
+
+    /**
+     * Get route upon login success
+     * @return Status OK / 200
+     */
+    @GetMapping(value = "/loginSuccess")
+    public ResponseEntity<String> loginSuccess() {
+        return new ResponseEntity<String>("Login success",HttpStatus.OK);
+    }
+
+
+    /**
+     * Get route upon login fail
+     * @return unauthorized / 401
+     */
+    @GetMapping(value = "/loginFail")
+    public ResponseEntity<String> loginFail() {
+        return new ResponseEntity<String>("Login Failed",HttpStatus.UNAUTHORIZED);
     }
 
     /**

@@ -127,6 +127,27 @@ class CanvasClientServiceTest {
             ))
             .build();
 
+    private final Response unAuthorizedAccessTokenResponse = new Response.Builder()
+            .request(USER_ID_REQUEST)
+            .protocol(Protocol.HTTP_2)
+            .code(401) // status code
+            .message("")
+            .body(ResponseBody.create(
+                    MediaType.get("application/json; charset=utf-8"),
+                    "{\"message\": \"UnAuthorized\" }"
+            ))
+            .build();
+
+    private final Response successAccessTokenResponse = new Response.Builder()
+            .request(USER_ID_REQUEST)
+            .protocol(Protocol.HTTP_2)
+            .code(200) // status code
+            .message("")
+            .body(ResponseBody.create(
+                    MediaType.get("application/json; charset=utf-8"),
+                    "{\"access_token\": \"xxxxxxyy\" }"
+            ))
+            .build();
     private final Response emptyResponse = new Response.Builder()
             .request(USER_ID_REQUEST)
             .protocol(Protocol.HTTP_2)
@@ -448,6 +469,38 @@ class CanvasClientServiceTest {
         Assertions.assertEquals(
                 "12345",
                 canvasClientService.getFileId("folderId", "fooAssignmentId", BEARER_TOKEN)
+        );
+    }
+
+    @Test
+    public void testGetAccessToken_returnsUnAuthroziedResponse() throws IOException, CanvasAPIException {
+        when(okHttpClient.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(unAuthorizedAccessTokenResponse);
+        Response response1 = canvasClientService.fetchAccessTokenResponse("testClientId", "testClientId", "testClientId", "testClientId");
+        Assertions.assertEquals(
+                401,
+                response1.code()
+        );
+    }
+
+    @Test
+    public void testGetAccessToken_returnsSuccessResponse() throws IOException, CanvasAPIException {
+        when(okHttpClient.newCall(any())).thenReturn(call);
+        when(call.execute()).thenReturn(successAccessTokenResponse);
+        Response response1 = canvasClientService.fetchAccessTokenResponse("testClientId", "testClientId", "testClientId", "testClientId");
+        Assertions.assertEquals(
+                200,
+                response1.code()
+        );
+    }
+
+    @Test
+    public void testGetAccessToken_throwsCanvasApiException() throws IOException, CanvasAPIException {
+        when(okHttpClient.newCall(any())).thenReturn(call);
+        when(call.execute()).thenThrow(new IOException());
+        Assertions.assertThrows(
+                CanvasAPIException.class,
+                () -> canvasClientService.fetchAccessTokenResponse("testClientId", "testClientId", "testClientId", "testClientId")
         );
     }
 

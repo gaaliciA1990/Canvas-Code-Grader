@@ -1,6 +1,7 @@
 package com.canvas.controllers.chromeApiServer;
 
 import com.canvas.exceptions.CanvasAPIException;
+import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.service.EvaluationService;
 import com.canvas.service.SubmissionDirectoryService;
@@ -17,6 +18,10 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.catalina.User;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -190,6 +195,104 @@ class ChromeApiControllerUnitTest {
     }
 
     @Test
+    public void getOAuth2Response_should_return_login_success_when_access_token_is_returned() throws Exception {
+        // Set Up
+        String code = "testCode";
+        Mockito.when(canvasClientService.fetchAccessTokenResponse(any(), any(), any(), any())).thenReturn(new Response.Builder()
+                .request(new Request.Builder()
+                        .url(CanvasClientService.CANVAS_URL + "/oauthResponse")
+                        .get()
+                        .build())
+                .protocol(Protocol.HTTP_2)
+                .code(200) // status code
+                .message("")
+                .body(ResponseBody.create(
+                        okhttp3.MediaType.get("application/json; charset=utf-8"),
+                        "{\"access_token\": \"TestAccessToken\" }"
+                )).build());
+
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/oauth2Response")
+                        .param("code", code)).andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.FOUND.value(), result.getResponse().getStatus());
+        assertEquals("/loginSuccess?access_token=TestAccessToken", result.getResponse().getRedirectedUrl());
+    }
+
+    @Test
+    public void getOAuth2Response_should_return_bad_request_when_code_is_not_passed() throws Exception {
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/oauth2Response")).andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+    }
+    @Test
+    public void getOAuth2Response_should_return_login_failure_when_access_token_response_fails() throws Exception {
+        // Set Up
+        Mockito.when(canvasClientService.fetchAccessTokenResponse(any(), any(), any(), any())).thenThrow(new CanvasAPIException());
+
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/oauth2Response")
+                .param("code", "testCode")).andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.FOUND.value(), result.getResponse().getStatus());
+        assertEquals("/loginFail", result.getResponse().getRedirectedUrl());
+    }
+    @ParameterizedTest
+    @ValueSource(ints = {302, 401, 200})
+    public void getOAuth2Response_should_return_login_failure_when_access_token_response_is_not_valid(int code) throws Exception {
+        // Set Up
+        Mockito.when(canvasClientService.fetchAccessTokenResponse(any(), any(), any(), any())).thenReturn(new Response.Builder()
+                .request(new Request.Builder()
+                        .url(CanvasClientService.CANVAS_URL + "/oauthResponse")
+                        .get()
+                        .build())
+                .protocol(Protocol.HTTP_2)
+                .code(code) // status code
+                .message("")
+                .body(ResponseBody.create(
+                        okhttp3.MediaType.get("application/json; charset=utf-8"),
+                        "{\"message\": \"Unauthorized\" }"
+                )).build());
+
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/oauth2Response")
+                .param("code", "testCode")).andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.FOUND.value(), result.getResponse().getStatus());
+        assertEquals("/loginFail", result.getResponse().getRedirectedUrl());
+    }
+
+    @Test
+    public void getLoginFail_should_succeed() throws Exception {
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/loginFail")).andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+    }
+
+    @Test
+    public void getLoginSuccess_should_succeed() throws Exception {
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/loginSuccess")).andReturn();
+
+        // Assert
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        assertEquals("Login success", result.getResponse().getContentAsString());
+    }
+
+    @Test
     public void retrieveStudentSubmissionFiles_shouldReturnResponseEntityOK() throws Exception {
         // Arrange
         String bearerToken = "authToken";
@@ -328,5 +431,4 @@ class ChromeApiControllerUnitTest {
                 Arguments.of("", "", "", "", UserType.GRADER)
         );
     }
-
 }
