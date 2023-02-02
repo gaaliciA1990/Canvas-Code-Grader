@@ -9,6 +9,7 @@ import com.canvas.service.models.submission.Submission;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -205,7 +206,36 @@ class SubmissionDirectoryServiceTest {
             File directory = new File("fooId");
             directory.delete();
         }
+
+        @Test
+        public void testDeleteSubmissionDirectory() {
+            // Given
+            ExtensionUser user = new ExtensionUser(
+                    "fooToken",
+                    "fooId",
+                    "fooCourse",
+                    "fooAssignment",
+                    "fooId",
+                    UserType.STUDENT);
+            String uniqueDirectoryName = submissionDirectoryService.generateUniqueDirectoryName(
+                    user.getCourseId(),
+                    user.getAssignmentId(),
+                    user.getStudentId()
+            );
+            File dir = new File(uniqueDirectoryName);
+            dir.mkdirs();
+            // Assert exists
+            Assertions.assertTrue(dir.exists());
+
+            // When
+            submissionDirectoryService.deleteSubmissionDirectory(user);
+
+            // Then
+            // Assert does not exist
+            Assertions.assertFalse(dir.exists());
+        }
     }
+
 
 
 }

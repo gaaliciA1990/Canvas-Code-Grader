@@ -4,6 +4,7 @@ import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.helperServices.FileService;
 import com.canvas.service.models.ExtensionUser;
+import com.canvas.service.models.submission.Deletion;
 import com.canvas.service.models.submission.Submission;
 import com.canvas.service.models.submission.SubmissionFile;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,13 +106,31 @@ public class SubmissionDirectoryService {
         return submissionFiles.toArray(new SubmissionFile[0]);
     }
 
+    public ResponseEntity<Deletion> deleteSubmissionDirectory(ExtensionUser user) {
+        String submissionDirectory = generateUniqueDirectoryName(user.getCourseId(), user.getAssignmentId(), user.getStudentId());
+        String description = String.format(
+                "courdeId:%s,\nassignmentId:%s,\nstudentId:%s,\nsubmissionDirectory:%s",
+                user.getCourseId(), user.getAssignmentId(), user.getStudentId(), submissionDirectory
+        );
+
+        // Now delete
+        boolean success = deleteDirectory(submissionDirectory);
+
+        Deletion deletion = Deletion.builder()
+                .success(success)
+                .description(description)
+                .build();
+
+        return new ResponseEntity<>(deletion, HttpStatus.OK);
+    }
+
     /**
      * Deletes the submission directory
      *
      * @param directory name of directory to delete
      */
-    public void deleteDirectory(String directory) {
-        fileService.deleteDirectory(directory);
+    public boolean deleteDirectory(String directory) {
+        return fileService.deleteDirectory(directory);
     }
 
     /**
@@ -129,7 +148,7 @@ public class SubmissionDirectoryService {
      * @param idArgs IDs to hash
      * @return unique hash value
      */
-    private String generateUniqueDirectoryName(String ... idArgs) {
+    protected String generateUniqueDirectoryName(String ... idArgs) {
         String[] idList = Arrays.copyOf(idArgs, idArgs.length);
         return String.valueOf(Arrays.hashCode(idList));
     }

@@ -9,6 +9,7 @@ import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
 import com.canvas.service.models.UserType;
+import com.canvas.service.models.submission.Deletion;
 import com.canvas.service.models.submission.Submission;
 import com.canvas.service.models.submission.SubmissionFile;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,6 +24,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -407,6 +409,32 @@ class ChromeApiControllerUnitTest {
                 "Incorrect request parameters received. Check the parameters meet the requirements",
                 exception.getMessage()
         );
+    }
+
+    @Test
+    void deleteStudentSubmissionFiles_shouldReturnResponseEntityOK() throws Exception {
+        // Given
+        String endpoint = "/submission/courses/fooCourseId/assignments/fooAssignmentId";
+        Deletion deletion = new Deletion(true, "fooDescription");
+
+        Mockito.when(canvasClientService.fetchUserId("fooBearerToken")).thenReturn("fooUserId");
+        Mockito.when(submissionDirectoryService.deleteSubmissionDirectory(any()))
+                .thenReturn(new ResponseEntity<>(deletion, HttpStatus.OK));
+
+        // Act
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.delete(endpoint)
+                        .header("Authorization", "fooBearerToken")
+                        .param("userType", String.valueOf(UserType.GRADER))
+                        .param("studentId", "fooUserId")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())  // assert we get OK response
+                .andReturn();
+
+        Deletion deletionResp = new ObjectMapper()
+                .readValue(result.getResponse().getContentAsString(), Deletion.class);
+
+        Assertions.assertEquals("fooDescription", deletion.getDescription());
+        Assertions.assertTrue(deletion.isSuccess());
     }
 
     /******************** Static methods for providing parameters to parameterized tests ***************************/
