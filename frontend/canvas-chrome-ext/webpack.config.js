@@ -25,6 +25,11 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
     },
+
+    optimization: {
+        minimize: false
+    },
+
     module: {
         rules: [{
             test: /\.(js|jsx)$/,
@@ -37,6 +42,7 @@ module.exports = {
             }
         }],
     },
+
     plugins: [
         new HtmlWebpackPlugin({
             template: './src/html/popup.html',
