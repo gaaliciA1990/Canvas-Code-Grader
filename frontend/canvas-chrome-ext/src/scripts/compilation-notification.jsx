@@ -1,4 +1,7 @@
-//script that is being used in compilation_notification.html
+/**
+ * script that is being used in compilation-notification.html
+ */
+
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
 
     if (msg.action === 'compilation_results') {

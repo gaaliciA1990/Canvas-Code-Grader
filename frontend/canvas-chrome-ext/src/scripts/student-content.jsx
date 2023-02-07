@@ -11,7 +11,7 @@ function injectScript(file_path){
     node.appendChild(script);
 }
 
-let script_url = chrome.runtime.getURL("scripts/inject_script.js");
+let script_url = chrome.runtime.getURL("scripts/student-inject_script.jsx");
 const regex = /^https:\/\/canvas\.instructure\.com\/courses\/[0-9][0-9][0-9][0-9][0-9][0-9][0-9]\/assignments/;
 
 

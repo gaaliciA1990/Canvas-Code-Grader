@@ -1,0 +1,1 @@
+chrome.runtime.onMessage.addListener((function(t,e,n){"compilation_results"===t.action&&(console.log(t.data),n("confirmed"),document.getElementById("update-text").textContent=JSON.stringify(t.data,null,"  "))}));

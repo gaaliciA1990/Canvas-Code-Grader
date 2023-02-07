@@ -1,3 +1,6 @@
+/*
+Main extension window styles
+ */
 .popup {
     text-align: center;
 }
@@ -17,7 +20,7 @@
     color: white;
 }
 
-.popup-container{
+.popup-container {
     background-color: #282c34;
     min-height: 50vh;
     display: flex;
@@ -59,6 +62,52 @@ button.ghost {
 }
 
 
+/*
+Styles for compilation notifications
+ */
+.compilation-notification-body {
+    background: rgb(27, 27, 27);
+    margin: 0;
+    display: grid;
+    place-content: center;
+    height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    color: white;
+}
+
+.compilation-notification-results-container {
+    position: relative;
+    width: 60%;
+    margin: 0 auto;
+    background: #232323;
+    padding: 2em;
+}
+
+
+/*
+Instructor view styles
+ */
+p.secret {
+    display: none;
+}
+
+
+/*
+Read Only View Styles for code submissions
+ */
+.submission-view-a {
+    display: contents;
+    border: 2px solid red;
+    background-color: #ccc;
+    padding: 10px;
+    width: 200px;
+}
+
+.submission-view-b {
+    border: 2px solid blue;
+    background-color: lightblue;
+    padding: 10px;
+}
 
 
 /* #088099 bluish*/

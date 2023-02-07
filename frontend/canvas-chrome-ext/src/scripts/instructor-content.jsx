@@ -13,7 +13,7 @@ function injectScript(file_path, tag) {
     node.appendChild(script);
 }
 
-injectScript(chrome.runtime.getURL("scripts/InstructorInjectScript.js"), 'body');
+injectScript(chrome.runtime.getURL("scripts/instructor-inject-script.jsx"), 'body');
 
 try {
     window.addEventListener("message", function (msg) {

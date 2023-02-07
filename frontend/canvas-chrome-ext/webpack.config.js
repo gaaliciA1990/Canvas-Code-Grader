@@ -6,11 +6,15 @@
 
 const path = require('path');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
     entry: {
         popup: './src/popup.jsx',
-        background: './src/background.jsx'
+        background: './src/background.jsx',
+        student: './src/scripts/student-content.jsx',
+        instructor: './src/scripts/instructor-content.jsx',
+        compilationStatus: './src/scripts/compilation-notification.jsx',
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -29,7 +33,13 @@ module.exports = {
         }],
     },
     plugins: [new HtmlWebpackPlugin({
-        template: './src/popup.html',
+        template: './src/html/popup.html',
         filename: 'popup.html'
-    })],
+    }),
+        new CopyPlugin({
+            patterns: [
+                {from: "public"},
+            ],
+        }),
+    ],
 };
