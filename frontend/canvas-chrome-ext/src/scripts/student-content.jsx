@@ -11,14 +11,14 @@ function injectScript(file_path){
     node.appendChild(script);
 }
 
-let script_url = chrome.runtime.getURL("scripts/student-inject_script.jsx");
+let script_url = chrome.runtime.getURL("scripts/student-inject-script.jsx");
 const regex = /^https:\/\/canvas\.instructure\.com\/courses\/[0-9][0-9][0-9][0-9][0-9][0-9][0-9]\/assignments/;
 
 
 //event listener that makes sure all DOM elements are loaded prior to running injection script
 document.addEventListener('readystatechange', event => {
     if (event.target.readyState === "complete") {
-        if(window.location.toString().match(regex)) {
+        if(true) {
             //onload inject the script
             injectScript(script_url, 'ag-list');
         }

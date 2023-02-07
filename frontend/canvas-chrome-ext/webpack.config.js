@@ -1,6 +1,9 @@
 /**
  * Webpack for building the project and creating static
- * versions of the components we need to display on the webpage
+ * versions of the components we need to display on the webpage and
+ * placing them in the dist folder. The names created here are referenced in
+ * manifest.json
+ *
  * @type {path.PlatformPath | path}
  */
 
@@ -12,8 +15,10 @@ module.exports = {
     entry: {
         popup: './src/popup.jsx',
         background: './src/background.jsx',
-        student: './src/scripts/student-content.jsx',
-        instructor: './src/scripts/instructor-content.jsx',
+        studentContent: './src/scripts/student-content.jsx',
+        studentInject: './src/scripts/student-inject-script.jsx',
+        instructorContent: './src/scripts/instructor-content.jsx',
+        instructorInject: './src/scripts/instructor-inject-script.jsx',
         compilationStatus: './src/scripts/compilation-notification.jsx',
     },
     output: {
@@ -32,10 +37,22 @@ module.exports = {
             }
         }],
     },
-    plugins: [new HtmlWebpackPlugin({
-        template: './src/html/popup.html',
-        filename: 'popup.html'
-    }),
+    plugins: [
+        new HtmlWebpackPlugin({
+            template: './src/html/popup.html',
+            filename: 'popup.html',
+            chunks: ['popup']
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/html/instructor-view.html',
+            filename: 'instructor-view.html',
+            chunks: ['instructorContent']
+        }),
+        new HtmlWebpackPlugin({
+            template: './src/html/compilation-notification.html',
+            filename: 'compilation-notification.html',
+            chunks: ['compilationStatus']
+        }),
         new CopyPlugin({
             patterns: [
                 {from: "public"},

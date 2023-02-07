@@ -1,0 +1,139 @@
+/*
+Main extension window styles
+ */
+.popup {
+    text-align: center;
+}
+
+.popup-logo {
+    height: 20vmin;
+    pointer-events: none;
+}
+
+.popup-header {
+    background-color: #aa0000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
+}
+
+.popup-container {
+    background-color: #282c34;
+    min-height: 50vh;
+    display: flex;
+    flex-direction: column;
+    align-items: normal;
+    justify-content: flex-start;
+    font-size: calc(10px + 2vmin);
+    color: white;
+}
+
+.popup-button-container {
+    background-color: #282c34;
+    min-height: 20vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
+}
+
+.popup-link {
+    color: #61dafb;
+}
+
+body {
+    width: 300px;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+button {
+    border-radius: 20px;
+    border: 1px solid #088099;
+    background-color: #088099;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 12px 45px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: transform 80ms ease-in;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+button:focus {
+    outline: none;
+}
+
+button.ghost {
+    background-color: transparent;
+    border-color: #FFFFFF;
+}
+
+
+/*
+Styles for compilation notifications
+ */
+.compilation-notification-body {
+    background: rgb(27, 27, 27);
+    margin: 0;
+    display: grid;
+    place-content: center;
+    height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    color: white;
+}
+
+.compilation-notification-results-container {
+    position: relative;
+    width: 60%;
+    margin: 0 auto;
+    background: #232323;
+    padding: 2em;
+}
+
+
+/*
+Instructor view styles
+ */
+p.secret {
+    display: none;
+}
+
+
+/*
+Read Only View Styles for code submissions
+ */
+.submission-view-a {
+    display: contents;
+    border: 2px solid red;
+    background-color: #ccc;
+    padding: 10px;
+    width: 200px;
+}
+
+.submission-view-b {
+    border: 2px solid blue;
+    background-color: lightblue;
+    padding: 10px;
+}
+
+
+/* #088099 bluish*/
+/* #1E2021 off gray*/

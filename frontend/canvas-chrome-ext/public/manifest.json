@@ -8,12 +8,12 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "scripts/inject_script.js",
-        "components/compilation_notification.html",
-        "scripts/notification.js",
-        "styles/popup.css",
-        "components/submission_read_only_view.html",
-        "scripts/InstructorInjectScript.js"
+        "studentInject.js",
+        "instructorInject.js",
+        "compilationStatus.js",
+        "compilation-notification.html",
+        "instructor-view.html",
+        "extension-styles.css"
       ],
       "matches": [
         "<all_urls>"
@@ -21,8 +21,8 @@
     }
   ],
   "action": {
-    "default_popup": "components/popup.html",
-    "default_icon": "images/su_emblem.png"
+    "default_popup": "popup.html",
+    "default_icon": "su_emblem.png"
   },
   "permissions": [
     "activeTab",
@@ -30,7 +30,7 @@
     "scripting"
   ],
   "background": {
-    "service_worker": "background.jsx"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
@@ -39,10 +39,10 @@
         "*://www.google.com/",
         "https://canvas.instructure.com/courses/*/assignments/*",
         "http://10.242.15.70:3000/courses/*/assignments/*",
-        "https://canvas.instructure.com/*"
+        "https://canvas.instructure.com/courses/*/assignments/*"
       ],
       "js": [
-        "scripts/student-content.js"
+        "studentContent.js"
       ]
     },
     {
@@ -55,7 +55,7 @@
         "https://seattleu.instructure.com/courses/*/gradebook/speed_grader?assignment_id=*&student_id=*"
       ],
       "js": [
-        "scripts/instructor-content.js"
+        "instructorContent.js"
       ]
     }
   ]
