@@ -9,7 +9,10 @@
     {
       "resources": [
         "studentInject.js",
+        "studentContent.js",
         "instructorInject.js",
+        "instructorContent.js",
+        "background.js",
         "compilationStatus.js",
         "compilation-notification.html",
         "instructor-view.html",

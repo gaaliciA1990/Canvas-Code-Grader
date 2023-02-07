@@ -1,8 +1,7 @@
 console.log("Chrome ext ready");
 
 
-
-function injectScript(file_path){
+function injectScript(file_path) {
     let node = document.body;
     let script = document.createElement("script");
     script.setAttribute('type', 'text/javascript');
@@ -11,23 +10,20 @@ function injectScript(file_path){
     node.appendChild(script);
 }
 
-let script_url = chrome.runtime.getURL("scripts/student-inject-script.jsx");
-const regex = /^https:\/\/canvas\.instructure\.com\/courses\/[0-9][0-9][0-9][0-9][0-9][0-9][0-9]\/assignments/;
-
+// reference the js file created by the webpack
+let script_url = chrome.runtime.getURL("studentInject.js");
 
 //event listener that makes sure all DOM elements are loaded prior to running injection script
 document.addEventListener('readystatechange', event => {
     if (event.target.readyState === "complete") {
-        if(true) {
-            //onload inject the script
-            injectScript(script_url, 'ag-list');
-        }
+        //onload inject the script
+        injectScript(script_url, 'ag-list');
     }
 })
 
 
 try {
-    window.addEventListener("message", function(msg) {
+    window.addEventListener("message", function (msg) {
 
         if (msg.data.type
             && (msg.data.type == "FROM_PAGE")) {
@@ -37,13 +33,13 @@ try {
             //console.log(msg.data.output);
 
             //by default do these msgs alaways go to BG?
-            chrome.runtime.sendMessage({type: "waiting", output: msg.data.output }, (response) => {
+            chrome.runtime.sendMessage({type: "waiting", output: msg.data.output}, (response) => {
                 console.log(response);
             });
         }
 
     }, false);
-}catch (e) {
+} catch (e) {
     console.log(e);
 }
 
