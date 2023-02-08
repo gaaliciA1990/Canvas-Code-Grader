@@ -49,12 +49,7 @@ module.exports = {
             filename: 'popup.html',
             chunks: ['popup']
         }),
-        new HtmlWebpackPlugin({
-            template: './src/html/instructor-view.html',
-            filename: 'instructor-view.html',
-            chunks: ['instructorContent']
-        }),
-        new HtmlWebpackPlugin({
+                new HtmlWebpackPlugin({
             template: './src/html/compilation-notification.html',
             filename: 'compilation-notification.html',
             chunks: ['compilationStatus']

@@ -110,14 +110,6 @@ Styles for compilation notifications
 
 
 /*
-Instructor view styles
- */
-p.secret {
-    display: none;
-}
-
-
-/*
 Read Only View Styles for code submissions
  */
 .submission-view-a {
