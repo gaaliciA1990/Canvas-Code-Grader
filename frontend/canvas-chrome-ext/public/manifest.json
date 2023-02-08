@@ -8,14 +8,13 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "studentInject.js",
-        "studentContent.js",
-        "instructorInject.js",
-        "instructorContent.js",
+        "student-inject-script.js",
+        "student-content.js",
+        "instructor-inject-script.js",
+        "instructor-content.js",
         "background.js",
-        "compilationStatus.js",
+        "compilation-notification.js",
         "compilation-notification.html",
-        "instructor-view.html",
         "extension-styles.css"
       ],
       "matches": [
@@ -45,7 +44,7 @@
         "https://canvas.instructure.com/courses/*/assignments/*"
       ],
       "js": [
-        "studentContent.js"
+        "student-content.js"
       ]
     },
     {
@@ -58,7 +57,7 @@
         "https://seattleu.instructure.com/courses/*/gradebook/speed_grader?assignment_id=*&student_id=*"
       ],
       "js": [
-        "instructorContent.js"
+        "instructor-content.js"
       ]
     }
   ]

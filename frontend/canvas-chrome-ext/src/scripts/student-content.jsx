@@ -11,7 +11,7 @@ function injectScript(file_path) {
 }
 
 // reference the js file created by the webpack
-let script_url = chrome.runtime.getURL("studentInject.js");
+let script_url = chrome.runtime.getURL("student-inject-script.js");
 
 //event listener that makes sure all DOM elements are loaded prior to running injection script
 document.addEventListener('readystatechange', event => {
