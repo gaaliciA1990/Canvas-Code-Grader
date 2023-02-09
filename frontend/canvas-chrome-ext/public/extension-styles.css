@@ -109,23 +109,6 @@ Styles for compilation notifications
 }
 
 
-/*
-Read Only View Styles for code submissions
- */
-.submission-view-a {
-    display: contents;
-    border: 2px solid red;
-    background-color: #ccc;
-    padding: 10px;
-    width: 200px;
-}
-
-.submission-view-b {
-    border: 2px solid blue;
-    background-color: lightblue;
-    padding: 10px;
-}
-
 
 /* #088099 bluish*/
 /* #1E2021 off gray*/
