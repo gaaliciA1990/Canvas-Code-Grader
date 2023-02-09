@@ -12,8 +12,8 @@ function injectScript(file_path, tag) {
 
     node.appendChild(script);
 }
-
-injectScript(chrome.runtime.getURL("scripts/InstructorInjectScript.js"), 'body');
+// reference the js file created by the webpack
+injectScript(chrome.runtime.getURL("instructor-inject-script.js"), 'body');
 
 try {
     window.addEventListener("message", function (msg) {

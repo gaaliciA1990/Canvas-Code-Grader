@@ -1,3 +1,7 @@
+/**
+ * Event manager
+ */
+
 try {
 
     function onTabLoaded(tabId) {
@@ -18,7 +22,7 @@ try {
         if (message.type === 'waiting') {
 
             const notification_window = await chrome.tabs.create({
-                url: chrome.runtime.getURL('components/compilation_notification.html'),
+                url: chrome.runtime.getURL('components/compilation-notification.html'),
                 active: false
             });
             await onTabLoaded(notification_window.id);

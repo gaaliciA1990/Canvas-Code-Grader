@@ -1,4 +1,4 @@
-console.log("inside InstructorInjectScript.js")
+console.log("inside instructor-inject-script.jsx")
 
 beginUrlChangeListener();
 

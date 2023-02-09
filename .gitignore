@@ -32,6 +32,7 @@ build/
 
 ### React App
 
+
 ### VS Code ###
 .vscode/
 
@@ -45,6 +46,7 @@ coverage
 
 # production
 build
+dist
 
 # misc
 .DS_Store
