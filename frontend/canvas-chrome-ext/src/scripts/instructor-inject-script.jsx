@@ -1,5 +1,4 @@
 console.log("inside instructor-inject-script.jsx")
-
 beginUrlChangeListener();
 
 // Listen for on initial page load for student_id to get appended 
@@ -173,6 +172,13 @@ function generateReadOnlyCodeView(submissionFiles) {
 
 function generateTerminalView(submissionDirectory) {
     // TODO: terminal view function
+    console.log("generate terminal view function");
+    let terminalFrame = document.createElement("iframe");
+    terminalFrame.src = "http://localhost:8000/"
+    terminalFrame.width = "500px"
+    terminalFrame.height = "300px"
+    terminalFrame.style.resize = "both"
+    document.body.appendChild(terminalFrame);
 }
 
 function initReadOnlyContainer() {
