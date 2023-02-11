@@ -50,8 +50,9 @@ async function updateStudentSubmissionView() {
             // Check current student page matches the studentId in case
             // new student submission was clicked before API call is resolved
             if (window.location.href.includes(params["studentId"])) {
-                generateReadOnlyCodeView(responseJson.submissionFiles);
-                generateTerminalView(responseJson.submissionDirectory);
+                let instructorViewContainer = initInstructorViewContainer();
+                generateReadOnlyCodeView(responseJson.submissionFiles, instructorViewContainer);
+                generateTerminalView(responseJson.submissionDirectory, instructorViewContainer);
             }
         });
 }
@@ -89,17 +90,17 @@ function getParameters() {
     return params;
 }
 
-function generateReadOnlyCodeView(submissionFiles) {
+function generateReadOnlyCodeView(submissionFiles, instructorViewContainer) {
     document.getElementById("iframe_holder").style.display = "none";
 
-    let readOnlyContainer = initReadOnlyContainer();
+
     let tabContainer = initTabContainer();
     let codeContainer = initCodeContainer();
     let darkModeButton = initDarkModeButton();
 
-    readOnlyContainer.appendChild(darkModeButton);
-    readOnlyContainer.appendChild(tabContainer);
-    readOnlyContainer.appendChild(codeContainer);
+    instructorViewContainer.appendChild(darkModeButton);
+    instructorViewContainer.appendChild(tabContainer);
+    instructorViewContainer.appendChild(codeContainer);
 
     let isInDarkMode = false;
     let fileName = submissionFiles[0].name;
@@ -167,26 +168,28 @@ function generateReadOnlyCodeView(submissionFiles) {
 
     }
 
-    document.getElementById("submissions_container").prepend(readOnlyContainer);
+    document.getElementById("submissions_container").prepend(instructorViewContainer);
 }
 
-function generateTerminalView(submissionDirectory) {
+function generateTerminalView(submissionDirectory, instructorViewContainer) {
     // TODO: terminal view function
     console.log("generate terminal view function");
     let terminalFrame = document.createElement("iframe");
     terminalFrame.src = "http://localhost:8000/"
     terminalFrame.width = "500px"
-    terminalFrame.height = "300px"
+    terminalFrame.height = "40%"
     terminalFrame.style.resize = "both"
-    document.body.appendChild(terminalFrame);
+    instructorViewContainer.appendChild(terminalFrame);
+    //document.getElementById('submissions_container').appendChild(terminalContainer);
 }
 
-function initReadOnlyContainer() {
-    let readOnlyContainer = document.createElement("div");
-    readOnlyContainer.id = "read-only-container";
-    readOnlyContainer.style.margin = "20px";
-    readOnlyContainer.style.height = "50%";
-    return readOnlyContainer;
+function initInstructorViewContainer() {
+    let instructorViewContainer = document.createElement("div");
+    instructorViewContainer.id = "instructor-view-container";
+    instructorViewContainer.style.margin = "20px";
+    instructorViewContainer.style.height = "100%";
+    instructorViewContainer.style.overflowY = "scroll";
+    return instructorViewContainer;
 }
 
 function initTabContainer() {
@@ -200,7 +203,7 @@ function initTabContainer() {
 function initCodeContainer() {
     let codeContainer = document.createElement("div");
     codeContainer.id = "code-container";
-    codeContainer.style.height = "100%";
+    codeContainer.style.height = "70%";
 
     return codeContainer;
 }
