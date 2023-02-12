@@ -1,5 +1,11 @@
 console.log("inside instructor-inject-script.jsx")
 beginUrlChangeListener();
+let isFirstStudent = true;
+
+window.addEventListener('beforeunload', async (event) => {
+    await closeSSHSession();
+    return 'closing ssh session'
+})
 
 // Listen for on initial page load for student_id to get appended 
 // and when new student is clicked in speedgrader
@@ -50,11 +56,24 @@ async function updateStudentSubmissionView() {
             // Check current student page matches the studentId in case
             // new student submission was clicked before API call is resolved
             if (window.location.href.includes(params["studentId"])) {
+                if (!isFirstStudent) {
+                    erasePreviousStudentView();
+                }
+
                 let instructorViewContainer = initInstructorViewContainer();
                 generateReadOnlyCodeView(responseJson.submissionFiles, instructorViewContainer);
                 generateTerminalView(responseJson.submissionDirectory, instructorViewContainer);
+                isFirstStudent = false;
             }
         });
+}
+
+async function erasePreviousStudentView() {
+    // This will remove everything inside the container (RO-view and terminal)
+    let prevInstructorViewContainer = document.getElementById('instructor-view-container');
+    prevInstructorViewContainer.remove();
+
+    await closeSSHSession();
 }
 
 function studentHasSubmission() {
@@ -170,37 +189,58 @@ function generateReadOnlyCodeView(submissionFiles, instructorViewContainer) {
     document.getElementById("submissions_container").prepend(instructorViewContainer);
 }
 
-async function generateTerminalView(submissionDirectory, instructorViewContainer) {
-    // TODO: terminal view function
+function generateTerminalView(submissionDirectory, instructorViewContainer) {
     console.log("generate terminal view function");
+    let terminalFrame = initTerminalFrame();
+    instructorViewContainer.appendChild(terminalFrame);
+
+    terminalFrame.addEventListener('load', async function () {
+        console.log('waiting for everything else to load in terminal')
+        setTimeout(async () => {
+            console.log('waited 5 seconds');
+            await changeToSubmissionDirectory(submissionDirectory)
+        }, 5000);
+    });
+}
+
+async function closeSSHSession() {
+    await fetch('http://localhost:7000/logout', {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).catch(console.error)
+        .then((response) => response.json())
+        .then((responseJson) => {
+            console.log(responseJson);
+        });
+}
+
+async function changeToSubmissionDirectory(submissionDirectory) {
+    let port = 7000;
+    await fetch(`http://localhost:${port}/dir`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            dir: submissionDirectory
+        })
+    }).catch(console.error)
+        .then((response) => response.json())
+        .then((responseJson) => {
+            console.log(responseJson);
+        });
+}
+
+function initTerminalFrame() {
     let terminalFrame = document.createElement("iframe");
     terminalFrame.id = "terminal-frame";
     terminalFrame.src = "http://localhost:8000/"
     terminalFrame.width = "500px"
     terminalFrame.height = "40%"
     terminalFrame.style.resize = "both"
-    instructorViewContainer.appendChild(terminalFrame);
-
-    terminalFrame.addEventListener('load', async function () {
-        setTimeout(async () => {
-            console.log('Hello, World!');
-            await fetch('http://localhost:7000/dir', {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    dir: submissionDirectory
-                })
-            }).catch(console.error)
-                .then((response) => response.json())
-                .then((responseJson) => {
-                    console.log(responseJson);
-                });
-        }, 5000);
-    })
-
-    //document.getElementById('submissions_container').appendChild(terminalContainer);
+    return terminalFrame;
 }
 
 function initInstructorViewContainer() {
@@ -224,7 +264,6 @@ function initCodeContainer() {
     let codeContainer = document.createElement("div");
     codeContainer.id = "code-container";
     codeContainer.style.height = "70%";
-
     return codeContainer;
 }
 
