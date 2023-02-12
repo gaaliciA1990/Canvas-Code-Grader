@@ -140,7 +140,6 @@ function generateReadOnlyCodeView(submissionFiles, instructorViewContainer) {
         tab.addEventListener("mouseenter", () => {
             let previousColor = tab.style.backgroundColor;
             tab.style.backgroundColor = "#ddd";
-
             tab.addEventListener("mouseleave", () => {
                 if (document.getElementById(getCodeWindowId(name)).style.display === "none") {
                     tab.style.backgroundColor = previousColor;
@@ -171,15 +170,36 @@ function generateReadOnlyCodeView(submissionFiles, instructorViewContainer) {
     document.getElementById("submissions_container").prepend(instructorViewContainer);
 }
 
-function generateTerminalView(submissionDirectory, instructorViewContainer) {
+async function generateTerminalView(submissionDirectory, instructorViewContainer) {
     // TODO: terminal view function
     console.log("generate terminal view function");
     let terminalFrame = document.createElement("iframe");
+    terminalFrame.id = "terminal-frame";
     terminalFrame.src = "http://localhost:8000/"
     terminalFrame.width = "500px"
     terminalFrame.height = "40%"
     terminalFrame.style.resize = "both"
     instructorViewContainer.appendChild(terminalFrame);
+
+    terminalFrame.addEventListener('load', async function () {
+        setTimeout(async () => {
+            console.log('Hello, World!');
+            await fetch('http://localhost:7000/dir', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    dir: submissionDirectory
+                })
+            }).catch(console.error)
+                .then((response) => response.json())
+                .then((responseJson) => {
+                    console.log(responseJson);
+                });
+        }, 5000);
+    })
+
     //document.getElementById('submissions_container').appendChild(terminalContainer);
 }
 
