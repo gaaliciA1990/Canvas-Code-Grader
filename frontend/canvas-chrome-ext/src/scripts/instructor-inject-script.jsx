@@ -1,11 +1,12 @@
 console.log("inside instructor-inject-script.jsx")
-beginUrlChangeListener();
-let isFirstStudent = true;
 
 window.addEventListener('beforeunload', async (event) => {
     await closeSSHSession();
     return 'closing ssh session'
 })
+
+let isFirstStudent = true;
+beginUrlChangeListener();
 
 // Listen for on initial page load for student_id to get appended 
 // and when new student is clicked in speedgrader
@@ -47,7 +48,8 @@ async function updateStudentSubmissionView() {
         headers: new Headers({
             'Authorization': params.bearerToken
         })
-    }).catch(console.error)
+    })
+        .catch(console.error)
         .then((response) => response.json())
         .then((responseJson) => {
             console.log(responseJson);
@@ -111,7 +113,6 @@ function getParameters() {
 
 function generateReadOnlyCodeView(submissionFiles, instructorViewContainer) {
     document.getElementById("iframe_holder").style.display = "none";
-
 
     let tabContainer = initTabContainer();
     let codeContainer = initCodeContainer();
@@ -179,9 +180,7 @@ function generateReadOnlyCodeView(submissionFiles, instructorViewContainer) {
                     textAreaElement.style.color = "white";
                 }
             }
-
-            // Flip to other mode
-            isInDarkMode = !isInDarkMode;
+            isInDarkMode = !isInDarkMode; // Flip to other mode
         });
 
     }
@@ -209,7 +208,8 @@ async function closeSSHSession() {
         headers: {
             'Content-Type': 'application/json'
         }
-    }).catch(console.error)
+    })
+        .catch(console.error)
         .then((response) => response.json())
         .then((responseJson) => {
             console.log(responseJson);
@@ -226,7 +226,8 @@ async function changeToSubmissionDirectory(submissionDirectory) {
         body: JSON.stringify({
             dir: submissionDirectory
         })
-    }).catch(console.error)
+    })
+        .catch(console.error)
         .then((response) => response.json())
         .then((responseJson) => {
             console.log(responseJson);
@@ -237,9 +238,9 @@ function initTerminalFrame() {
     let terminalFrame = document.createElement("iframe");
     terminalFrame.id = "terminal-frame";
     terminalFrame.src = "http://localhost:8000/"
-    terminalFrame.width = "500px"
     terminalFrame.height = "40%"
     terminalFrame.style.resize = "both"
+    terminalFrame.style.position = "relative";
     return terminalFrame;
 }
 
