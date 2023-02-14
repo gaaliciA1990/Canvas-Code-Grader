@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +25,7 @@ public class SubmissionDirectoryService {
     private final FileService fileService;
     private final CanvasClientService canvasClientService;
 
-    private static final String MAKEFILE = "makefile";
+    public static final String MAKEFILE = "makefile";
 
     /**
      * Constructor for creating our instances of FileService and CanvasClientService
@@ -50,7 +51,7 @@ public class SubmissionDirectoryService {
      */
     public ResponseEntity<Submission> generateSubmissionDirectory(ExtensionUser user) throws CanvasAPIException {
         String submissionDirectory = generateUniqueDirectoryName(user.getCourseId(), user.getAssignmentId(), user.getStudentId());
-        writeMakefile(user, submissionDirectory);
+        writeMakefileFromCanvas(user);
 
         Submission submission = canvasClientService.fetchStudentSubmission(user);
         SubmissionFile[] submissionFiles = writeSubmissionFiles(submission.getSubmissionFileBytes(), submissionDirectory);
@@ -61,16 +62,20 @@ public class SubmissionDirectoryService {
         return new ResponseEntity<>(submission, HttpStatus.OK);
     }
 
+    public void writeMakefileFromStudent(ExtensionUser user, byte[] makefileBytes) {
+        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
+    }
+
     /**
      * Helper method for writing the makefile
      *
      * @param user User object the make file is associated with
      * @throws CanvasAPIException
      */
-    public void writeMakefile(ExtensionUser user, String directory) throws CanvasAPIException {
+    public void writeMakefileFromCanvas(ExtensionUser user) throws CanvasAPIException {
         // Retrieve makefile from Canvas API
         byte[] makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
-        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, directory);
+        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
     }
 
     /**

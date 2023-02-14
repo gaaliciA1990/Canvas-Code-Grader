@@ -2,6 +2,7 @@ package com.canvas.exceptions.handler;
 
 import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.exceptions.IncorrectRequestParamsException;
+import com.canvas.exceptions.MakefileNotFoundException;
 import com.canvas.exceptions.UserNotAuthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +54,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponse> handleCanvasAPIException(
             CanvasAPIException e) {
         return buildErrorResponse(e, HttpStatus.FAILED_DEPENDENCY);
-     }
+    }
 
     /**
      * Private method for building the exception message

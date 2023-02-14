@@ -138,7 +138,7 @@ class SubmissionDirectoryServiceTest {
             when(canvasClientService.fetchFileUnderCourseAssignmentFolder(any(), any())).thenReturn(bytes);
 
             // Act
-            submissionDirectoryService.writeMakefile(user, userId);
+            submissionDirectoryService.writeMakefileFromCanvas(user);
 
             // Get Contents
             byte[] data = Files.readAllBytes(Path.of("./" + userId + "/makefile"));
