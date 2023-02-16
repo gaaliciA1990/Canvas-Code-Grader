@@ -49,14 +49,14 @@ module.exports = {
             filename: 'popup.html',
             chunks: ['popup']
         }),
-                new HtmlWebpackPlugin({
+        new HtmlWebpackPlugin({
             template: './src/html/compilation-notification.html',
             filename: 'compilation-notification.html',
             chunks: ['compilation-notification']
         }),
         new CopyPlugin({
             patterns: [
-                {from: "public"},
+                { from: "public" },
             ],
         }),
     ],

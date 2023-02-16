@@ -1,5 +1,11 @@
 console.log("inside instructor-inject-script.jsx")
 
+window.addEventListener('beforeunload', async (event) => {
+    await closeSSHSession();
+    return 'closing ssh session'
+})
+
+let isFirstStudent = true;
 beginUrlChangeListener();
 
 // Listen for on initial page load for student_id to get appended 
@@ -42,7 +48,8 @@ async function updateStudentSubmissionView() {
         headers: new Headers({
             'Authorization': params.bearerToken
         })
-    }).catch(console.error)
+    })
+        .catch(console.error)
         .then((response) => response.json())
         .then((responseJson) => {
             console.log(responseJson);
@@ -51,10 +58,24 @@ async function updateStudentSubmissionView() {
             // Check current student page matches the studentId in case
             // new student submission was clicked before API call is resolved
             if (window.location.href.includes(params["studentId"])) {
-                generateReadOnlyCodeView(responseJson.submissionFiles);
-                generateTerminalView(responseJson.submissionDirectory);
+                if (!isFirstStudent) {
+                    erasePreviousStudentView();
+                }
+
+                let instructorViewContainer = initInstructorViewContainer();
+                generateReadOnlyCodeView(responseJson.submissionFiles, instructorViewContainer);
+                generateTerminalView(responseJson.submissionDirectory, instructorViewContainer);
+                isFirstStudent = false;
             }
         });
+}
+
+async function erasePreviousStudentView() {
+    // This will remove everything inside the container (RO-view and terminal)
+    let prevInstructorViewContainer = document.getElementById('instructor-view-container');
+    prevInstructorViewContainer.remove();
+
+    await closeSSHSession();
 }
 
 function studentHasSubmission() {
@@ -90,17 +111,16 @@ function getParameters() {
     return params;
 }
 
-function generateReadOnlyCodeView(submissionFiles) {
+function generateReadOnlyCodeView(submissionFiles, instructorViewContainer) {
     document.getElementById("iframe_holder").style.display = "none";
 
-    let readOnlyContainer = initReadOnlyContainer();
     let tabContainer = initTabContainer();
     let codeContainer = initCodeContainer();
     let darkModeButton = initDarkModeButton();
 
-    readOnlyContainer.appendChild(darkModeButton);
-    readOnlyContainer.appendChild(tabContainer);
-    readOnlyContainer.appendChild(codeContainer);
+    instructorViewContainer.appendChild(darkModeButton);
+    instructorViewContainer.appendChild(tabContainer);
+    instructorViewContainer.appendChild(codeContainer);
 
     let isInDarkMode = false;
     let fileName = submissionFiles[0].name;
@@ -140,7 +160,6 @@ function generateReadOnlyCodeView(submissionFiles) {
         tab.addEventListener("mouseenter", () => {
             let previousColor = tab.style.backgroundColor;
             tab.style.backgroundColor = "#ddd";
-
             tab.addEventListener("mouseleave", () => {
                 if (document.getElementById(getCodeWindowId(name)).style.display === "none") {
                     tab.style.backgroundColor = previousColor;
@@ -161,26 +180,77 @@ function generateReadOnlyCodeView(submissionFiles) {
                     textAreaElement.style.color = "white";
                 }
             }
-
-            // Flip to other mode
-            isInDarkMode = !isInDarkMode;
+            isInDarkMode = !isInDarkMode; // Flip to other mode
         });
 
     }
 
-    document.getElementById("submissions_container").prepend(readOnlyContainer);
+    document.getElementById("submissions_container").prepend(instructorViewContainer);
 }
 
-function generateTerminalView(submissionDirectory) {
-    // TODO: terminal view function
+function generateTerminalView(submissionDirectory, instructorViewContainer) {
+    console.log("generate terminal view function");
+    let terminalFrame = initTerminalFrame();
+    instructorViewContainer.appendChild(terminalFrame);
+
+    terminalFrame.addEventListener('load', async function () {
+        console.log('waiting for everything else to load in terminal')
+        setTimeout(async () => {
+            console.log('waited 5 seconds');
+            await changeToSubmissionDirectory(submissionDirectory)
+        }, 5000);
+    });
 }
 
-function initReadOnlyContainer() {
-    let readOnlyContainer = document.createElement("div");
-    readOnlyContainer.id = "read-only-container";
-    readOnlyContainer.style.margin = "20px";
-    readOnlyContainer.style.height = "50%";
-    return readOnlyContainer;
+async function closeSSHSession() {
+    await fetch('http://localhost:7000/logout', {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+        .catch(console.error)
+        .then((response) => response.json())
+        .then((responseJson) => {
+            console.log(responseJson);
+        });
+}
+
+async function changeToSubmissionDirectory(submissionDirectory) {
+    let port = 7000;
+    await fetch(`http://localhost:${port}/dir`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            dir: submissionDirectory
+        })
+    })
+        .catch(console.error)
+        .then((response) => response.json())
+        .then((responseJson) => {
+            console.log(responseJson);
+        });
+}
+
+function initTerminalFrame() {
+    let terminalFrame = document.createElement("iframe");
+    terminalFrame.id = "terminal-frame";
+    terminalFrame.src = "http://localhost:8000/"
+    terminalFrame.height = "40%"
+    terminalFrame.style.resize = "both"
+    terminalFrame.style.position = "relative";
+    return terminalFrame;
+}
+
+function initInstructorViewContainer() {
+    let instructorViewContainer = document.createElement("div");
+    instructorViewContainer.id = "instructor-view-container";
+    instructorViewContainer.style.margin = "20px";
+    instructorViewContainer.style.height = "100%";
+    instructorViewContainer.style.overflowY = "scroll";
+    return instructorViewContainer;
 }
 
 function initTabContainer() {
@@ -194,8 +264,7 @@ function initTabContainer() {
 function initCodeContainer() {
     let codeContainer = document.createElement("div");
     codeContainer.id = "code-container";
-    codeContainer.style.height = "100%";
-
+    codeContainer.style.height = "70%";
     return codeContainer;
 }
 
