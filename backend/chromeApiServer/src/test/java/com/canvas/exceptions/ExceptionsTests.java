@@ -1,5 +1,7 @@
 package com.canvas.exceptions;
 
+import com.canvas.exceptions.CanvasAPIException;
+import com.canvas.exceptions.MakefileNotFoundException;
 import com.canvas.exceptions.handler.ControllerExceptionHandler;
 import com.canvas.exceptions.handler.ErrorResponse;
 import org.junit.jupiter.api.Test;
@@ -110,4 +112,57 @@ public class ExceptionsTests {
         assertEquals(HttpStatus.FAILED_DEPENDENCY, response.getBody().getStatus());
         assertEquals(message, response.getBody().getMessage());
     }
+
+    @Test
+    public void exceptionHandler_handleCanvasAPIException_shouldReturnMakefileNotFoundExceptionErrorResponseWithDefaultMessage() {
+        // Arrange
+        ControllerExceptionHandler handler = new ControllerExceptionHandler();
+        CanvasAPIException exception = new MakefileNotFoundException();
+
+        // Act
+        ResponseEntity<ErrorResponse> response = handler.handleCanvasAPIException(exception);
+
+        // Assert
+        assertEquals(HttpStatus.FAILED_DEPENDENCY, response.getStatusCode());
+        assertEquals(HttpStatus.FAILED_DEPENDENCY, response.getBody().getStatus());
+        assertEquals(
+                "Makefile was not found in the assignment folder. " +
+                        "Please submit a makefile if required to do so. " +
+                        "Otherwise, please contact your instructor.",
+                response.getBody().getMessage()
+        );
+    }
+
+    @Test
+    public void exceptionHandler_handleCanvasAPIException_shouldReturnMakefileNotFoundExceptionErrorResponseWithCustomMessage() {
+        // Arrange
+        ControllerExceptionHandler handler = new ControllerExceptionHandler();
+        String message = "foo message";
+        CanvasAPIException exception = new MakefileNotFoundException(message);
+
+        // Act
+        ResponseEntity<ErrorResponse> response = handler.handleCanvasAPIException(exception);
+
+        // Assert
+        assertEquals(HttpStatus.FAILED_DEPENDENCY, response.getStatusCode());
+        assertEquals(HttpStatus.FAILED_DEPENDENCY, response.getBody().getStatus());
+        assertEquals(message, response.getBody().getMessage());
+    }
+
+    @Test
+    public void exceptionHandler_handleCanvasAPIException_shouldReturnMakefileNotFoundExceptionErrorResponseWithCustomMessageAndException() {
+        // Arrange
+        ControllerExceptionHandler handler = new ControllerExceptionHandler();
+        String message = "foo message";
+        CanvasAPIException exception = new MakefileNotFoundException(message, new IOException());
+
+        // Act
+        ResponseEntity<ErrorResponse> response = handler.handleCanvasAPIException(exception);
+
+        // Assert
+        assertEquals(HttpStatus.FAILED_DEPENDENCY, response.getStatusCode());
+        assertEquals(HttpStatus.FAILED_DEPENDENCY, response.getBody().getStatus());
+        assertEquals(message, response.getBody().getMessage());
+    }
+
 }
