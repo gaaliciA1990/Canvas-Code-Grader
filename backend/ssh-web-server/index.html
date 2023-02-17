@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <title>SSH Terminal</title>
+    <link rel="stylesheet" href="/xterm.css" />
+    <script src="/xterm.js"></script>
+    <script src="/xterm-addon-fit.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      window.addEventListener('load', function() {
+        var terminalContainer = document.getElementById('terminal-container');
+        const term = new Terminal({ cursorBlink: true });        
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.open(terminalContainer);
+        fitAddon.fit();
+
+        var socket = io();
+        socket.on('connect', function() {
+          term.write('\r\n*** Connecting to SU Server... ***\r\n');
+        });
+
+        // Browser -> Backend
+        term.onKey(function (ev) {
+          socket.emit('data', ev.key);
+        });
+
+        // Backend -> Browser
+        socket.on('data', function(data) {
+          term.write(data);
+        });
+
+        socket.on('disconnect', function() {
+          term.write('\r\n*** Disconnected from SU Server ***\r\n');
+        });
+      }, false);
+    </script>
+    <style>
+      body {
+        font-family: helvetica, sans-serif, arial;
+        font-size: 1em;
+        color: #111;
+      }
+      h4 {
+        text-align: center;
+      }
+      #terminal-container {
+        width: 960px;
+        height: 600px;
+        margin: 0 auto;
+        padding: 2px;
+        border: 2px solid #43A6C6;
+      }
+      #terminal-container .terminal {
+        background-color: #111;
+        color: #fafafa;
+        padding: 2px;
+      }
+      #terminal-container .terminal:focus .terminal-cursor {
+        background-color: #fafafa;
+      }
+    </style>
+  </head>
+  <body>
+    <h4>SSH - Code Execution Window</h4>
+    <div id="terminal-container"></div>
+  </body>
+</html>
