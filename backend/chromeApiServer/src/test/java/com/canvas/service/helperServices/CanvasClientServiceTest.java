@@ -1,6 +1,7 @@
 package com.canvas.service.helperServices;
 
 import com.canvas.exceptions.CanvasAPIException;
+import com.canvas.exceptions.MakefileNotFoundException;
 import com.canvas.service.models.ExtensionUser;
 import com.canvas.service.models.UserType;
 import com.canvas.service.models.submission.Submission;
@@ -512,9 +513,21 @@ class CanvasClientServiceTest {
     }
 
     @Test
-    public void testGetFileIdFromFilesResponse_returnsNull() throws IOException {
+    public void testGetFileIdFromFilesResponse_throwsCanvasAPIException() throws IOException, CanvasAPIException {
         JsonNode node = canvasClientService.parseResponseToJsonNode(emptyResponse);
-        Assertions.assertNull(canvasClientService.getFileIdFromFilesResponse(node, "fooFile"));
+        Assertions.assertThrows(
+                CanvasAPIException.class,
+                () -> canvasClientService.getFileIdFromFilesResponse(node, "fooFile")
+        );
+    }
+
+    @Test
+    public void testGetFileIdFromFilesResponse_throwsMakefileNotFoundException() throws IOException, MakefileNotFoundException {
+        JsonNode node = canvasClientService.parseResponseToJsonNode(emptyResponse);
+        Assertions.assertThrows(
+                MakefileNotFoundException.class,
+                () -> canvasClientService.getFileIdFromFilesResponse(node, "makefile")
+        );
     }
 
     @Test

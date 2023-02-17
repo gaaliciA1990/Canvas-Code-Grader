@@ -46,9 +46,14 @@ public class EvaluationService {
      * @param files The files to compile
      * @return return a CommandOutput response
      */
-    public ResponseEntity<CommandOutput> compileStudentCodeFile(ExtensionUser user, MultipartFile[] files) throws CanvasAPIException {
-        // Retrieve file json from Canvas
-        submissionDirectoryService.writeMakefile(user, user.getUserId());
+    public ResponseEntity<CommandOutput> compileStudentCodeFile(ExtensionUser user, MultipartFile[] files) throws CanvasAPIException, IOException {
+        byte[] makefileBytes = getMakefileBytesIfExistsWithinStudentSubmissionFilesRetrievedFromEvaluatePostRequestBody(files);
+        if (makefileBytes != null) {
+            submissionDirectoryService.writeMakefileFromStudent(user, makefileBytes);
+        } else {
+            // Retrieve file json from Canvas
+            submissionDirectoryService.writeMakefileFromCanvas(user);
+        }
 
         // Write submitted code files
         submissionDirectoryService.writeSubmissionFiles(files, user.getUserId());
@@ -61,6 +66,15 @@ public class EvaluationService {
 
         // Generate response
         return new ResponseEntity<>(commandOutput, HttpStatus.OK);
+    }
+
+    private byte[] getMakefileBytesIfExistsWithinStudentSubmissionFilesRetrievedFromEvaluatePostRequestBody(MultipartFile[] files) throws IOException {
+        for (MultipartFile file : files) {
+            if (file.getOriginalFilename().equalsIgnoreCase(SubmissionDirectoryService.MAKEFILE)) {
+                return file.getBytes();
+            }
+        }
+        return null;
     }
 
 
