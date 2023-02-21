@@ -87,11 +87,27 @@ io.on('connection', function (socket) {
                 res.send({ changedDirectorySuccess: true })
             });
 
+            // Create make file and reveal executable
+            expressApp.post('/compile', (req, res) => {
+                let cmd = `make && ls\n`
+                stream.write(cmd)
+                cmd = `./`
+                stream.write(cmd)
+                res.send({ executionSuccess: true })
+            });
+
+            // Abort current execution
+            expressApp.post('/abort', (req, res) => {
+                let cmd = `^C\n`
+                stream.write(cmd)
+                res.send({ abortSuccess: true })
+            });
+
             // Route to logout of SSH session
             expressApp.post('/logout', (req, res) => {
                 console.log('logout API was invoked for socket: ', socket.id)
                 clientConnection.end();
-                res.send({ logoutSucces: true })
+                res.send({ logoutSuccess: true })
                 expressServer.close((err) => {
                     if (err) {
                         console.log(err);
