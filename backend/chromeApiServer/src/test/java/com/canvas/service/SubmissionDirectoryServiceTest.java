@@ -136,12 +136,13 @@ class SubmissionDirectoryServiceTest {
             );
             byte[] bytes = {1, 2, 3};
             when(canvasClientService.fetchFileUnderCourseAssignmentFolder(any(), any())).thenReturn(bytes);
+            String dirName = submissionDirectoryService.generateUniqueDirectoryName(user.getCourseId(), user.getAssignmentId(), user.getStudentId());
 
             // Act
-            submissionDirectoryService.writeMakefileFromCanvas(user);
+            submissionDirectoryService.writeMakefileFromCanvas(user, dirName);
 
             // Get Contents
-            byte[] data = Files.readAllBytes(Path.of("./" + userId + "/makefile"));
+            byte[] data = Files.readAllBytes(Path.of("./" + dirName + "/makefile"));
 
             // Verify
             for (int i=0; i<3; i++) {
@@ -149,8 +150,8 @@ class SubmissionDirectoryServiceTest {
             }
 
             // Delete directory
-            Files.deleteIfExists(Path.of("./" + userId + "/makefile"));
-            File directory = new File(userId);
+            Files.deleteIfExists(Path.of("./" + dirName + "/makefile"));
+            File directory = new File(dirName);
             directory.delete();
         }
 

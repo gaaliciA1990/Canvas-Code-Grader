@@ -4,7 +4,7 @@ window.addEventListener('beforeunload', async (event) => {
     event.preventDefault();
     closeSSHSession();
     const params = getParameters(document.location.href);
-    await deletePreviousStudentSubmissionDirectory(params);
+    deletePreviousStudentSubmissionDirectory(params);
     return 'deleting submission directory and closing ssh session';
 })
 
@@ -17,7 +17,7 @@ async function beginUrlChangeListener() {
     let previousUrl = "";
 
     // Checking every second if the URL changes
-    setInterval(async function() {
+    setInterval(async function () {
         console.log('hey!')
         if (window.location.href !== previousUrl) {
             console.log(`URL changed from ${previousUrl} to ${window.location.href}`);
@@ -176,7 +176,7 @@ function generateReadOnlyCodeView(submissionFiles, instructorViewContainer) {
     });
 
     //Compile button listener
-    compileButton.addEventListener("click", async function (){
+    compileButton.addEventListener("click", async function () {
         //send post request to backend to start compilation or send makefile?
         console.log('calling compileButtonCommand from instructor view');
         await compileButtonCommand();
@@ -184,7 +184,7 @@ function generateReadOnlyCodeView(submissionFiles, instructorViewContainer) {
 
 
     //Abort button listener
-    abortButton.addEventListener("click", async function (){
+    abortButton.addEventListener("click", async function () {
         //send post request to backend to start compilation or send makefile?
         console.log('calling abort from instructor view');
         await abortScriptExecution();
@@ -298,7 +298,7 @@ async function changeToSubmissionDirectory(submissionDirectory) {
  * read only script was made.
  * @returns {Promise<void>}
  */
-async function compileButtonCommand(){
+async function compileButtonCommand() {
     let port = 7000;
     await fetch(`http://localhost:${port}/compile`, {
         method: "POST",
@@ -315,7 +315,7 @@ async function compileButtonCommand(){
  * read only script was made.
  * @returns {Promise<void>}
  */
-async function abortScriptExecution(){
+async function abortScriptExecution() {
     let port = 7000;
     await fetch(`http://localhost:${port}/abort`, {
         method: "POST",
@@ -339,7 +339,7 @@ function initTerminalFrame() {
 }
 
 //APP BAR SPECIFIC FUNCTIONS
-function instructorViewAppBar(){
+function instructorViewAppBar() {
     let instructorViewAppBar = document.createElement("div");
     instructorViewAppBar.className = "instructor-appbar";
     instructorViewAppBar.id = "instructor-view-appbar";
@@ -348,20 +348,20 @@ function instructorViewAppBar(){
     return instructorViewAppBar;
 }
 
-function initAbortButton(){
+function initAbortButton() {
     let abortButton = document.createElement("button");
     abortButton.icon = document.createElement("icon");
-    abortButton.innerHTML ='&#x2716;'; //abort button icon
-    abortButton.className= 'abort-button';
+    abortButton.innerHTML = '&#x2716;'; //abort button icon
+    abortButton.className = 'abort-button';
 
     return abortButton;
 }
 
-function initCompileButton(){
+function initCompileButton() {
     let compileButton = document.createElement("button");
     compileButton.icon = document.createElement("icon");
-    compileButton.innerHTML ='&#x1F528;'; //play button icon
-    compileButton.className= 'abort-button';
+    compileButton.innerHTML = '&#x1F528;'; //play button icon
+    compileButton.className = 'abort-button';
 
     return compileButton;
 }

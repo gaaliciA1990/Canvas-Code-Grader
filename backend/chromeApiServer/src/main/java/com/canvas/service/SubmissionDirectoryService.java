@@ -14,10 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class SubmissionDirectoryService {
@@ -26,6 +29,7 @@ public class SubmissionDirectoryService {
     private final CanvasClientService canvasClientService;
 
     public static final String MAKEFILE = "makefile";
+    private static final Pattern MAKEFILE_REGEX_PATTERN = Pattern.compile("makefile(\\.dms)?|Makefile(\\.dms)?");
 
     /**
      * Constructor for creating our instances of FileService and CanvasClientService
@@ -51,10 +55,17 @@ public class SubmissionDirectoryService {
      */
     public ResponseEntity<Submission> generateSubmissionDirectory(ExtensionUser user) throws CanvasAPIException {
         String submissionDirectory = generateUniqueDirectoryName(user.getCourseId(), user.getAssignmentId(), user.getStudentId());
-        writeMakefileFromCanvas(user);
 
         Submission submission = canvasClientService.fetchStudentSubmission(user);
+        Map<String, byte[]> submissionFileBytes = submission.getSubmissionFileBytes();
+
         SubmissionFile[] submissionFiles = writeSubmissionFiles(submission.getSubmissionFileBytes(), submissionDirectory);
+
+        // If student was not required to submit makefile, we need to get the instructor
+        // uploaded makefile from Canvas
+        if (!studentSubmissionContainsMakefile(submissionFileBytes)) {
+            writeMakefileFromCanvas(user, submissionDirectory);
+        }
 
         submission.setSubmissionFiles(submissionFiles);
         submission.setSubmissionDirectory(submissionDirectory);
@@ -62,20 +73,25 @@ public class SubmissionDirectoryService {
         return new ResponseEntity<>(submission, HttpStatus.OK);
     }
 
-    public void writeMakefileFromStudent(ExtensionUser user, byte[] makefileBytes) {
-        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
+    /**
+     * Write the makefile retrieved from the student submission
+     * @param makefileBytes bytes of the makefile
+     * @param directory directory to write makefile to
+     */
+    public void writeMakefileFromStudent(byte[] makefileBytes, String directory) {
+        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, directory);
     }
 
     /**
-     * Helper method for writing the makefile
-     *
+     * Write the makefile retrieved from the Canvas assignment folder.
      * @param user User object the make file is associated with
+     * @param directory directory to write makefile to
      * @throws CanvasAPIException
      */
-    public void writeMakefileFromCanvas(ExtensionUser user) throws CanvasAPIException {
+    public void writeMakefileFromCanvas(ExtensionUser user, String directory) throws CanvasAPIException {
         // Retrieve makefile from Canvas API
         byte[] makefileBytes = canvasClientService.fetchFileUnderCourseAssignmentFolder(user, MAKEFILE);
-        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, user.getUserId());
+        fileService.writeFileFromBytes(MAKEFILE, makefileBytes, directory);
     }
 
     /**
@@ -101,7 +117,8 @@ public class SubmissionDirectoryService {
         List<SubmissionFile> submissionFiles = new ArrayList<>();
 
         for (Map.Entry<String, byte[]> entry : submissionFilesBytes.entrySet()) {
-            String fileName = entry.getKey();
+            String key = entry.getKey();
+            String fileName = (isMakefile(key)) ? SubmissionDirectoryService.MAKEFILE : key;
             byte[] fileBytes = entry.getValue();
             fileService.writeFileFromBytes(fileName, fileBytes, fileDirectory);
             String[] fileContent = fileService.parseLinesFromFile(fileName, fileDirectory);
@@ -156,6 +173,29 @@ public class SubmissionDirectoryService {
     protected String generateUniqueDirectoryName(String ... idArgs) {
         String[] idList = Arrays.copyOf(idArgs, idArgs.length);
         return String.valueOf(Arrays.hashCode(idList));
+    }
+
+    /**
+     * Regex matcher for detecting if the key is a makefile
+     * @param key key to match
+     * @return true if matches the makefile regex pattern
+     */
+    private boolean isMakefile(String key) {
+        return MAKEFILE_REGEX_PATTERN.matcher(key).matches();
+    }
+
+    /**
+     * Returns whether the student submitted files contains a makefile.
+     * @param submissionFileBytes
+     * @return
+     */
+    private boolean studentSubmissionContainsMakefile(Map<String, byte[]> submissionFileBytes) {
+        for (String filename : submissionFileBytes.keySet()) {
+            if (isMakefile(filename)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
