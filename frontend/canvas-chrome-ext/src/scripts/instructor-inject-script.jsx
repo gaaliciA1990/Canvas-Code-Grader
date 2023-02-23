@@ -4,7 +4,7 @@ window.addEventListener('beforeunload', async (event) => {
     event.preventDefault();
     closeSSHSession();
     const params = getParameters(document.location.href);
-    await deletePreviousStudentSubmissionDirectory(params);
+    deletePreviousStudentSubmissionDirectory(params);
     return 'deleting submission directory and closing ssh session';
 })
 

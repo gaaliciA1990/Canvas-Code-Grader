@@ -49,10 +49,10 @@ public class EvaluationService {
     public ResponseEntity<CommandOutput> compileStudentCodeFile(ExtensionUser user, MultipartFile[] files) throws CanvasAPIException, IOException {
         byte[] makefileBytes = getMakefileBytesIfExistsWithinStudentSubmissionFilesRetrievedFromEvaluatePostRequestBody(files);
         if (makefileBytes != null) {
-            submissionDirectoryService.writeMakefileFromStudent(user, makefileBytes);
+            submissionDirectoryService.writeMakefileFromStudent(makefileBytes, user.getUserId());
         } else {
             // Retrieve file json from Canvas
-            submissionDirectoryService.writeMakefileFromCanvas(user);
+            submissionDirectoryService.writeMakefileFromCanvas(user, user.getUserId());
         }
 
         // Write submitted code files
