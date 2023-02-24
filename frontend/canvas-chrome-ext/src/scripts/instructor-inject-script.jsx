@@ -422,7 +422,9 @@ function formatCodeView(name, content) {
     formattedCodeElement.id = name + "-textarea"
 
     for (var i = 0; i < content.length; i++) {
-        formattedCodeElement.value += content[i] + "\r\n";
+        let lineNumber = i + 1;
+        let paddedLineNumber = lineNumber.toString().padStart(3);
+        formattedCodeElement.value += `${paddedLineNumber}   ${content[i]}\r\n`;
     }
 
     console.log("formatted code:" + formattedCodeElement.value);
