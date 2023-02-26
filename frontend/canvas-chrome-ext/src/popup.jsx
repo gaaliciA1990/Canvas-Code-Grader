@@ -22,7 +22,7 @@ function Popup() {
 
         //oAuth redirect link should go here
         function canvasOauthRedirect() {
-            chrome.tabs.create({active: true, url: "https://www.google.com/"});
+            chrome.tabs.create({active: true, url: "https://10.242.15.70:3000/login/oauth2/auth?client_id=10000000000036&response_type=code&redirect_uri=http://localhost:8080/oauth2Response"});
         }
     })
 
