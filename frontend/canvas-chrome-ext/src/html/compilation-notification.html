@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src = "../scripts/compilation-notification.jsx"></script>
-    <link rel="stylesheet" href ="../../public/extension-styles.css">
+    <link rel="stylesheet" href ="./extension-styles.css">
 </head>
-<body>
+
+<body class ="page">
 
   <div class="notifications-container">
-      <h1 class ="results-display">Compilation Results</h1>
-
+      <h1 class ="results-title">Compilation Results</h1>
 
       <div class = "compilation-notification-results-container">
-          <p id ="update-text"> Results of Compilation </p>
+          <img class = "result-image" id = res_image src = "img/tick.png" alt = "tickIcon">
+          <p class = "compilation_status" id = "comp-status"> </p>
+          <p class = "text-results" id ="update-text"> Results of Compilation </p>
       </div>
-
   </div>
-
 
 </body>
 

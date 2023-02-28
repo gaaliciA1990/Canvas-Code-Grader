@@ -39,8 +39,8 @@ try {
                 tabId: notification_window.id,
                 type: 'popup',
                 focused: true,
-                height: 500,
-                width:600
+                height: 600,
+                width: 800
                 // incognito, top, left, ...
             })
 

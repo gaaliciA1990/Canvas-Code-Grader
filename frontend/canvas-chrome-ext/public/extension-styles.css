@@ -90,8 +90,29 @@ button.ghost {
 /*
 Styles for compilation notifications
  */
+
+.page {
+    height:100%;
+    background-color:#ab0001;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.results-title {
+    font-size: 38px;
+    font-weight: 500;
+    margin: 30px 0 10px;
+}
+
+.compilation_status {
+    font-size: 30px;
+    font-weight: 500;
+    margin: 30px 0 10px;
+}
+
 .compilation-notification-body {
-    background: rgb(27, 27, 27);
     margin: 0;
     display: grid;
     place-content: center;
@@ -100,14 +121,51 @@ Styles for compilation notifications
     color: white;
 }
 
-.compilation-notification-results-container {
-    position: relative;
-    width: 60%;
-    margin: 0 auto;
-    background: #232323;
-    padding: 2em;
+.notifications-container{
+    display: grid;
+    place-content: center;
+    height: 100vh;
 }
 
+.compilation-notification-results-container {
+    width: 400px;
+    background: #fff;
+    border-radius: 6px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 0 30px 30px;
+    color: #333;
+
+    word-wrap: break-word;
+}
+
+.result-image {
+    width: 100px;
+    margin-top: -50px;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.text-results {
+    color: black;
+    font-size: 18px;
+    text-align: center;
+    font-weight: 500;
+    margin: 30px 0 10px;
+}
+
+.submit_compile_code{
+    padding: 10px 0;
+    color: #0066cc;
+    border: 0;
+    font-size: 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 5px 5px rgba(0,0,0,0.2);
+}
 
 
 /* #088099 bluish*/
