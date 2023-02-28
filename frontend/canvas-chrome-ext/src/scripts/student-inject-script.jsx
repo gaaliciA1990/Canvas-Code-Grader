@@ -12,7 +12,7 @@
     };
 
     var btn_code_submission = document.createElement("input");
-    btn_code_submission.value = "Compile";
+    btn_code_submission.value = "Evaluate";
     btn_code_submission.id = "submit_compile_code";
     btn_code_submission.type = "button";
     btn_code_submission.style.textAlign = "center";
