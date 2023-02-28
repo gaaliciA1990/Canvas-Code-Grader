@@ -22,7 +22,7 @@ try {
         if (message.type === 'waiting') {
 
             const notification_window = await chrome.tabs.create({
-                url: chrome.runtime.getURL('components/compilation-notification.html'),
+                url: chrome.runtime.getURL('compilation-notification.html'),
                 active: false
             });
             await onTabLoaded(notification_window.id);

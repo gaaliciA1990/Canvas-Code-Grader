@@ -69,6 +69,7 @@
             for (var i = 0; i < this.files.length; i++) {
                 formData.append("files", fileInput.files[i]);
             }
+
             formData.append("courseId", courseId);
             formData.append("assignmentId", assignmentId);
             formData.append("userType", userType);
@@ -83,7 +84,7 @@
                 let fileSubmit_response = await response.json();
 
                 console.log(fileSubmit_response);
-                //alert(fileSubmit_response.output);
+                alert(fileSubmit_response.output);
 
                 let output = fileSubmit_response.output;
 
