@@ -18,6 +18,15 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
             document.getElementById("comp-status").textContent = "Success!";
             document.getElementById("res_image").src="img/tick.png";
         }
+    }
+    else if(msg.action === '424error'){
+        console.log(msg);
+        sendResponse("error received from backend");
 
+        document.getElementById('update-text').textContent  =
+            JSON.stringify(msg, null, '  ');
+
+        document.getElementById("comp-status").textContent = "ERROR 424";
+        document.getElementById("res_image").src="img/redx.png";
     }
 });

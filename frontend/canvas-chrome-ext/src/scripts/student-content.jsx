@@ -26,14 +26,22 @@ try {
     window.addEventListener("message", function (msg) {
 
         if (msg.data.type
-            && (msg.data.type == "FROM_PAGE")) {
+            && (msg.data.type === "assignment_evaluate")) {
 
             console.log("sending message to background script");
             //console.log(msg.data.type);
             //console.log(msg.data.output);
 
             //by default do these msgs alaways go to BG?
-            chrome.runtime.sendMessage({type: "waiting", output: msg.data.output}, (response) => {
+            console.log("sending message to background script");
+            chrome.runtime.sendMessage({type: "evaluation", output: msg.data.output}, (response) => {
+                console.log(response);
+            });
+        }
+        else if ((msg.data.type) && (msg.data.type === "evaluate_error")){
+            console.log("sending error message to background script");
+
+            chrome.runtime.sendMessage({type: "evaluate_error", output: msg.data}, (response) => {
                 console.log(response);
             });
         }

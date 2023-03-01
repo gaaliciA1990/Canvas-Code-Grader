@@ -84,12 +84,19 @@
                 let fileSubmit_response = await response.json();
 
                 console.log(fileSubmit_response);
+
                 alert(fileSubmit_response.output);
 
-                let output = fileSubmit_response.output;
+                if(fileSubmit_response.output !== undefined){
+                    let output = fileSubmit_response.output;
 
-                console.log("sending message to content")
-                window.postMessage({ type: "FROM_PAGE", output });
+                    console.log("Sending message to content script from injection")
+                    window.postMessage({ type: "assignment_evaluate", output });
+                }
+                else if (fileSubmit_response.code === 424){
+                    console.log("Sending error message to content from injection")
+                    window.postMessage({ type: "evaluate_error", fileSubmit_response });
+                }
 
             });
 
