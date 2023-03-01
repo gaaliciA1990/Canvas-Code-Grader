@@ -43,10 +43,6 @@ module.exports = {
                 }
             },
             {
-                test: /\.hmtl$/,
-                use: ['html-loader']
-            },
-            {
               test: /\.(jpg|png|jpeg|svg|gif)$/,
               use: [
                   {

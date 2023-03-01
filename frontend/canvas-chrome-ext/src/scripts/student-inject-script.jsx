@@ -74,6 +74,9 @@
             formData.append("assignmentId", assignmentId);
             formData.append("userType", userType);
 
+
+            console.log("calling backend API");
+
             fetch(endpoint, {
                 method: "POST",
                 headers: new Headers({
@@ -85,7 +88,7 @@
 
                 console.log(fileSubmit_response);
 
-                alert(fileSubmit_response.output);
+                alert(fileSubmit_response.output); //for debugging comment/remove in final build
 
                 if(fileSubmit_response.output !== undefined){
                     let output = fileSubmit_response.output;

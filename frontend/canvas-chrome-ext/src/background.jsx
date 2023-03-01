@@ -55,7 +55,6 @@ try {
 
             console.log("MESSAGE");
             console.log(message.output.fileSubmit_response);
-
             await chrome.tabs.sendMessage(notification_window.id, {
                 action: 'compilation_results',
                 data: message.output.fileSubmit_response.message,

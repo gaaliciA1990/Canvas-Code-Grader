@@ -29,4 +29,5 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
         document.getElementById("comp-status").textContent = "ERROR 424";
         document.getElementById("res_image").src="img/redx.png";
     }
+    //handle specific errors
 });
