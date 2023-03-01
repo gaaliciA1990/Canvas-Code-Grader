@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TODO: What is this classes responsibility?
@@ -51,7 +52,7 @@ public class ProcessExecutor {
 
         try {
             Process process = processBuilder.start();
-            process.waitFor();
+            process.waitFor(5, TimeUnit.SECONDS);
             this.buildSuccess = process.exitValue() == 0;
             BufferedReader inputReader = new BufferedReader(
                     new InputStreamReader(process.getInputStream())
