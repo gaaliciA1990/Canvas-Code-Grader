@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class ProcessExecutor {
     private final String[] commands;
     private boolean buildSuccess;
-    private final StringBuilder output;
+    private final List<String> output;
     private final String directory;
 
     /**
@@ -37,7 +38,7 @@ public class ProcessExecutor {
         this.commands = Arrays.copyOf(executeCommands, executeCommands.length);
         this.directory = directory;
         this.buildSuccess = false;
-        this.output = new StringBuilder();
+        this.output = new ArrayList<>();
     }
 
     /**
@@ -59,7 +60,7 @@ public class ProcessExecutor {
             );
             String line;
             while ((line = inputReader.readLine()) != null) {
-                this.output.append(line).append('\n');
+                this.output.add(line);
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -73,7 +74,7 @@ public class ProcessExecutor {
      *
      * @return string of the process output
      */
-    public String getProcessOutput() {
-        return this.output.toString();
+    public String[] getProcessOutput() {
+        return this.output.toArray(new String[0]);
     }
 }

@@ -87,7 +87,7 @@ public class EvaluationService {
     private CommandOutput compileCodeFiles(String userId) {
         CommandOutput compileOutput = executeCommand(new String[]{"make"}, userId);
         if (compileOutput.isSuccess()) {
-            compileOutput.setOutput("Your program compiled successfully!");
+            compileOutput.setOutput(new String[] {"Your program compiled successfully!"});
         }
         return compileOutput;
     }
@@ -102,7 +102,7 @@ public class EvaluationService {
     private CommandOutput executeCommand(String[] commands, String userId) {
         ProcessExecutor processExecutor = new ProcessExecutor(commands, submissionDirectoryService.getSubmissionDirectory(userId));
         boolean compileSuccess = processExecutor.executeProcess();
-        String output = processExecutor.getProcessOutput();
+        String[] output = processExecutor.getProcessOutput();
         return new CommandOutput(compileSuccess, output);
     }
 

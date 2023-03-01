@@ -16,7 +16,7 @@ class CommandOutputUnitTest {
     @Test
     public void getOutput_returns_test_string_output() {
         // Set up
-        String test_output = "test";
+        String[] test_output = {"test"};
         boolean test_success = true;
         CommandOutput output = new CommandOutput(test_success, test_output);
 
@@ -33,19 +33,20 @@ class CommandOutputUnitTest {
     @CsvFileSource(resources = "/setOutput_test_strings.csv", numLinesToSkip = 1)
     public void setOuput_updates_output_string(String output, String expectedResult) {
         // Set up
-        CommandOutput commandOutput = new CommandOutput(true, output);
+        String[] outputArray = { output };
+        CommandOutput commandOutput = new CommandOutput(true, outputArray);
 
         // Act
-        String testResult = commandOutput.getOutput();
+        String[] testResult = commandOutput.getOutput();
 
         // Assert
-        assertEquals(expectedResult, testResult);
+        assertEquals(expectedResult, testResult[0]);
     }
     @ParameterizedTest
     @CsvFileSource(resources = "/isSuccsess_bools.csv", numLinesToSkip = 1)
     public void isSuccess_returns_boolean_that_is_passed(boolean success, boolean expectedResult) {
         // Set up
-        String output = "test String";
+        String[] output = { "test String" };
         CommandOutput commandOutput = new CommandOutput(success, output);
 
         // Act
@@ -57,7 +58,7 @@ class CommandOutputUnitTest {
     @Test
     public void setSuccess_correctly_sets_success_boolean() {
         // Set up
-        String output = "test String";
+        String[] output = { "test String" };
         CommandOutput commandOutput = new CommandOutput(false, output);
 
         boolean success = true;

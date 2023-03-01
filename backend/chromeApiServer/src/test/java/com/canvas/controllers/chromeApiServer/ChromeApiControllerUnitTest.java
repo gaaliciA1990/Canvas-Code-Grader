@@ -110,7 +110,7 @@ class ChromeApiControllerUnitTest {
         String assignmentID = "cs5461321";
         String courseID = "cpsc5023";
         UserType type = UserType.STUDENT;
-        CommandOutput commandOutput = new CommandOutput(true, "test");
+        CommandOutput commandOutput = new CommandOutput(true, new String[] {"test"});
 
         Mockito.when(canvasClientService.fetchUserId(authToken)).thenReturn(userID);
         Mockito.when(evaluationService.compileStudentCodeFile(any(), any())).thenReturn(new ResponseEntity<>(commandOutput, HttpStatus.OK));
