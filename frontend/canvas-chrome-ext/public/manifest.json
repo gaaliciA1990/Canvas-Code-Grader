@@ -15,7 +15,9 @@
         "background.js",
         "compilation-notification.js",
         "compilation-notification.html",
-        "extension-styles.css"
+        "extension-styles.css",
+        "redx.png",
+        "tick.png"
       ],
       "matches": [
         "<all_urls>"
