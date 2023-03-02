@@ -94,7 +94,7 @@
                     let output = fileSubmit_response.output;
 
                     console.log("Sending message to content script from injection")
-                    window.postMessage({ type: "assignment_evaluate", output });
+                    window.postMessage({ type: "assignment_evaluate", fileSubmit_response });
                 }
                 else if (fileSubmit_response.code === 424){
                     console.log("Sending error message to content from injection")

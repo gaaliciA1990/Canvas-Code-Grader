@@ -29,12 +29,13 @@ try {
             && (msg.data.type === "assignment_evaluate")) {
 
             console.log("sending message to background script");
+            console.log(msg)
             //console.log(msg.data.type);
             //console.log(msg.data.output);
 
             //by default do these msgs alaways go to BG?
             console.log("sending message to background script");
-            chrome.runtime.sendMessage({type: "evaluation", output: msg.data.output}, (response) => {
+            chrome.runtime.sendMessage({type: "evaluation", output: msg.data}, (response) => {
                 console.log(response);
             });
         }

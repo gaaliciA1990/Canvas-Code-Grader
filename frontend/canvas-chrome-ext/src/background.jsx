@@ -29,7 +29,7 @@ try {
 
             await chrome.tabs.sendMessage(notification_window.id, {
                 action: 'compilation_results',
-                data: message.output,
+                data: message.output.fileSubmit_response,
             });
 
             //TODO does this need to be changed
@@ -56,8 +56,8 @@ try {
             console.log("MESSAGE");
             console.log(message.output.fileSubmit_response);
             await chrome.tabs.sendMessage(notification_window.id, {
-                action: 'compilation_results',
-                data: message.output.fileSubmit_response.message,
+                action: '424error',
+                data: message.output.fileSubmit_response,
             });
 
             //TODO does this need to be changed
