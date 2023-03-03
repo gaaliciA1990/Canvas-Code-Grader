@@ -40,5 +40,19 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
         document.getElementById("comp-status").textContent = "No Evaluation Script Found";
         document.getElementById("res_image").src="img/redx.png";
     }
+    else if(msg.action === "500error"){
+        console.log('msg.data status 500 Internal Server Error: ', msg.data);
+        sendResponse("error received from backend");
+
+        document.getElementById('update-text').textContent = msg.data.message;
+
+        document.getElementById("comp-status").textContent = "Status Code 500 - Internal Server Error: \n\n" +
+            "Check file submission for compilation errors or contact administrator.";
+        document.getElementById("res_image").src="img/redx.png";
+    }
+    else {
+        document.getElementById("comp-status").textContent = "Unknown error contact administrator.";
+        document.getElementById("res_image").src="img/redx.png";
+    }
     //handle specific errors
 });

@@ -26,9 +26,6 @@
     btn_code_submission.style.backgroundPosition = "center left 5px, center left 5px"
     btn_code_submission.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
 
-
-    //btn.onclick = fileInput.click();
-
     btn_code_submission.addEventListener("click", function () {
         fileInput.click();
 
@@ -91,16 +88,19 @@
                 alert(fileSubmit_response.output); //for debugging comment/remove in final build
 
                 if(fileSubmit_response.output !== undefined){
-                    let output = fileSubmit_response.output;
 
                     console.log("Sending message to content script from injection")
                     window.postMessage({ type: "assignment_evaluate", fileSubmit_response });
                 }
+                //TODO backend response should be uniform. Some error messages use JSON w/ code and some use Status
                 else if (fileSubmit_response.code === 424){
-                    console.log("Sending error message to content from injection")
+                    console.log("Sending error message to student content script from injection");
                     window.postMessage({ type: "evaluate_error", fileSubmit_response });
                 }
-
+                else if (fileSubmit_response.status === 500){
+                    console.log("Sending error message to student content script from injection");
+                    window.postMessage({ type: "internal_server_error", fileSubmit_response });
+                }
             });
 
             fileInput.removeEventListener("change", requestFunction);
