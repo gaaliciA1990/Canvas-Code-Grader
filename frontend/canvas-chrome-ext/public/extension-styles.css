@@ -128,7 +128,7 @@ Styles for compilation notifications
 }
 
 .compilation-notification-results-container {
-    width: 400px;
+    width: 70%;
     background: #fff;
     border-radius: 6px;
     position: absolute;

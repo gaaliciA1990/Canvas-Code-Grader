@@ -21,6 +21,7 @@ document.addEventListener('readystatechange', event => {
     }
 })
 
+//Content script message handler
 
 try {
     window.addEventListener("message", function (msg) {
@@ -28,20 +29,32 @@ try {
         if (msg.data.type
             && (msg.data.type === "assignment_evaluate")) {
 
-            console.log("sending message to background script");
+            console.log("Student Content script sending message to background script");
+            console.log("MESSAGE: " + msg)
             //console.log(msg.data.type);
             //console.log(msg.data.output);
 
-            //by default do these msgs alaways go to BG?
-            console.log("sending message to background script");
-            chrome.runtime.sendMessage({type: "evaluation", output: msg.data.output}, (response) => {
+            chrome.runtime.sendMessage({type: "evaluation", output: msg.data}, (response) => {
                 console.log(response);
             });
         }
         else if ((msg.data.type) && (msg.data.type === "evaluate_error")){
-            console.log("sending error message to background script");
+            console.log("Student Content script sending error message to background script");
 
             chrome.runtime.sendMessage({type: "evaluate_error", output: msg.data}, (response) => {
+                console.log(response);
+            });
+        }
+        else if ((msg.data.type) && (msg.data.type === "internal_server_error")){
+            console.log("Student Content script sending error message to background script");
+
+            chrome.runtime.sendMessage({type: "internal_server_error", output: msg.data}, (response) => {
+                console.log(response);
+            });
+        }
+        else {
+            console.log("Student Content script sending error message to background script");
+            chrome.runtime.sendMessage({type: "unknown", output: msg.data}, (response) => {
                 console.log(response);
             });
         }
