@@ -1,0 +1,222 @@
+openapi: 3.0.3
+info:
+  title: Canvas Code Grader
+  version: 1.0.0
+tags:
+  - name: student
+    description: actions that can be taken with the Canvas Code Grader API
+  - name: oauth
+    description: Actions required for implementing Oauth/SSO with Canvas
+paths:
+  /submission/courses/{courseId}/assignments/{assignmentId}:
+    get:
+      tags:
+        - student
+      summary: retrieve a student submission
+      description: get the student assignment for a given course
+      operationId: retrieveSubmission
+      parameters:
+        - name: Authorization
+          in: header
+          description: bearer token for Oauth validation
+          required: true
+          schema:
+            type: string
+        - name: courseId
+          in: path
+          description: ID of course to search for submission
+          required: true
+          schema:
+            type: string
+        - name: assignmentId
+          in: path
+          description: ID of assignment in a course to search for submission
+          required: true
+          schema:
+            type: string
+        - name: studentId
+          in: query
+          description: ID of student to search for submission
+          required: true
+          schema:
+            type: string
+        - name: userType
+          in: query
+          description: Type of user for the action. This is an ENUM, so enter either STUDENT or GRADER
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+
+        '400':
+          description: Invalid parameter entered
+        '401':
+          description: UserType not Grader, unauthorized access
+    delete:
+      tags:
+        - student
+      summary: delete the student submissions
+      description: Deletes the temporary storage folder created during submission retrieval
+      operationId: deleteSubmission
+      parameters:
+        - name: Authorization
+          in: header
+          description: bearer token for Oauth validation
+          required: true
+          schema:
+            type: string
+        - name: courseId
+          in: path
+          description: ID of course to search for submission
+          required: true
+          schema:
+            type: string
+        - name: assignmentId
+          in: path
+          description: ID of assignment in a course to search for submission
+          required: true
+          schema:
+            type: string
+        - name: studentId
+          in: query
+          description: ID of student to search for submission
+          required: true
+          schema:
+            type: string
+        - name: userType
+          in: query
+          description: Type of user for the action. This is an ENUM, so enter either STUDENT or GRADER
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+
+        '400':
+          description: Invalid parameter entered
+        '401':
+          description: UserType not Student, unauthorized access
+
+  /evaluate:
+    post:
+      tags:
+        - student
+      summary: evaluate the student submission
+      description: Starts the evaluation process to ensure the student assignment compiles with the makefile
+      operationId: evaluateCode
+      parameters:
+        - name: Authorization
+          in: header
+          description: bearer token for Oauth validation
+          required: true
+          schema:
+            type: string
+        - name: courseId
+          in: query
+          description: ID of course to search for submission.Pulled from url
+          required: true
+          schema:
+            type: string
+        - name: assignmentId
+          in: query
+          description: ID of assignment in a course to search for submission. Pulled from url
+          required: true
+          schema:
+            type: string
+        - name: userType
+          in: query
+          description: Type of user for the action. This is an ENUM, so enter either STUDENT or GRADER
+          required: true
+          schema:
+            type: string
+      #TODO: Update this section with example
+      requestBody:
+        content:
+          multipart/form-data: # Media type
+            schema:            # Request payload
+              type: object
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid parameter entered
+        '401':
+          description: UserType not Grader, unauthorize access
+
+  /oauth2Response:
+    get:
+      tags:
+        - oauth
+      summary: Request to fetch auth token
+      description: Initiates the oauth login process and fetches the access token from Canvas
+      operationId: oauth
+      parameters:
+        - name: code
+          in: query
+          description: bearer token for Oauth validation
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '401':
+          description: UserType not Grader, unauthorize access
+#TODO: update this section with examples of our responses
+components:
+  schemas:
+    Submission:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        petId:
+          type: integer
+          format: int64
+          example: 198772
+        quantity:
+          type: integer
+          format: int32
+          example: 7
+        shipDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          description: Order Status
+          example: approved
+          enum:
+            - placed
+            - approved
+            - delivered
+        complete:
+          type: boolean
+      xml:
+        name: order
+    CommandOutput:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 100000
+        username:
+          type: string
+          example: fehguy
