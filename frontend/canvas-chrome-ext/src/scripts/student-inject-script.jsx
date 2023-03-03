@@ -88,7 +88,6 @@
                 alert(fileSubmit_response.output); //for debugging comment/remove in final build
 
                 if(fileSubmit_response.output !== undefined){
-
                     console.log("Sending message to content script from injection")
                     window.postMessage({ type: "assignment_evaluate", fileSubmit_response });
                 }
@@ -100,6 +99,10 @@
                 else if (fileSubmit_response.status === 500){
                     console.log("Sending error message to student content script from injection");
                     window.postMessage({ type: "internal_server_error", fileSubmit_response });
+                }
+                else {
+                    console.log("Sending error message to student content script from injection");
+                    window.postMessage({ type: "unknown", fileSubmit_response });
                 }
             });
 
