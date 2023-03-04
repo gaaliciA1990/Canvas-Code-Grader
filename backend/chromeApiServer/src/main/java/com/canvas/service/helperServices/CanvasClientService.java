@@ -14,6 +14,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,7 +35,7 @@ import java.util.Objects;
 public class CanvasClientService {
 
     // seattleU host: https://seattleu.instructure.com/api/v1
-    public static final String CANVAS_URL = "https://canvas.instructure.com/api/v1";
+    public String canvasUrl;
     public static final String AUTH_HEADER = "Authorization";
 
     private final OkHttpClient okHttpClient;
@@ -42,14 +44,14 @@ public class CanvasClientService {
     private static final Logger logger = LoggerFactory.getLogger(CanvasClientService.class);
 
 
-    /**
-     * Constructor with not arguments
-     */
-    public CanvasClientService() {
+    @Autowired
+    protected CanvasClientService(Environment env) {
+        this.canvasUrl = env.getProperty("canvas.url");
         this.okHttpClient = new OkHttpClient();
     }
 
-    protected CanvasClientService(OkHttpClient okHttpClient) {
+    protected CanvasClientService(String canvasUrl, OkHttpClient okHttpClient) {
+        this.canvasUrl = canvasUrl;
         this.okHttpClient = okHttpClient;
     }
 
@@ -62,7 +64,7 @@ public class CanvasClientService {
      */
     public String fetchUserId(String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
-                .url(CANVAS_URL + "/users/self")
+                .url(canvasUrl + "/users/self")
                 .get()
                 .addHeader(AUTH_HEADER, bearerToken)
                 .build();
@@ -94,7 +96,7 @@ public class CanvasClientService {
 
         try {
             Request request = new Request.Builder()
-                    .url(CANVAS_URL + "login/oauth2/token")
+                    .url(canvasUrl + "/login/oauth2/token")
                     .addHeader("ContentType", "application/x-www-form-urlencoded;charset=utf-8")
                     .post(formBody)
                     .build();
@@ -147,7 +149,7 @@ public class CanvasClientService {
      */
     public byte[] fetchFile(String fileId, String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
-                .url(CANVAS_URL + "/files/" + fileId)
+                .url(canvasUrl + "/files/" + fileId)
                 .get()
                 .addHeader(AUTH_HEADER, bearerToken)
                 .build();
@@ -174,7 +176,7 @@ public class CanvasClientService {
      */
     public JsonNode fetchFoldersUnderCourse(String courseId, String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
-                .url(CANVAS_URL + "/courses/" + courseId + "/folders")
+                .url(canvasUrl + "/courses/" + courseId + "/folders")
                 .get()
                 .addHeader(AUTH_HEADER, bearerToken)
                 .build();
@@ -195,7 +197,7 @@ public class CanvasClientService {
      */
     public JsonNode fetchFoldersUnderStudent(String userId, String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
-                .url(CANVAS_URL + "/users/" + userId + "/folders/by_path")
+                .url(canvasUrl + "/users/" + userId + "/folders/by_path")
                 .get()
                 .addHeader(AUTH_HEADER, bearerToken)
                 .build();
@@ -216,7 +218,7 @@ public class CanvasClientService {
      */
     public JsonNode fetchFolders(String folderId, String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
-                .url(CANVAS_URL + "/folders/" + folderId + "/folders")
+                .url(canvasUrl + "/folders/" + folderId + "/folders")
                 .get()
                 .addHeader(AUTH_HEADER, bearerToken)
                 .build();
@@ -237,7 +239,7 @@ public class CanvasClientService {
      */
     public JsonNode fetchFilesUnderFolder(String folderId, String bearerToken) throws CanvasAPIException {
         Request request = new Request.Builder()
-                .url(CANVAS_URL + "/folders/" + folderId + "/files")
+                .url(canvasUrl + "/folders/" + folderId + "/files")
                 .get()
                 .addHeader(AUTH_HEADER, bearerToken)
                 .build();
@@ -257,7 +259,7 @@ public class CanvasClientService {
      */
     public JsonNode fetchCanvasSubmissionJson(ExtensionUser user) throws CanvasAPIException {
         Request request = new Request.Builder()
-                .url(CANVAS_URL + "/courses/" + user.getCourseId() + "/assignments/" + user.getAssignmentId() + "/submissions/" + user.getStudentId())
+                .url(canvasUrl + "/courses/" + user.getCourseId() + "/assignments/" + user.getAssignmentId() + "/submissions/" + user.getStudentId())
                 .get()
                 .addHeader(AUTH_HEADER, user.getBearerToken())
                 .build();

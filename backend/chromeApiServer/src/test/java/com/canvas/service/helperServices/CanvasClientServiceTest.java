@@ -20,20 +20,25 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.Environment;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 
 import static org.mockito.Mockito.*;
-
+@SpringBootTest
+@ContextConfiguration(classes = CanvasClientServiceTest.class)
 class CanvasClientServiceTest {
 
     private static final String BEARER_TOKEN = "fooToken";
     private static final String USER_ID = "fooId";
     private static final Request USER_ID_REQUEST =
             new Request.Builder()
-                    .url(CanvasClientService.CANVAS_URL + "/users/self")
+                    .url("http:///users/self")
                     .get()
                     .addHeader(CanvasClientService.AUTH_HEADER, BEARER_TOKEN)
                     .build();
@@ -180,10 +185,12 @@ class CanvasClientServiceTest {
     @Captor
     ArgumentCaptor<Request> requestCaptor; // TODO: Verify contents of requests
 
+    @Autowired
+    Environment env;
     @BeforeEach
     public void before() {
         MockitoAnnotations.openMocks(this);
-        canvasClientService =  new CanvasClientService(okHttpClient);
+        canvasClientService =  new CanvasClientService("http://canvasDummyUrl.com", okHttpClient);
     }
 
     @Test

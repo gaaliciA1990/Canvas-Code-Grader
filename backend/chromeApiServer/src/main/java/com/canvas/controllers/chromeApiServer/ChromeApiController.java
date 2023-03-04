@@ -4,6 +4,7 @@ import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.exceptions.UserNotAuthorizedException;
 import com.canvas.service.EvaluationService;
+import com.canvas.service.helperServices.AESCryptoService;
 import com.canvas.service.helperServices.OAuthService;
 import com.canvas.service.SubmissionDirectoryService;
 import com.canvas.service.models.CommandOutput;
@@ -12,11 +13,10 @@ import com.canvas.service.models.ExtensionUser;
 import com.canvas.service.models.UserType;
 import com.canvas.service.models.submission.Deletion;
 import com.canvas.service.models.submission.Submission;
-import org.json.JSONObject;
-import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.print.attribute.standard.Media;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 /**
@@ -39,6 +39,11 @@ public class ChromeApiController {
     private final SubmissionDirectoryService submissionDirectoryService;
     private final OAuthService oauthService;
 
+    @Autowired
+    Environment env;
+
+    private final AESCryptoService aesCryptoService;
+
     // Logger object
     private static final Logger logger = LoggerFactory.getLogger(ChromeApiController.class);
 
@@ -47,12 +52,14 @@ public class ChromeApiController {
     public ChromeApiController(
             EvaluationService studentEval,
             CanvasClientService canvasClientService,
-            SubmissionDirectoryService submissionDirectoryService
-    ) {
+            SubmissionDirectoryService submissionDirectoryService,
+            AESCryptoService aesCryptoService,
+            Environment env) {
         this.evaluation = studentEval;
         this.canvasClientService = canvasClientService;
-        this.oauthService = new OAuthService(canvasClientService);
+        this.oauthService = new OAuthService(env, canvasClientService);
         this.submissionDirectoryService = submissionDirectoryService;
+        this.aesCryptoService = aesCryptoService;
     }
 
     /**
@@ -73,6 +80,7 @@ public class ChromeApiController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Submission> retrieveStudentSubmissionFiles(
+            HttpServletRequest request,
             @RequestHeader("Authorization") String bearerToken,
             @PathVariable("assignmentId") String assignmentId,
             @PathVariable("courseId") String courseId,
@@ -81,8 +89,10 @@ public class ChromeApiController {
     ) throws CanvasAPIException, IncorrectRequestParamsException, UserNotAuthorizedException {
         validateGraderRequest(bearerToken, assignmentId, courseId, studentId, userType);
 
-        String userId = canvasClientService.fetchUserId(bearerToken);
-        ExtensionUser graderUser = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, userType);
+        String decryptedBearerToken = request.getHeader("Authorization");
+
+        String userId = canvasClientService.fetchUserId(decryptedBearerToken);
+        ExtensionUser graderUser = new ExtensionUser(decryptedBearerToken, userId, courseId, assignmentId, studentId, userType);
         return submissionDirectoryService.generateSubmissionDirectory(graderUser);
     }
 
@@ -91,6 +101,7 @@ public class ChromeApiController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Deletion> deleteStudentSubmissionFiles(
+            HttpServletRequest request,
             @RequestHeader("Authorization") String bearerToken,
             @PathVariable("assignmentId") String assignmentId,
             @PathVariable("courseId") String courseId,
@@ -99,8 +110,10 @@ public class ChromeApiController {
     ) throws UserNotAuthorizedException, IncorrectRequestParamsException, CanvasAPIException {
         validateGraderRequest(bearerToken, assignmentId, courseId, studentId, userType);
 
-        String userId = canvasClientService.fetchUserId(bearerToken);
-        ExtensionUser graderUser = new ExtensionUser(bearerToken, userId, courseId, assignmentId, studentId, userType);
+        String decryptedBearerToken = request.getHeader("Authorization");
+
+        String userId = canvasClientService.fetchUserId(decryptedBearerToken);
+        ExtensionUser graderUser = new ExtensionUser(decryptedBearerToken, userId, courseId, assignmentId, studentId, userType);
         return submissionDirectoryService.deleteSubmissionDirectory(graderUser);
     }
 
@@ -121,6 +134,7 @@ public class ChromeApiController {
             consumes = {"multipart/form-data"}
     )
     public ResponseEntity<CommandOutput> initiateStudentCodeEvaluation(
+            HttpServletRequest request,
             @RequestHeader("Authorization") String bearerToken,
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("assignmentId") String assignmentId,
@@ -140,6 +154,9 @@ public class ChromeApiController {
             logger.warn(warnMsg);
             throw new IncorrectRequestParamsException(warnMsg);
         }
+
+        String decryptedBearerToken = request.getHeader("Authorization");
+
         // check userType isn't Unauthorized or Grader
         if (type == UserType.UNAUTHORIZED || type == UserType.GRADER) {
             String errorMessage = String.format("user type [%s] does not match expected [%s]", type, UserType.STUDENT);
@@ -148,10 +165,10 @@ public class ChromeApiController {
         }
 
         // Get the user id from Canvas API
-        String userId = canvasClientService.fetchUserId(bearerToken);
+        String userId = canvasClientService.fetchUserId(decryptedBearerToken);
 
         // Create a user object with params, studentId is null
-        ExtensionUser user = new ExtensionUser(bearerToken, userId, courseId, assignmentId, null, type);
+        ExtensionUser user = new ExtensionUser(decryptedBearerToken, userId, courseId, assignmentId, null, type);
 
         // TODO: check if submission includes makefile
         return evaluation.compileStudentCodeFile(user, files);
@@ -171,10 +188,10 @@ public class ChromeApiController {
             @RequestParam(value = "code", required = true) String code) {
         try {
             String accessToken = this.oauthService.fetchAccessTokenResponse(code,"http://csrh51.cslab.seattleu.edu:8080/oauth2Response");
-            // TODO: Encrypt access token with a key and send to user in the URL
-            // TODO: For each API call, decrypt the token from the headers and use it when making canvas API calls
             HttpHeaders headers = new HttpHeaders();
-            headers.add("Location", "/loginSuccess?access_token=" + accessToken);
+            String encryptedAccessToken = aesCryptoService.encrypt(accessToken, "testSecretKey");
+            headers.add("Location", "/loginSuccess?access_token=" + encryptedAccessToken);
+            String decryptedAccessToken = aesCryptoService.decrypt(encryptedAccessToken, "testSecretKey");
             return new ResponseEntity<String>("Login Success",headers, HttpStatus.FOUND);
         } catch (Exception e) {
             HttpHeaders headers = new HttpHeaders();

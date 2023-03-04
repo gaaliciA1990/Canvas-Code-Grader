@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +69,7 @@ class SubmissionDirectoryServiceTest {
 
             Response canvasSubmissionResponse = new Response.Builder()
                     .request(new Request.Builder()
-                            .url(CanvasClientService.CANVAS_URL + "/foo")
+                            .url("http://foo")
                             .get()
                             .addHeader(CanvasClientService.AUTH_HEADER, bearerToken)
                             .build()
