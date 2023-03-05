@@ -1,10 +1,11 @@
 package com.canvas.controllers.chromeApiServer;
 
 import com.canvas.exceptions.CanvasAPIException;
-import com.canvas.exceptions.CanvasAPIException;
 import com.canvas.exceptions.IncorrectRequestParamsException;
 import com.canvas.service.EvaluationService;
 import com.canvas.service.SubmissionDirectoryService;
+import com.canvas.service.helperServices.AESCryptoService;
+import com.canvas.service.helperServices.HeaderFilter;
 import com.canvas.service.models.CommandOutput;
 import com.canvas.service.helperServices.CanvasClientService;
 import com.canvas.service.models.ExtensionUser;
@@ -12,13 +13,7 @@ import com.canvas.service.models.UserType;
 import com.canvas.service.models.submission.Deletion;
 import com.canvas.service.models.submission.Submission;
 import com.canvas.service.models.submission.SubmissionFile;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.Protocol;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import org.apache.catalina.User;
 import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -33,11 +28,15 @@ import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 
-
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +46,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 
-import java.nio.charset.StandardCharsets;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -58,7 +57,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@WebMvcTest
+@AutoConfigureMockMvc
+@SpringBootTest
 class ChromeApiControllerUnitTest {
 
     /**
@@ -66,6 +66,9 @@ class ChromeApiControllerUnitTest {
      */
     @Autowired
     MockMvc mockMvc;
+
+    @Autowired
+    ApplicationContext context;
 
     @MockBean
     ExtensionUser user;
@@ -79,14 +82,27 @@ class ChromeApiControllerUnitTest {
     @MockBean
     SubmissionDirectoryService submissionDirectoryService;
 
+    @MockBean
+    AESCryptoService aesCryptoService;
+
+    @Autowired
+    Environment env;
+
     ChromeApiController controller;
 
     /**
-     * Placeholder for action to take before running tests
+     * action to take before running tests
+     * We are setting the filter in the test environment to decrypt the access token in the request headers.
      */
     @BeforeEach
     void setUp() {
-        controller = new ChromeApiController(evaluationService, canvasClientService, submissionDirectoryService);
+        MockitoAnnotations.openMocks(this);
+        FilterRegistrationBean<HeaderFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+        filterRegistrationBean.setFilter(new HeaderFilter(aesCryptoService, env));
+        filterRegistrationBean.setUrlPatterns(Arrays.asList("/submission/*","/evaluate"));
+        filterRegistrationBean.setName("MyFilter");
+        context.getAutowireCapableBeanFactory().initializeBean(filterRegistrationBean, "MyFilter");
+        controller = new ChromeApiController(evaluationService, canvasClientService, submissionDirectoryService, aesCryptoService, env);
     }
 
     /**
@@ -200,9 +216,10 @@ class ChromeApiControllerUnitTest {
     public void getOAuth2Response_should_return_login_success_when_access_token_is_returned() throws Exception {
         // Set Up
         String code = "testCode";
+        Mockito.when(aesCryptoService.encrypt(any(), any())).thenReturn("encryptedString");
         Mockito.when(canvasClientService.fetchAccessTokenResponse(any(), any(), any(), any())).thenReturn(new Response.Builder()
                 .request(new Request.Builder()
-                        .url(CanvasClientService.CANVAS_URL + "/oauthResponse")
+                        .url("http://oauthResponse")
                         .get()
                         .build())
                 .protocol(Protocol.HTTP_2)
@@ -220,7 +237,7 @@ class ChromeApiControllerUnitTest {
 
         // Assert
         assertEquals(HttpStatus.FOUND.value(), result.getResponse().getStatus());
-        assertEquals("/loginSuccess?access_token=TestAccessToken", result.getResponse().getRedirectedUrl());
+        assertEquals("/loginSuccess?access_token=encryptedString", result.getResponse().getRedirectedUrl());
     }
 
     @Test
@@ -252,7 +269,7 @@ class ChromeApiControllerUnitTest {
         // Set Up
         Mockito.when(canvasClientService.fetchAccessTokenResponse(any(), any(), any(), any())).thenReturn(new Response.Builder()
                 .request(new Request.Builder()
-                        .url(CanvasClientService.CANVAS_URL + "/oauthResponse")
+                        .url("http://oauthResponse")
                         .get()
                         .build())
                 .protocol(Protocol.HTTP_2)
@@ -368,6 +385,7 @@ class ChromeApiControllerUnitTest {
     @ParameterizedTest
     @MethodSource
     void retrieveStudentSubmissionFiles_shouldThrowIncorrectRequestParamsException_whenAnyParameterIsNull(
+            HttpServletRequest request,
             String bearerToken,
             String assignmentId,
             String courseId,
@@ -377,7 +395,7 @@ class ChromeApiControllerUnitTest {
         // Act
         IncorrectRequestParamsException exception = assertThrows(
                 IncorrectRequestParamsException.class,
-                () -> controller.retrieveStudentSubmissionFiles(bearerToken, assignmentId, courseId, studentId, userType),
+                () -> controller.retrieveStudentSubmissionFiles(request, bearerToken, assignmentId, courseId, studentId, userType),
                 "Expected IncorrectRequestParamsException to be thrown."
         );
 
@@ -391,6 +409,7 @@ class ChromeApiControllerUnitTest {
     @ParameterizedTest
     @MethodSource
     void retrieveStudentSubmissionFiles_shouldThrowIncorrectRequestParamsException_whenTokenOrAnyIdIsEmptyString(
+            HttpServletRequest request,
             String bearerToken,
             String assignmentId,
             String courseId,
@@ -400,7 +419,7 @@ class ChromeApiControllerUnitTest {
         // Act
         IncorrectRequestParamsException exception = assertThrows(
                 IncorrectRequestParamsException.class,
-                () -> controller.retrieveStudentSubmissionFiles(bearerToken, assignmentId, courseId, studentId, userType),
+                () -> controller.retrieveStudentSubmissionFiles(request, bearerToken, assignmentId, courseId, studentId, userType),
                 "Expected IncorrectRequestParamsException to be thrown."
         );
 
@@ -441,22 +460,22 @@ class ChromeApiControllerUnitTest {
 
     private static Stream<Arguments> retrieveStudentSubmissionFiles_shouldThrowIncorrectRequestParamsException_whenAnyParameterIsNull() {
         return Stream.of(
-                Arguments.of(null, "fooAssignmentId", "fooCourseId", "fooStudentId", UserType.GRADER),
-                Arguments.of("fooBearerToken", null, "fooCourseId", "fooStudentId", UserType.GRADER),
-                Arguments.of("fooBearerToken", "fooAssignmentId", null, "fooStudentId", UserType.GRADER),
-                Arguments.of("fooBearerToken", "fooAssignmentId", "fooCourseId", null, UserType.GRADER),
-                Arguments.of("fooBearerToken", "fooAssignmentId", "fooCourseId", "fooStudentId", null),
-                Arguments.of(null, null, null, null, null)
+                Arguments.of(null,null, "fooAssignmentId", "fooCourseId", "fooStudentId", UserType.GRADER),
+                Arguments.of(null,"fooBearerToken", null, "fooCourseId", "fooStudentId", UserType.GRADER),
+                Arguments.of(null,"fooBearerToken", "fooAssignmentId", null, "fooStudentId", UserType.GRADER),
+                Arguments.of(null,"fooBearerToken", "fooAssignmentId", "fooCourseId", null, UserType.GRADER),
+                Arguments.of(null,"fooBearerToken", "fooAssignmentId", "fooCourseId", "fooStudentId", null),
+                Arguments.of(null,null, null, null, null, null)
         );
     }
 
     private static Stream<Arguments> retrieveStudentSubmissionFiles_shouldThrowIncorrectRequestParamsException_whenTokenOrAnyIdIsEmptyString() {
         return Stream.of(
-                Arguments.of("", "fooAssignmentId", "fooCourseId", "fooStudentId", UserType.GRADER),
-                Arguments.of("fooBearerToken", "", "fooCourseId", "fooStudentId", UserType.GRADER),
-                Arguments.of("fooBearerToken", "fooAssignmentId", "", "fooStudentId", UserType.GRADER),
-                Arguments.of("fooBearerToken", "fooAssignmentId", "fooCourseId", "", UserType.GRADER),
-                Arguments.of("", "", "", "", UserType.GRADER)
+                Arguments.of(null,"", "fooAssignmentId", "fooCourseId", "fooStudentId", UserType.GRADER),
+                Arguments.of(null,"fooBearerToken", "", "fooCourseId", "fooStudentId", UserType.GRADER),
+                Arguments.of(null,"fooBearerToken", "fooAssignmentId", "", "fooStudentId", UserType.GRADER),
+                Arguments.of(null,"fooBearerToken", "fooAssignmentId", "fooCourseId", "", UserType.GRADER),
+                Arguments.of(null,"", "", "", "", UserType.GRADER)
         );
     }
 }
