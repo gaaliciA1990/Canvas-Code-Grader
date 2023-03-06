@@ -95,6 +95,10 @@
                 <configuration>
                     <executable>true</executable>
                     <jvmArguments>-Dfile.encoding=UTF8</jvmArguments>
+                    <profiles>
+                        <profile>canvas</profile>
+                        <profile>Oauth</profile>
+                    </profiles>
                 </configuration>
             </plugin>
 
