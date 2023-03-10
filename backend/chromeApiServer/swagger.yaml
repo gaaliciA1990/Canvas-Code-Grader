@@ -52,7 +52,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/Submission'
 
         '400':
           description: Invalid parameter entered
@@ -101,10 +101,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/CommandOutputSuccess'
 
         '400':
           description: Invalid parameter entered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandOutputFail'
         '401':
           description: UserType not Student, unauthorized access
 
@@ -140,8 +144,8 @@ paths:
           required: true
           schema:
             type: string
-      #TODO: Update this section with example
       requestBody:
+        description: These files will be uploaded by the student when the evaluate button is clicked. Upload your files to run the evaluation.
         content:
           multipart/form-data: # Media type
             schema:            # Request payload
@@ -156,7 +160,7 @@ paths:
         '400':
           description: Invalid parameter entered
         '401':
-          description: UserType not Grader, unauthorize access
+          description: UserType not Grader, unauthorized access
 
   /oauth2Response:
     get:
@@ -176,47 +180,83 @@ paths:
         '200':
           description: successful operation
         '401':
-          description: UserType not Grader, unauthorize access
-#TODO: update this section with examples of our responses
+          description: Unauthorized access
 components:
   schemas:
     Submission:
       type: object
       properties:
-        id:
+        submissionId:
           type: integer
           format: int64
-          example: 10
-        petId:
+          example: 2543245
+        studentId:
           type: integer
           format: int64
-          example: 198772
-        quantity:
+          example: 423423
+        assignmentId:
           type: integer
-          format: int32
-          example: 7
-        shipDate:
-          type: string
-          format: date-time
-        status:
-          type: string
-          description: Order Status
-          example: approved
-          enum:
-            - placed
-            - approved
-            - delivered
-        complete:
-          type: boolean
+          format: int64
+          example: 2342342
+        submissionFiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Files'
+          example:
+            - name: "main.cpp"
+              fileContent:
+                - "#include <iostream>"
+                - ""
+                - "int main() {"
+                - "    Hello hello;"
+                - "    hello.sayHello();"
+                - "    return 0;"
+                - "}"
+            - name: "Hello.h"
+              fileContent:
+                - "#pragma once"
+                - ""
+                - "class Hello {"
+                - "public:"
+                - " void sayHello();"
+                - "}"
+            - name: "Hello.cpp"
+              fileContent:
+                - "#include <iostream>"
+                - "#include \"Hello.h\""
+                - "\n"
+                - "using namespace std;"
+                - "void Hello::sayHello() {"
+                - " cout << \"Hello World!\" << endl;"
+                - "}"
+
+        submissionDirectory:
+          type: integer
+          format: int64
+          example: 129373263
+
       xml:
         name: order
-    CommandOutput:
+    CommandOutputSuccess:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-          example: 100000
-        username:
+        success:
+          type: boolean
+          example: true
+    CommandOutputFail:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        description:
           type: string
-          example: fehguy
+          example: "submission directory does not exist"
+
+    Files:
+      type: string
+      properties:
+        name:
+          type: string
+        fileContent:
+          type: array
