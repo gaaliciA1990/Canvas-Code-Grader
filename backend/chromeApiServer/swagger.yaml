@@ -1,0 +1,262 @@
+openapi: 3.0.3
+info:
+  title: Canvas Code Grader
+  version: 1.0.0
+tags:
+  - name: student
+    description: actions that can be taken with the Canvas Code Grader API
+  - name: oauth
+    description: Actions required for implementing Oauth/SSO with Canvas
+paths:
+  /submission/courses/{courseId}/assignments/{assignmentId}:
+    get:
+      tags:
+        - student
+      summary: retrieve a student submission
+      description: get the student assignment for a given course
+      operationId: retrieveSubmission
+      parameters:
+        - name: Authorization
+          in: header
+          description: bearer token for Oauth validation
+          required: true
+          schema:
+            type: string
+        - name: courseId
+          in: path
+          description: ID of course to search for submission
+          required: true
+          schema:
+            type: string
+        - name: assignmentId
+          in: path
+          description: ID of assignment in a course to search for submission
+          required: true
+          schema:
+            type: string
+        - name: studentId
+          in: query
+          description: ID of student to search for submission
+          required: true
+          schema:
+            type: string
+        - name: userType
+          in: query
+          description: Type of user for the action. This is an ENUM, so enter either STUDENT or GRADER
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Submission'
+
+        '400':
+          description: Invalid parameter entered
+        '401':
+          description: UserType not Grader, unauthorized access
+    delete:
+      tags:
+        - student
+      summary: delete the student submissions
+      description: Deletes the temporary storage folder created during submission retrieval
+      operationId: deleteSubmission
+      parameters:
+        - name: Authorization
+          in: header
+          description: bearer token for Oauth validation
+          required: true
+          schema:
+            type: string
+        - name: courseId
+          in: path
+          description: ID of course to search for submission
+          required: true
+          schema:
+            type: string
+        - name: assignmentId
+          in: path
+          description: ID of assignment in a course to search for submission
+          required: true
+          schema:
+            type: string
+        - name: studentId
+          in: query
+          description: ID of student to search for submission
+          required: true
+          schema:
+            type: string
+        - name: userType
+          in: query
+          description: Type of user for the action. This is an ENUM, so enter either STUDENT or GRADER
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandOutputSuccess'
+
+        '400':
+          description: Invalid parameter entered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandOutputFail'
+        '401':
+          description: UserType not Student, unauthorized access
+
+  /evaluate:
+    post:
+      tags:
+        - student
+      summary: evaluate the student submission
+      description: Starts the evaluation process to ensure the student assignment compiles with the makefile
+      operationId: evaluateCode
+      parameters:
+        - name: Authorization
+          in: header
+          description: bearer token for Oauth validation
+          required: true
+          schema:
+            type: string
+        - name: courseId
+          in: query
+          description: ID of course to search for submission.Pulled from url
+          required: true
+          schema:
+            type: string
+        - name: assignmentId
+          in: query
+          description: ID of assignment in a course to search for submission. Pulled from url
+          required: true
+          schema:
+            type: string
+        - name: userType
+          in: query
+          description: Type of user for the action. This is an ENUM, so enter either STUDENT or GRADER
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: These files will be uploaded by the student when the evaluate button is clicked. Upload your files to run the evaluation.
+        content:
+          multipart/form-data: # Media type
+            schema:            # Request payload
+              type: object
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid parameter entered
+        '401':
+          description: UserType not Grader, unauthorized access
+
+  /oauth2Response:
+    get:
+      tags:
+        - oauth
+      summary: Request to fetch auth token
+      description: Initiates the oauth login process and fetches the access token from Canvas
+      operationId: oauth
+      parameters:
+        - name: code
+          in: query
+          description: bearer token for Oauth validation
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '401':
+          description: Unauthorized access
+components:
+  schemas:
+    Submission:
+      type: object
+      properties:
+        submissionId:
+          type: integer
+          format: int64
+          example: 2543245
+        studentId:
+          type: integer
+          format: int64
+          example: 423423
+        assignmentId:
+          type: integer
+          format: int64
+          example: 2342342
+        submissionFiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Files'
+          example:
+            - name: "main.cpp"
+              fileContent:
+                - "#include <iostream>"
+                - ""
+                - "int main() {"
+                - "    Hello hello;"
+                - "    hello.sayHello();"
+                - "    return 0;"
+                - "}"
+            - name: "Hello.h"
+              fileContent:
+                - "#pragma once"
+                - ""
+                - "class Hello {"
+                - "public:"
+                - " void sayHello();"
+                - "}"
+            - name: "Hello.cpp"
+              fileContent:
+                - "#include <iostream>"
+                - "#include \"Hello.h\""
+                - "\n"
+                - "using namespace std;"
+                - "void Hello::sayHello() {"
+                - " cout << \"Hello World!\" << endl;"
+                - "}"
+
+        submissionDirectory:
+          type: integer
+          format: int64
+          example: 129373263
+
+      xml:
+        name: order
+    CommandOutputSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+    CommandOutputFail:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        description:
+          type: string
+          example: "submission directory does not exist"
+
+    Files:
+      type: string
+      properties:
+        name:
+          type: string
+        fileContent:
+          type: array
