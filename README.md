@@ -17,4 +17,4 @@ The final project of the master's program, completed in 20 weeks (across two 8 w
 This repository contains the entire code base for the capstone projet, as well as all of the documentation associated with the project. 
 
 ### Documentation
-For information on our project requirements, design, and set up guides, please see our [wiki pages](https://github.com/gaaliciA1990/Canvas-Code-Grader/wiki)
+For information on our project requirements, design, and set up guides, please see the [wiki pages](https://github.com/gaaliciA1990/Canvas-Code-Grader/wiki)
